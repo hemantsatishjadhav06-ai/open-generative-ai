@@ -24,13 +24,13 @@ test('pickBinaryAssetForPlatform prefers native linux arm64 assets', () => {
 
 test('getBundledBinaryResourceDir resolves linux arm64 bundled path', () => {
     const bundledDir = getBundledBinaryResourceDir({
-        resourcesPath: '/opt/Open Generative AI/resources',
+        resourcesPath: '/opt/Creator Agency/resources',
         platform: 'linux',
         arch: 'arm64',
     });
 
     assert.equal(
         bundledDir,
-        '/opt/Open Generative AI/resources/local-ai/linux-arm64/bin'
+        '/opt/Creator Agency/resources/local-ai/linux-arm64/bin'
     );
 });

@@ -4,6 +4,10 @@
 
 @layer base {
   body, html, input, button, textarea, select {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-inter, 'Inter'), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2 {
+    font-family: var(--font-display, 'Space Grotesk'), 'Space Grotesk', var(--font-inter, 'Inter'), sans-serif;
   }
 }

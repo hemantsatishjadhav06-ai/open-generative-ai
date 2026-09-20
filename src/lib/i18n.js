@@ -203,11 +203,11 @@ const translations = {
 
         // Agent Studio
         'agents.title': 'Agent Studio',
-        'agents.webOnly': 'Available in the web app at open-generative-ai.com',
+        'agents.webOnly': 'Available in the Creator Agency web app',
 
         // Workflow Studio
         'workflows.title': 'Workflow Studio',
-        'workflows.webOnly': 'Available in the web app at open-generative-ai.com',
+        'workflows.webOnly': 'Available in the Creator Agency web app',
 
         // Local Model Manager
         'localModels.title': 'Local Models',
@@ -247,7 +247,7 @@ const translations = {
         // MCP & CLI page
         'mcp.tagline': 'For developers & AI agents',
         'mcp.title': 'MCP & CLI',
-        'mcp.subtitle': 'Use Open Generative AI from your terminal, your IDE, or any MCP-compatible assistant. Generate cinematic images, videos, and audio across 100+ models — without leaving your workflow.',
+        'mcp.subtitle': 'Use Creator Agency from your terminal, your IDE or any MCP-compatible assistant. Make images, video and audio across 100+ models — without leaving your workflow.',
         'mcp.quickStart': 'Quick start',
     },
     zh: {
@@ -404,11 +404,11 @@ const translations = {
 
         // Agent Studio
         'agents.title': '智能体工作室',
-        'agents.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'agents.webOnly': '在 Creator Agency 网页版中可用',
 
         // Workflow Studio
         'workflows.title': '工作流工作室',
-        'workflows.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'workflows.webOnly': '在 Creator Agency 网页版中可用',
 
         // Local Model Manager
         'localModels.title': '本地模型',
@@ -448,7 +448,7 @@ const translations = {
         // MCP & CLI page
         'mcp.tagline': '面向开发者与 AI 智能体',
         'mcp.title': 'MCP & CLI',
-        'mcp.subtitle': '在终端、IDE 或任何兼容 MCP 的助手中使用 Open Generative AI。跨 100+ 模型生成电影级图像、视频和音频 — 无需离开您的工作流。',
+        'mcp.subtitle': '在终端、IDE 或任何兼容 MCP 的助手里使用 Creator Agency。跨 100+ 模型生成图像、视频和音频 — 不用离开你的工作流。',
         'mcp.quickStart': '快速开始',
     },
 };

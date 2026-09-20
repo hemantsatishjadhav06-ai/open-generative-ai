@@ -8,10 +8,9 @@ import AgentChatClient from "./AgentChatClient";
  *
  * URL: /agents/[agent_id]   (new chat — no conversation ID yet)
  */
-export async function generateMetadata({ params }) {
-  const { agent_id } = await params;
+export async function generateMetadata() {
   return {
-    title: `Agent Chat — Open Generative AI`,
+    title: 'Agent chat — Creator Agency',
   };
 }
 

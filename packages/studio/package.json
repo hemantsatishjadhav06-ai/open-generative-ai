@@ -1,7 +1,7 @@
 {
   "name": "studio",
   "version": "1.0.0",
-  "description": "Open Generative AI studio components for Muapi",
+  "description": "Creator Agency studio components (image, video, audio, agents, workflows)",
   "main": "src/index.js",
   "module": "src/index.js",
   "exports": {

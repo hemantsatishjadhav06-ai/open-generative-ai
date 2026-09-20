@@ -19,19 +19,19 @@ const DEFAULT_TEXTAREA_CLASS =
   "w-full bg-transparent border-none text-white text-sm placeholder:text-white/20 focus:outline-none resize-none pt-1 leading-relaxed min-h-[40px] max-h-[150px] md:max-h-[250px] overflow-y-auto custom-scrollbar disabled:opacity-40";
 
 const DEFAULT_ACTION_CLASS =
-  "bg-[#22d3ee] text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#22d3ee]/20 hover:shadow-[#22d3ee]/35 border border-[#22d3ee]/10 z-10 disabled:opacity-50 disabled:cursor-not-allowed";
+  "bg-[#c6f135] text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#c6f135]/20 hover:shadow-[#c6f135]/35 border border-[#c6f135]/10 z-10 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const CONTROL_LAYOUT_CLASS =
-  "h-[38px] flex items-center gap-2 rounded-md transition-all border group whitespace-nowrap shadow-inner focus:outline-none focus-visible:border-[#22d3ee]/45 focus-visible:ring-1 focus-visible:ring-[#22d3ee]/30";
+  "h-[38px] flex items-center gap-2 rounded-md transition-all border group whitespace-nowrap shadow-inner focus:outline-none focus-visible:border-[#c6f135]/45 focus-visible:ring-1 focus-visible:ring-[#c6f135]/30";
 
 const CONTROL_IDLE_CLASS =
   "text-white bg-[#16161a]/60 hover:bg-[#202026]/80 border-white/[0.06]";
 
 const CONTROL_ACTIVE_CLASS =
-  "text-[#22d3ee] bg-[#22d3ee]/10 hover:bg-[#22d3ee]/15 border-[#22d3ee]/25";
+  "text-[#c6f135] bg-[#c6f135]/10 hover:bg-[#c6f135]/15 border-[#c6f135]/25";
 
 const MEDIA_CONTROL_LAYOUT_CLASS =
-  "w-10 h-10 shrink-0 rounded-full border transition-all flex items-center justify-center relative overflow-hidden group focus:outline-none focus-visible:border-[#22d3ee]/45 focus-visible:ring-1 focus-visible:ring-[#22d3ee]/30";
+  "w-10 h-10 shrink-0 rounded-full border transition-all flex items-center justify-center relative overflow-hidden group focus:outline-none focus-visible:border-[#c6f135]/45 focus-visible:ring-1 focus-visible:ring-[#c6f135]/30";
 
 const DEFAULT_POPOVER_POSITION_CLASS =
   "absolute bottom-[calc(100%+12px)] left-0 z-50";
@@ -68,8 +68,8 @@ export function promptMediaButtonClassName({
   return joinClasses(
     MEDIA_CONTROL_LAYOUT_CLASS,
     active
-      ? "border-[#22d3ee]/60 bg-[#22d3ee]/5 hover:border-[#22d3ee]/70"
-      : "border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.06] hover:border-[#22d3ee]/40",
+      ? "border-[#c6f135]/60 bg-[#c6f135]/5 hover:border-[#c6f135]/70"
+      : "border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.06] hover:border-[#c6f135]/40",
     className,
   );
 }
@@ -78,7 +78,7 @@ export const PROMPT_MEDIA_PREVIEW_CLASS =
   "relative w-10 h-10 shrink-0 rounded-full border border-white/10 overflow-hidden shadow-md group";
 
 export const PROMPT_CONTROL_LABEL_CLASS =
-  "text-xs font-semibold text-current opacity-70 group-hover:text-[#22d3ee] group-hover:opacity-100 transition-all";
+  "text-xs font-semibold text-current opacity-70 group-hover:text-[#c6f135] group-hover:opacity-100 transition-all";
 
 export function PromptChevronIcon({ className = "" }) {
   return (
@@ -263,7 +263,7 @@ export function PromptMenuItem({
       role="menuitemradio"
       className={joinClasses(
         "w-full min-h-10 flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all group/menu-item",
-        "text-xs font-semibold text-white/70 hover:bg-[#22d3ee]/10 hover:text-[#22d3ee] focus:outline-none focus-visible:bg-[#22d3ee]/10 focus-visible:text-[#22d3ee]",
+        "text-xs font-semibold text-white/70 hover:bg-[#c6f135]/10 hover:text-[#c6f135] focus:outline-none focus-visible:bg-[#c6f135]/10 focus-visible:text-[#c6f135]",
         className,
       )}
     >
@@ -286,7 +286,7 @@ export function PromptMenuItem({
           height="12"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#22d3ee"
+          stroke="#c6f135"
           strokeWidth="4.5"
           className="flex-shrink-0"
           aria-hidden="true"
@@ -325,9 +325,9 @@ export function PromptSegmentOption({
       aria-pressed={selected}
       className={joinClasses(
         "min-h-7 px-3 py-1 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
-        "focus:outline-none focus-visible:ring-1 focus-visible:ring-[#22d3ee]/40",
+        "focus:outline-none focus-visible:ring-1 focus-visible:ring-[#c6f135]/40",
         selected
-          ? "bg-[#22d3ee] text-black shadow-md shadow-[#22d3ee]/20"
+          ? "bg-[#c6f135] text-black shadow-md shadow-[#c6f135]/20"
           : "text-white/40 hover:text-white/70",
         className,
       )}

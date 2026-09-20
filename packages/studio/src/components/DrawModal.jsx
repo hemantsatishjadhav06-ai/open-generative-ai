@@ -69,7 +69,7 @@ export default function DrawModal({
     "#eab308", // Yellow
     "#22c55e", // Green
     "#3b82f6", // Blue
-    "#a855f7", // Purple
+    "#ff3cac", // Pop magenta
     "#ffffff", // White
     "#000000", // Black
   ];

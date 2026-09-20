@@ -1,17 +1,19 @@
-# Open Generative AI: Technical Documentation & Context
+> **Rebrand note (2026-09-20):** this product is now **Creator Agency**. It is built on the upstream open-source project Open Generative AI (MIT) by Anil Chandra Naidu Matcha and contributors. The notes below were written for the original codebase and are kept for reference; brand names and colours have been updated to the Creator Agency system.
 
-This document serves as a comprehensive knowledge base for the Open Generative AI project. It details the architecture, key components, API integration patterns, and state management strategies used in the application.
+# Creator Agency: Technical Documentation & Context
+
+This document serves as a comprehensive knowledge base for the Creator Agency project. It details the architecture, key components, API integration patterns, and state management strategies used in the application.
 
 ## 1. Project Vision & Overview
 
-**Open Generative AI** is an ambitious open-source project for AI image and video generation.
+**Creator Agency** is an AI studio for creators: image, video, audio, lip-sync, avatars, agents and workflows, with Reelty (AI real-estate marketing) built in as a tab.
 
 - **Core Goal:** To build a feature-complete, self-hosted generative AI studio, starting with **Image Generation** (Nano) and expanding into **Video Generation** (Cinema) and other creative tools.
 - **Current State:** The Image Studio ("Nano Banana Pro" interface) is fully operational, featuring a premium dark-mode UI, history management, and multi-model support via the [Muapi.ai](https://muapi.ai) engine.
 - **Future Direction:** The architecture is designed to scale for video generation, model training interfaces, and advanced editing tools.
 
 - **Stack:** Vite, Vanilla JavaScript, Tailwind CSS v4.
-- **Repository:** `https://github.com/Anil-matcha/Open-Generative-AI`
+- **Repository:** `https://github.com/hemantsatishjadhav06-ai/open-generative-ai`
 - **Primary Branch:** `main`
 
 ## 2. Architecture & File Structure
@@ -72,8 +74,9 @@ Contains the `t2iModels` array.
 
 ## 4. UI & Styling (Tailwind v4)
 
-- **Theme:** Dark mode by default (`bg-app-bg` = `#050505`).
-- **Accent:** Electric Cyan (`#22d3ee`) used for primary actions and glows.
+- **Theme:** Dark mode by default (`bg-app-bg` = `#08060f`, a violet-tinted near-black).
+- **Accent:** "Volt" lime (`#c6f135`) for primary actions and glows, with "Pop" magenta (`#ff3cac`) as the secondary accent. Brand gradient: `linear-gradient(135deg, #c6f135 0%, #ff3cac 100%)`.
+- **Type:** Inter for body copy, Space Grotesk for the wordmark and display headings.
 - **Glassmorphism:** Extensive use of `backdrop-blur` and `bg-white/5` or `bg-black/60` for panels, headers, and modals.
 - **Responsiveness:**
     - **Mobile:** Stacked layout, simplified controls, hidden sidebar.

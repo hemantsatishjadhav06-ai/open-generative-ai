@@ -1,7 +1,7 @@
 {
-  "name": "open-generative-ai",
-  "description": "Open-source alternative to HF AI — AI image, video, cinema and lip sync studio",
-  "homepage": "https://github.com/Anil-matcha/Open-Generative-AI",
+  "name": "creator-agency",
+  "description": "Creator Agency — AI studio for creators (images, video, audio, agents, workflows) with Reelty built in",
+  "homepage": "https://github.com/hemantsatishjadhav06-ai/open-generative-ai",
   "private": true,
   "version": "2.0.0",
   "license": "MIT",
@@ -37,9 +37,9 @@
     "electron:build:all": "vite build && electron-builder --mac --win --linux"
   },
   "build": {
-    "appId": "ai.generative.open",
-    "productName": "Open Generative AI",
-    "copyright": "Copyright © 2025",
+    "appId": "agency.creator.studio",
+    "productName": "Creator Agency",
+    "copyright": "Copyright © 2026 Creator Agency",
     "directories": {
       "output": "release"
     },
@@ -91,7 +91,7 @@
     "linux": {
       "icon": "public/banner.png",
       "category": "Utility",
-      "maintainer": "Open Generative AI Team",
+      "maintainer": "Creator Agency",
       "extraFiles": [
         {
           "from": "build/linux/apparmor.profile",

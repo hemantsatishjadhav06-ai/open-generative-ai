@@ -1590,7 +1590,7 @@ export default function LayersStudio({
                     Processing Image...
                   </p>
                   <p className="text-xs text-white/50 mt-1">
-                    Open Generative AI Studio
+                    Creator Agency Studio
                   </p>
 
                   <div className="w-48 bg-white/10 h-1.5 rounded-full overflow-hidden mt-4">

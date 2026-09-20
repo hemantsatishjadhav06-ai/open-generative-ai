@@ -71,7 +71,7 @@ export default function AgentChatClient({ agentDetails, initialHistory, userData
   );
 
   return (
-    <div className="h-screen w-full bg-black">
+    <div className="h-screen w-full bg-surface-app">
       <AiAgent
         initialAgentDetails={agentDetails}
         initialHistory={initialHistory}

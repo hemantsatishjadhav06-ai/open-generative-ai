@@ -51,7 +51,7 @@ const activeDownloads = new Map(); // modelId → request object
 // ships e.g. avx512 still resolves cleanly.
 function fetchJson(url) {
     return new Promise((resolve, reject) => {
-        https.get(url, { headers: { 'User-Agent': 'open-generative-ai' } }, (res) => {
+        https.get(url, { headers: { 'User-Agent': 'creator-agency' } }, (res) => {
             if (res.statusCode !== 200) {
                 res.resume();
                 reject(new Error(`HTTP ${res.statusCode} from ${url}`));
@@ -82,7 +82,7 @@ function downloadFile(url, destPath, onProgress) {
         const mod = parsed.protocol === 'https:' ? https : http;
 
         const reqHeaders = {
-            'User-Agent': 'Mozilla/5.0 (compatible; open-generative-ai/1.0)',
+            'User-Agent': 'Mozilla/5.0 (compatible; creator-agency/1.0)',
             'Accept': '*/*',
             'Connection': 'keep-alive',
         };

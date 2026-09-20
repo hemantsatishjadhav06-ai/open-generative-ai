@@ -43,7 +43,7 @@ export function CinemaStudio() {
 
     const overlayContent = document.createElement('div');
     // Reduced padding for mobile (p-4) and added max-height/overflow handling
-    overlayContent.className = 'w-full max-w-4xl bg-[#141414] border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]';
+    overlayContent.className = 'w-full max-w-4xl bg-[#151021] border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]';
     overlayBackdrop.appendChild(overlayContent);
 
     // Header for Overlay
@@ -235,7 +235,7 @@ export function CinemaStudio() {
 
     // Generate Button
     const generateBtn = document.createElement('button');
-    generateBtn.className = 'h-[56px] px-8 bg-[#22d3ee] text-black rounded-xl font-black text-xs uppercase hover:bg-white transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed';
+    generateBtn.className = 'h-[56px] px-8 bg-[#c6f135] text-black rounded-xl font-black text-xs uppercase hover:bg-white transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed';
     generateBtn.setAttribute('data-tooltip', 'Generate cinema shot');
     generateBtn.innerHTML = t('cinema.generateBtn');
 
@@ -396,7 +396,7 @@ export function CinemaStudio() {
     const createActionBtn = (label, primary = false) => {
         const btn = document.createElement('button');
         btn.className = primary
-            ? 'bg-[#22d3ee] text-black px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wide hover:bg-white transition-colors shadow-glow-sm hover:scale-105 active:scale-95'
+            ? 'bg-[#c6f135] text-black px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wide hover:bg-white transition-colors shadow-glow-sm hover:scale-105 active:scale-95'
             : 'bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border border-white/5 backdrop-blur-lg text-white hover:border-white/20';
         btn.textContent = label;
         return btn;
@@ -418,7 +418,7 @@ export function CinemaStudio() {
         historyList.innerHTML = '';
         generationHistory.forEach((entry, idx) => {
             const thumb = document.createElement('div');
-            thumb.className = `relative group/thumb cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 aspect-square ${idx === 0 ? 'border-[#22d3ee] shadow-glow-sm' : 'border-white/10 hover:border-white/30'}`;
+            thumb.className = `relative group/thumb cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 aspect-square ${idx === 0 ? 'border-[#c6f135] shadow-glow-sm' : 'border-white/10 hover:border-white/30'}`;
 
             thumb.innerHTML = `
                 <img src="${entry.url}" class="w-full h-full object-cover opacity-80 group-hover/thumb:opacity-100 transition-opacity">
@@ -459,11 +459,11 @@ export function CinemaStudio() {
         // Highlight active history item
         if (thumbElement) {
             historyList.querySelectorAll('div').forEach(t => {
-                t.classList.remove('border-[#22d3ee]', 'shadow-glow-sm');
+                t.classList.remove('border-[#c6f135]', 'shadow-glow-sm');
                 t.classList.add('border-white/10');
             });
             thumbElement.classList.remove('border-white/10');
-            thumbElement.classList.add('border-[#22d3ee]', 'shadow-glow-sm');
+            thumbElement.classList.add('border-[#c6f135]', 'shadow-glow-sm');
         }
     };
 

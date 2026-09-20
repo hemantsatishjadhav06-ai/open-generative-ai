@@ -53,7 +53,7 @@ const formatTime = (s) =>
 
 // ── icons ─────────────────────────────────────────────────────────────────────
 const CheckSvg = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="4">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c6f135" strokeWidth="4">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -286,7 +286,7 @@ export default function VibeMotionStudio({
             <div className="flex flex-col items-center gap-4 py-16">
               <div className="relative w-20 h-20">
                 <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping" />
-                <div className="absolute inset-2 rounded-full border-2 border-[#22d3ee]/30 animate-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-[#c6f135]/30 animate-spin" />
                 <div className="absolute inset-4 rounded-full border-2 border-violet-400/50 animate-[spin_1.5s_linear_infinite_reverse]" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400 animate-pulse">
@@ -316,7 +316,7 @@ export default function VibeMotionStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 {/* Video thumbnail */}
@@ -334,7 +334,7 @@ export default function VibeMotionStudio({
                 {/* ── Mode tag (top-left) ── */}
                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm border ${
                   entry.mode === "edit"
-                    ? "bg-[#22d3ee]/20 text-[#22d3ee] border-[#22d3ee]/30"
+                    ? "bg-[#c6f135]/20 text-[#c6f135] border-[#c6f135]/30"
                     : "bg-violet-600/30 text-violet-300 border-violet-500/30"
                 }`}>
                   {entry.mode === "edit" ? copy.card.modeEdit : copy.card.modeGenerated}
@@ -367,7 +367,7 @@ export default function VibeMotionStudio({
                         setPrompt("");
                         setTimeout(() => textareaRef.current?.focus(), 50);
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#22d3ee] hover:text-black transition-all border border-white/10"
+                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#c6f135] hover:text-black transition-all border border-white/10"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -501,7 +501,7 @@ export default function VibeMotionStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#c6f135] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -539,7 +539,7 @@ export default function VibeMotionStudio({
 
             {/* Right: Edit mode status banner beside toggle buttons */}
             {editMode && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-[#22d3ee]/5 border border-[#22d3ee]/10 rounded-full text-[11px] text-[#22d3ee] font-medium tracking-tight min-w-0 max-w-full overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-1 bg-[#c6f135]/5 border border-[#c6f135]/10 rounded-full text-[11px] text-[#c6f135] font-medium tracking-tight min-w-0 max-w-full overflow-hidden">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="flex-shrink-0">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -551,7 +551,7 @@ export default function VibeMotionStudio({
                 </span>
                 <button
                   onClick={() => { setEditMode(false); setEditSourceId(null); setPrompt(""); }}
-                  className="ml-auto text-[#22d3ee]/40 hover:text-[#22d3ee] transition-colors text-sm leading-none flex-shrink-0"
+                  className="ml-auto text-[#c6f135]/40 hover:text-[#c6f135] transition-colors text-sm leading-none flex-shrink-0"
                   title={copy.editBanner.cancelEdit}
                 >
                   ×
@@ -657,13 +657,13 @@ export default function VibeMotionStudio({
                     onClick={toggleDropdown("source")}
                     className={promptControlClassName({ active: true })}
                   >
-                    <div className="w-4 h-4 bg-[#22d3ee]/20 rounded flex items-center justify-center border border-[#22d3ee]/30">
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="w-4 h-4 bg-[#c6f135]/20 rounded flex items-center justify-center border border-[#c6f135]/30">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#c6f135" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
                     </div>
-                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} text-[#22d3ee]/70 max-w-[120px] truncate`}>
+                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} text-[#c6f135]/70 max-w-[120px] truncate`}>
                       {sourceEntry ? `${copy.controls.sourcePrefix} ${sourceEntry.prompt?.slice(0, 20)}…` : copy.controls.pickSource}
                     </span>
                     <PromptChevronIcon />
