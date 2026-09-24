@@ -15,6 +15,7 @@ import {
   getWorkflowData,
 } from "../muapi.js";
 import dynamic from "next/dynamic";
+import { notifyError } from "../utils/notify.js";
 
 const WorkflowUI = dynamic(() => import("./WorkflowUI"), {
   ssr: false,
@@ -36,7 +37,7 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
   return (
     <div
       onClick={() => onClick(workflow)}
-      className="group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border border-white/5 bg-[#0e0b18] transition-all hover:border-brand/30 hover:scale-[1.02] shadow-2xl"
+      className="group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border border-white/5 bg-[#0a1422] transition-all hover:border-brand/30 hover:scale-[1.02] shadow-2xl"
     >
       {workflow.thumbnail ? (
         <img
@@ -304,7 +305,7 @@ export default function WorkflowStudio({
       setWorkflows((prev) => prev.filter((w) => w.id !== wfId));
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Failed to delete workflow");
+      notifyError("Failed to delete workflow");
     } finally {
       setIsDeletingId(null);
     }
@@ -326,7 +327,7 @@ export default function WorkflowStudio({
       setRenamingWorkflow(null);
     } catch (err) {
       console.error("Rename failed:", err);
-      alert("Failed to rename workflow");
+      notifyError("Failed to rename workflow");
     }
   };
 
@@ -460,7 +461,7 @@ export default function WorkflowStudio({
 
   if (selectedWorkflow) {
     return (
-      <div className="h-full flex flex-col bg-[#08060f] text-white">
+      <div className="h-full flex flex-col bg-[#050b14] text-white">
         {/* Immersive Sub-header / Floating Toggle */}
         {isHeaderVisible ? (
           <div className="flex-shrink-0 h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 z-30">
@@ -488,7 +489,7 @@ export default function WorkflowStudio({
                     type="button"
                     className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${
                       activeSubTab === "playground"
-                        ? "bg-brand text-black shadow-[0_0_15px_rgba(198,241,53,0.2)]"
+                        ? "bg-brand text-on-brand shadow-[0_0_15px_rgba(46,230,214,0.2)]"
                         : "text-white/40 hover:text-white"
                     }`}
                   >
@@ -505,7 +506,7 @@ export default function WorkflowStudio({
                     type="button"
                     className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${
                       activeSubTab === "builder"
-                        ? "bg-brand text-black shadow-[0_0_15px_rgba(198,241,53,0.2)]"
+                        ? "bg-brand text-on-brand shadow-[0_0_15px_rgba(46,230,214,0.2)]"
                         : "text-white/40 hover:text-white"
                     }`}
                   >
@@ -550,7 +551,7 @@ export default function WorkflowStudio({
                  onClick={() => setActiveSubTab("playground")}
                  type="button"
                  className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${
-                   activeSubTab === "playground" ? "bg-brand text-black" : "text-white/40"
+                   activeSubTab === "playground" ? "bg-brand text-on-brand" : "text-white/40"
                  }`}
                >
                  Play
@@ -559,7 +560,7 @@ export default function WorkflowStudio({
                  onClick={() => setActiveSubTab("builder")}
                  type="button"
                  className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${
-                   activeSubTab === "builder" ? "bg-brand text-black" : "text-white/40"
+                   activeSubTab === "builder" ? "bg-brand text-on-brand" : "text-white/40"
                  }`}
                >
                  Builder
@@ -658,7 +659,7 @@ export default function WorkflowStudio({
                     <button
                       type="submit"
                       disabled={isExecuting || !selectedWorkflow.id}
-                      className="w-full py-4 bg-brand text-black text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-[0_0_30px_rgba(198,241,53,0.15)] flex items-center justify-center gap-3 mt-8"
+                      className="w-full py-4 bg-brand text-on-brand text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-brand-hover transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-[0_0_30px_rgba(46,230,214,0.15)] flex items-center justify-center gap-3 mt-8"
                     >
                       {isExecuting ? (
                         <>
@@ -691,7 +692,7 @@ export default function WorkflowStudio({
               </div>
 
               {/* Preview Panel */}
-              <div className="flex-1 overflow-y-auto p-8 lg:p-12 bg-[#08060f] flex items-center justify-center min-h-[500px]">
+              <div className="flex-1 overflow-y-auto p-8 lg:p-12 bg-[#050b14] flex items-center justify-center min-h-[500px]">
                 {error && (
                   <div className="w-full max-w-md p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col items-center gap-4 animate-shake">
                     <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center text-red-500">
@@ -742,7 +743,7 @@ export default function WorkflowStudio({
                 {isExecuting && (
                   <div className="flex flex-col items-center gap-6 animate-fade-in">
                     <div className="relative">
-                      <div className="w-24 h-24 border-[3px] border-white/5 border-t-brand rounded-full animate-spin shadow-[0_0_40px_rgba(198,241,53,0.1)]" />
+                      <div className="w-24 h-24 border-[3px] border-white/5 border-t-brand rounded-full animate-spin shadow-[0_0_40px_rgba(46,230,214,0.1)]" />
                       <div className="absolute inset-0 flex items-center justify-center text-brand">
                         <svg
                           width="32"
@@ -813,7 +814,7 @@ export default function WorkflowStudio({
                                 href={out.value}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-brand hover:text-black transition-colors"
+                                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-brand hover:text-on-brand transition-colors"
                               >
                                 <svg
                                   width="14"
@@ -836,7 +837,7 @@ export default function WorkflowStudio({
               </div>
             </>
           ) : (
-            <div className="flex-1 relative bg-[#08060f]">
+            <div className="flex-1 relative bg-[#050b14]">
               {nodeSchemas && workflowDef ? (
                 <WorkflowUI
                   apiKey={apiKey}
@@ -885,7 +886,7 @@ export default function WorkflowStudio({
             </div>
             <button
               onClick={() => handleCreateWorkflow()}
-              className="px-6 py-3 bg-brand text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(198,241,53,0.3)] flex items-center gap-2"
+              className="px-6 py-3 bg-brand text-on-brand text-xs font-black uppercase tracking-widest rounded-lg hover:bg-brand-hover transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(46,230,214,0.3)] flex items-center gap-2"
             >
               <svg
                 width="14"
@@ -948,7 +949,7 @@ export default function WorkflowStudio({
             <button
               type="button"
               onClick={() => setReloadTick((t) => t + 1)}
-              className="mt-4 px-4 py-2 rounded-lg bg-brand text-black text-[11px] font-semibold hover:bg-brand-hover transition-colors"
+              className="mt-4 px-4 py-2 rounded-lg bg-brand text-on-brand text-[11px] font-semibold hover:bg-brand-hover transition-colors"
             >
               Retry
             </button>
@@ -985,7 +986,7 @@ export default function WorkflowStudio({
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setRenamingWorkflow(null)} />
           <form 
             onSubmit={handleRenameWorkflow}
-            className="relative w-full max-w-sm bg-[#0e0b18] border border-white/10 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300"
+            className="relative w-full max-w-sm bg-[#0a1422] border border-white/10 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300"
           >
             <h3 className="text-xl font-bold text-white mb-2">Rename Workflow</h3>
             <p className="text-white/40 text-sm mb-6">Enter a new descriptive name for your pipeline.</p>
@@ -1013,7 +1014,7 @@ export default function WorkflowStudio({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-brand text-black px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white transition-all transform hover:scale-105 active:scale-95"
+                  className="flex-1 bg-brand text-on-brand px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-hover transition-all transform hover:scale-105 active:scale-95"
                 >
                   Save Name
                 </button>

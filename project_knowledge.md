@@ -1,12 +1,12 @@
-> **Rebrand note (2026-09-20):** this product is now **Creator Agency**. It is built on the upstream open-source project Open Generative AI (MIT) by Anil Chandra Naidu Matcha and contributors. The notes below were written for the original codebase and are kept for reference; brand names and colours have been updated to the Creator Agency system.
+> **Rebrand notes:** 2026-09-20 the product became **Creator Agency**; 2026-09-24 it was renamed **Aquora** (turquoise + electric-blue palette). It is built on the upstream open-source project Open Generative AI (MIT) by Anil Chandra Naidu Matcha and contributors. The notes below were written for the original codebase and are kept for reference; brand names and colours have been updated to the Aquora system.
 
-# Creator Agency: Technical Documentation & Context
+# Aquora: Technical Documentation & Context
 
-This document serves as a comprehensive knowledge base for the Creator Agency project. It details the architecture, key components, API integration patterns, and state management strategies used in the application.
+This document serves as a comprehensive knowledge base for the Aquora project. It details the architecture, key components, API integration patterns, and state management strategies used in the application.
 
 ## 1. Project Vision & Overview
 
-**Creator Agency** is an AI studio for creators: image, video, audio, lip-sync, avatars, agents and workflows, with Reelty (AI real-estate marketing) built in as a tab.
+**Aquora** is an AI studio for creators: image, video, audio, lip-sync, avatars, agents and workflows, with Reelty (AI real-estate marketing) built in as a tab.
 
 - **Core Goal:** To build a feature-complete, self-hosted generative AI studio, starting with **Image Generation** (Nano) and expanding into **Video Generation** (Cinema) and other creative tools.
 - **Current State:** The Image Studio ("Nano Banana Pro" interface) is fully operational, featuring a premium dark-mode UI, history management, and multi-model support via the [Muapi.ai](https://muapi.ai) engine.
@@ -74,8 +74,8 @@ Contains the `t2iModels` array.
 
 ## 4. UI & Styling (Tailwind v4)
 
-- **Theme:** Dark mode by default (`bg-app-bg` = `#08060f`, a violet-tinted near-black).
-- **Accent:** "Volt" lime (`#c6f135`) for primary actions and glows, with "Pop" magenta (`#ff3cac`) as the secondary accent. Brand gradient: `linear-gradient(135deg, #c6f135 0%, #ff3cac 100%)`.
+- **Theme:** Dark mode by default (`bg-app-bg` = `#050b14`, a deep navy).
+- **Accent:** Turquoise (`#2ee6d6`) for primary actions and glows, with "Pop" electric blue (`#3b82f6`; use `#60a5fa` for blue text on dark) as the secondary accent. Brand gradient: `linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%)`.
 - **Type:** Inter for body copy, Space Grotesk for the wordmark and display headings.
 - **Glassmorphism:** Extensive use of `backdrop-blur` and `bg-white/5` or `bg-black/60` for panels, headers, and modals.
 - **Responsiveness:**

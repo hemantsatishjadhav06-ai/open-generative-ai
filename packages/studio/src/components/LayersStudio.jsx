@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import {
   decomposeLayers,
   uploadFile,
@@ -14,6 +13,7 @@ import { formatErrorMessage } from "../utils/formatError.js";
 import en from "../messages/en/layersStudio.json";
 import zh from "../messages/zh/layersStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { notify, notifyError, notifySuccess } from "../utils/notify.js";
 
 // Upscale Models Definition from schema_data.json
 const UPSCALE_MODELS = [
@@ -276,7 +276,7 @@ export default function LayersStudio({
   // Upload File Helper
   const handleUploadFile = async (file) => {
     if (!apiKey) {
-      toast.error(copy.toasts.enterApiKeyUpload);
+      notifyError(copy.toasts.enterApiKeyUpload);
       return;
     }
     setUploading(true);
@@ -291,9 +291,9 @@ export default function LayersStudio({
       setCarouselIndex(0);
       setLassoPoints([]);
       clearDrawingCanvas();
-      toast.success(copy.toasts.imageUploaded);
+      notifySuccess(copy.toasts.imageUploaded);
     } catch (err) {
-      toast.error(copy.toasts.uploadFailed.replace('{error}', formatErrorMessage(err)));
+      notifyError(copy.toasts.uploadFailed.replace('{error}', formatErrorMessage(err)));
     } finally {
       setUploading(false);
     }
@@ -309,11 +309,11 @@ export default function LayersStudio({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error(copy.toasts.uploadImageFileOnly);
+      notifyError(copy.toasts.uploadImageFileOnly);
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      toast.error(copy.toasts.fileTooLarge.replace('{name}', file.name));
+      notifyError(copy.toasts.fileTooLarge.replace('{name}', file.name));
       return;
     }
 
@@ -709,17 +709,17 @@ export default function LayersStudio({
   const resetView = () => {
     setZoomLevel(100);
     setPanOffset({ x: 0, y: 0 });
-    toast(copy.toasts.viewReset);
+    notify(copy.toasts.viewReset);
   };
 
   // --- REGIONAL & LASSO EDIT AI SUBMIT WITH <bbox> BBOX TAGS ---
   const handleRunRegionalEdit = async () => {
     if (!apiKey) {
-      toast.error(copy.toasts.enterApiKey);
+      notifyError(copy.toasts.enterApiKey);
       return;
     }
     if (!regionalPrompt) {
-      toast.error(copy.toasts.enterRegionPrompt);
+      notifyError(copy.toasts.enterRegionPrompt);
       return;
     }
 
@@ -772,14 +772,14 @@ export default function LayersStudio({
           initialVis[idx] = true;
         });
         setVisibleLayers(initialVis);
-        toast.success(
+        notifySuccess(
           `Generated ${layerUrls.length} layer(s) with Seedream 5 Pro!`,
         );
         onGenerationComplete?.(result);
       }
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.editFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.editFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -824,11 +824,11 @@ export default function LayersStudio({
     const finalSeedreamPrompt = buildSeedreamLayerPrompt(rawPrompt);
 
     if (!apiKey) {
-      toast.error(copy.toasts.apiKeyMissingSet);
+      notifyError(copy.toasts.apiKeyMissingSet);
       return;
     }
     if (!currentImageUrl) {
-      toast.error(copy.toasts.uploadOrSelectDecompose);
+      notifyError(copy.toasts.uploadOrSelectDecompose);
       return;
     }
 
@@ -867,11 +867,11 @@ export default function LayersStudio({
       });
       setVisibleLayers(initialVis);
 
-      toast.success(copy.toasts.decomposedInto.replace('{count}', layerUrls.length));
+      notifySuccess(copy.toasts.decomposedInto.replace('{count}', layerUrls.length));
       onGenerationComplete?.(result);
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.decompositionFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.decompositionFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -882,11 +882,11 @@ export default function LayersStudio({
   // --- API CALL: UPSCALE IMAGE (seedvr2-image-upscale, topaz-image-upscale, ai-image-upscaler) ---
   const handleRunUpscale = async () => {
     if (!apiKey) {
-      toast.error(copy.toasts.enterApiKey);
+      notifyError(copy.toasts.enterApiKey);
       return;
     }
     if (!currentImageUrl) {
-      toast.error(copy.toasts.uploadOrSelectUpscale);
+      notifyError(copy.toasts.uploadOrSelectUpscale);
       return;
     }
 
@@ -921,16 +921,16 @@ export default function LayersStudio({
         const selectedModelObj = UPSCALE_MODELS.find(
           (m) => m.id === upscaleModel,
         );
-        toast.success(
+        notifySuccess(
           copy.toasts.upscaleSuccess.replace('{model}', selectedModelObj?.name || "AI Upscaler"),
         );
         onGenerationComplete?.(result);
       } else {
-        toast.error(copy.toasts.upscaleNoOutput);
+        notifyError(copy.toasts.upscaleNoOutput);
       }
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.upscaleFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.upscaleFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -941,11 +941,11 @@ export default function LayersStudio({
   // --- API CALL: REMOVE BACKGROUND (ai-background-remover) ---
   const handleRunRemoveBg = async () => {
     if (!apiKey) {
-      toast.error(copy.toasts.enterApiKey);
+      notifyError(copy.toasts.enterApiKey);
       return;
     }
     if (!currentImageUrl) {
-      toast.error(copy.toasts.uploadOrSelectRemoveBg);
+      notifyError(copy.toasts.uploadOrSelectRemoveBg);
       return;
     }
 
@@ -979,14 +979,14 @@ export default function LayersStudio({
           ...prev.filter((u) => u !== outputUrl),
         ]);
         setCarouselIndex(0);
-        toast.success(copy.toasts.removeBgSuccess);
+        notifySuccess(copy.toasts.removeBgSuccess);
         onGenerationComplete?.(result);
       } else {
-        toast.error(copy.toasts.removeBgNoOutput);
+        notifyError(copy.toasts.removeBgNoOutput);
       }
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.removeBgFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.removeBgFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -997,11 +997,11 @@ export default function LayersStudio({
   // --- API CALL: EXPAND / OUTPAINT IMAGE (ai-image-extension) ---
   const handleRunExpand = async () => {
     if (!apiKey) {
-      toast.error(copy.toasts.enterApiKey);
+      notifyError(copy.toasts.enterApiKey);
       return;
     }
     if (!currentImageUrl) {
-      toast.error(copy.toasts.uploadOrSelectExpand);
+      notifyError(copy.toasts.uploadOrSelectExpand);
       return;
     }
 
@@ -1030,14 +1030,14 @@ export default function LayersStudio({
 
       if (outputUrl) {
         setCurrentImageUrl(outputUrl);
-        toast.success(copy.toasts.expandSuccess);
+        notifySuccess(copy.toasts.expandSuccess);
         onGenerationComplete?.(result);
       } else {
-        toast.error(copy.toasts.expandNoOutput);
+        notifyError(copy.toasts.expandNoOutput);
       }
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.expandFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.expandFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -1050,7 +1050,7 @@ export default function LayersStudio({
     setUpscaleModel("topaz-image-upscale");
     setTopazFactor(1);
     setSeedvrResolution("4k");
-    toast(copy.toasts.upscaleSettingsReset);
+    notify(copy.toasts.upscaleSettingsReset);
   };
 
   // Reset individual Color Grading category
@@ -1059,13 +1059,13 @@ export default function LayersStudio({
       ...prev,
       [catKey]: { ...DEFAULT_COLOR_GRADING[catKey] },
     }));
-    toast(copy.toasts.resetCategory.replace('{category}', catKey));
+    notify(copy.toasts.resetCategory.replace('{category}', catKey));
   };
 
   // Reset all Color Grading parameters
   const handleResetAllColorGrading = () => {
     setColorGrading(DEFAULT_COLOR_GRADING);
-    toast(copy.toasts.colorGradingReset);
+    notify(copy.toasts.colorGradingReset);
   };
 
   // Download Color Graded Image (Includes live filters, vignette, halation, and film grain)
@@ -1144,7 +1144,7 @@ export default function LayersStudio({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success(copy.toasts.downloadedGraded);
+      notifySuccess(copy.toasts.downloadedGraded);
     } catch {
       handleDownloadSingle(currentImageUrl, "color_graded_image.png");
     }
@@ -1164,17 +1164,17 @@ export default function LayersStudio({
     setVisibleLayers(initialVis);
     clearDrawingCanvas();
     setMarkedRegions([]);
-    toast.success(copy.toasts.loadedSample);
+    notifySuccess(copy.toasts.loadedSample);
   };
 
   // Explicit Side Tool Execution Handler
   const handleExecuteSideTool = async (toolId) => {
     if (!apiKey) {
-      toast.error(copy.toasts.apiKeyMissing);
+      notifyError(copy.toasts.apiKeyMissing);
       return;
     }
     if (!currentImageUrl) {
-      toast.error(copy.toasts.uploadImageFirst);
+      notifyError(copy.toasts.uploadImageFirst);
       return;
     }
 
@@ -1219,12 +1219,12 @@ export default function LayersStudio({
       setProgress(100);
       if (result?.url) {
         setCurrentImageUrl(result.url);
-        toast.success(copy.toasts.toolCompleted.replace('{tool}', toolId));
+        notifySuccess(copy.toasts.toolCompleted.replace('{tool}', toolId));
         onGenerationComplete?.(result);
       }
     } catch (err) {
       const errorMsg = formatErrorMessage(err);
-      toast.error(copy.toasts.operationFailed.replace('{error}', errorMsg));
+      notifyError(copy.toasts.operationFailed.replace('{error}', errorMsg));
       onGenerationError?.(errorMsg);
     } finally {
       setIsProcessing(false);
@@ -1268,7 +1268,7 @@ export default function LayersStudio({
         handleDownloadSingle(url, `layer_${i + 1}.${outputFormat}`);
       }, i * 300);
     });
-    toast.success(copy.toasts.downloadingAll);
+    notifySuccess(copy.toasts.downloadingAll);
   };
 
   const sideMenuItems = [
@@ -1296,17 +1296,7 @@ export default function LayersStudio({
   };
 
   return (
-    <div className="relative w-full h-full bg-[#121318] text-white flex overflow-hidden font-sans select-none">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: "#1c1e24",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.1)",
-          },
-        }}
-      />
+    <div className="relative w-full h-full bg-surface-app text-white flex overflow-hidden font-sans select-none">
 
       {/* Hidden File Input */}
       <input
@@ -1366,7 +1356,7 @@ export default function LayersStudio({
         onMouseMove={doPan}
         onMouseUp={stopPan}
         onMouseLeave={stopPan}
-        className={`flex-1 relative h-full flex flex-col items-center justify-center p-4 pb-28 overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1d2029] via-[#0f1015] to-[#08090c] ${
+        className={`flex-1 relative h-full flex flex-col items-center justify-center p-4 pb-28 overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1d2029] via-[#0a1422] to-[#050b14] ${
           activeTool === "hand" ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
@@ -1516,7 +1506,7 @@ export default function LayersStudio({
                   <button
                     onClick={handleRunRegionalEdit}
                     disabled={isProcessing}
-                    className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover text-black flex items-center justify-center shadow-[0_0_12px_rgba(198,241,53,0.6)] transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                    className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover text-on-brand flex items-center justify-center shadow-[0_0_12px_rgba(46,230,214,0.6)] transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                     title={copy.tools.runSelectionEdit}
                   >
                     <svg
@@ -1570,7 +1560,7 @@ export default function LayersStudio({
                         }}
                         className={`absolute inset-0 w-full h-full object-contain transition-all duration-200 cursor-pointer pointer-events-auto ${
                           isSelected
-                            ? "ring-2 ring-brand drop-shadow-[0_0_20px_rgba(198,241,53,0.6)]"
+                            ? "ring-2 ring-brand drop-shadow-[0_0_20px_rgba(46,230,214,0.6)]"
                             : "hover:opacity-90"
                         }`}
                       />
@@ -1590,7 +1580,7 @@ export default function LayersStudio({
                     Processing Image...
                   </p>
                   <p className="text-xs text-white/50 mt-1">
-                    Creator Agency Studio
+                    Aquora Studio
                   </p>
 
                   <div className="w-48 bg-white/10 h-1.5 rounded-full overflow-hidden mt-4">
@@ -1649,7 +1639,7 @@ export default function LayersStudio({
                   onClick={() => setActiveShape("line")}
                   className={`p-1.5 rounded-lg border transition-all ${
                     activeShape === "line"
-                      ? "bg-brand text-black border-brand"
+                      ? "bg-brand text-on-brand border-brand"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.line}
@@ -1670,7 +1660,7 @@ export default function LayersStudio({
                   onClick={() => setActiveShape("arrow")}
                   className={`p-1.5 rounded-lg border transition-all ${
                     activeShape === "arrow"
-                      ? "bg-brand text-black border-brand"
+                      ? "bg-brand text-on-brand border-brand"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.arrow}
@@ -1692,7 +1682,7 @@ export default function LayersStudio({
                   onClick={() => setActiveShape("rect")}
                   className={`p-1.5 rounded-lg border transition-all ${
                     activeShape === "rect"
-                      ? "bg-brand text-black border-brand"
+                      ? "bg-brand text-on-brand border-brand"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.rectangle}
@@ -1713,7 +1703,7 @@ export default function LayersStudio({
                   onClick={() => setActiveShape("circle")}
                   className={`p-1.5 rounded-lg border transition-all ${
                     activeShape === "circle"
-                      ? "bg-brand text-black border-brand"
+                      ? "bg-brand text-on-brand border-brand"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.circle}
@@ -1832,7 +1822,7 @@ export default function LayersStudio({
               onClick={() => setActiveTool("pointer")}
               className={`p-2 rounded-xl transition-all ${
                 activeTool === "pointer"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.selectPointerTool}
@@ -1851,7 +1841,7 @@ export default function LayersStudio({
               onClick={() => setActiveTool("hand")}
               className={`p-2 rounded-xl transition-all ${
                 activeTool === "hand"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.panTool}
@@ -1877,7 +1867,7 @@ export default function LayersStudio({
               }
               className={`group relative p-2 rounded-xl transition-all ${
                 activeTool === "lasso"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.lassoEdit}
@@ -1909,7 +1899,7 @@ export default function LayersStudio({
               }
               className={`group relative p-2 rounded-xl transition-all ${
                 activeTool === "regional-edit"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.regionalEdit}
@@ -1943,7 +1933,7 @@ export default function LayersStudio({
               }
               className={`p-2 rounded-xl transition-all ${
                 activeTool === "draw"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.highlightMarkerPen}
@@ -1967,7 +1957,7 @@ export default function LayersStudio({
               }
               className={`p-2 rounded-xl transition-all ${
                 activeTool === "eraser"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.eraserTool}
@@ -1990,7 +1980,7 @@ export default function LayersStudio({
               }
               className={`group relative p-2 rounded-xl transition-all ${
                 activeTool === "shapes"
-                  ? "bg-brand text-black shadow-[0_0_12px_rgba(198,241,53,0.4)]"
+                  ? "bg-brand text-on-brand shadow-[0_0_12px_rgba(46,230,214,0.4)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.shapes}
@@ -2035,7 +2025,7 @@ export default function LayersStudio({
           </div>
 
           {/* Bottom Floating Main Prompt Bar */}
-          <div className="w-full relative flex items-center bg-[#15171e]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
+          <div className="w-full relative flex items-center bg-[#0f1c2e]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all mr-2 flex-shrink-0"
@@ -2070,7 +2060,7 @@ export default function LayersStudio({
             <button
               onClick={() => handleDecompose()}
               disabled={isProcessing}
-              className="w-10 h-10 rounded-full bg-brand hover:bg-brand-hover text-black flex items-center justify-center shadow-[0_0_20px_rgba(198,241,53,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ml-2 flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-brand hover:bg-brand-hover text-on-brand flex items-center justify-center shadow-[0_0_20px_rgba(46,230,214,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ml-2 flex-shrink-0"
               title={copy.tools.runLayerDecomposition}
             >
               <svg
@@ -2090,7 +2080,7 @@ export default function LayersStudio({
 
       {/* Right Inspector Panel */}
       {isSidebarOpen && (
-        <div className="w-[380px] h-full bg-surface-raised border-l border-white/10 flex flex-col justify-between z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] animate-fade-in">
+        <div className="absolute inset-0 w-full md:static md:inset-auto md:w-[380px] md:shrink-0 h-full bg-surface-raised border-l border-white/10 flex flex-col justify-between z-30 md:z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] animate-fade-in">
           {/* Top Header & Panel Content */}
           <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
             {/* Header with Back, Title & Close */}
@@ -2198,8 +2188,9 @@ export default function LayersStudio({
 
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center transition-colors"
                 title={copy.tools.closePanel}
+                aria-label={copy.tools.closePanel}
               >
                 <svg
                   width="16"
@@ -2225,7 +2216,7 @@ export default function LayersStudio({
                   title={copy.sample.clickToLoad}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="relative w-28 h-36 rounded-2xl overflow-hidden bg-zinc-900 flex-shrink-0 shadow-md">
+                    <div className="relative w-28 h-36 rounded-2xl overflow-hidden bg-surface-card flex-shrink-0 shadow-md">
                       <img
                         src="https://cdn.muapi.ai/assets/1786019968051_cKRYLHHu.png"
                         alt="Seedream original demo"
@@ -2237,7 +2228,7 @@ export default function LayersStudio({
                       </div>
                     </div>
 
-                    <div className="flex-1 bg-[#13151d] rounded-2xl p-2.5 flex flex-col justify-between h-36 shadow-inner overflow-hidden">
+                    <div className="flex-1 bg-[#0f1c2e] rounded-2xl p-2.5 flex flex-col justify-between h-36 shadow-inner overflow-hidden">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-[10px] font-black text-brand-300 uppercase tracking-wider">
                           {copy.sample.layersCount}
@@ -2251,7 +2242,7 @@ export default function LayersStudio({
                         {DEFAULT_SAMPLE_LAYERS.map((layerUrl, idx) => (
                           <div
                             key={idx}
-                            className="flex-shrink-0 w-11 h-16 rounded-xl overflow-hidden border border-white/10 relative flex items-center justify-center p-1 bg-[#1a1d26] shadow-sm hover:border-brand/50 transition-all"
+                            className="flex-shrink-0 w-11 h-16 rounded-xl overflow-hidden border border-white/10 relative flex items-center justify-center p-1 bg-surface-raised shadow-sm hover:border-brand/50 transition-all"
                             style={{
                               backgroundImage: `linear-gradient(45deg, #242733 25%, transparent 25%), linear-gradient(-45deg, #242733 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #242733 75%), linear-gradient(-45deg, transparent 75%, #242733 75%)`,
                               backgroundSize: "6px 6px",
@@ -2350,7 +2341,7 @@ export default function LayersStudio({
                           onClick={() => setIsSoloMode(!isSoloMode)}
                           className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
                             isSoloMode
-                              ? "bg-brand text-black border-brand"
+                              ? "bg-brand text-on-brand border-brand"
                               : "bg-white/5 text-white/60 hover:text-white border-white/10"
                           }`}
                           title={copy.carousel.viewOnlyActive}
@@ -2366,7 +2357,7 @@ export default function LayersStudio({
                       </div>
                     </div>
 
-                    <div className="relative group bg-[#111319] border border-white/15 rounded-2xl overflow-hidden p-3 flex flex-col items-center shadow-xl">
+                    <div className="relative group bg-[#0a1422] border border-white/15 rounded-2xl overflow-hidden p-3 flex flex-col items-center shadow-xl">
                       <div
                         className="w-full h-48 rounded-xl overflow-hidden relative flex items-center justify-center border border-white/10"
                         style={{
@@ -2387,7 +2378,7 @@ export default function LayersStudio({
                               prev > 0 ? prev - 1 : decomposedLayers.length - 1,
                             )
                           }
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-black flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-on-brand flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
                           title={copy.carousel.previousLayer}
                         >
                           ‹
@@ -2399,7 +2390,7 @@ export default function LayersStudio({
                               prev < decomposedLayers.length - 1 ? prev + 1 : 0,
                             )
                           }
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-black flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-on-brand flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
                           title={copy.carousel.nextLayer}
                         >
                           ›
@@ -2436,7 +2427,7 @@ export default function LayersStudio({
                                 `layer_${carouselIndex + 1}.${outputFormat}`,
                               )
                             }
-                            className="px-2.5 py-1 rounded-lg bg-brand hover:bg-brand-hover text-black font-extrabold text-xs flex items-center gap-1 shadow-md"
+                            className="px-2.5 py-1 rounded-lg bg-brand hover:bg-brand-hover text-on-brand font-extrabold text-xs flex items-center gap-1 shadow-md"
                             title={copy.carousel.downloadThisLayer}
                           >
                             <span>⬇</span>
@@ -3874,7 +3865,7 @@ export default function LayersStudio({
                       <span>{item.label}</span>
                     </div>
                     {item.isNew && (
-                      <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-brand text-black rounded-md tracking-wider">
+                      <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-brand text-on-brand rounded-md tracking-wider">
                         {copy.menuItems.new}
                       </span>
                     )}
@@ -3899,7 +3890,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("edit-text")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-brand hover:bg-brand-hover text-black font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover text-on-brand font-bold text-xs uppercase rounded-xl shadow-md"
                 >
                   {isProcessing ? copy.editText.processing : copy.editText.run}
                 </button>
@@ -3917,7 +3908,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("enhancer")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-brand hover:bg-brand-hover text-black font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover text-on-brand font-bold text-xs uppercase rounded-xl shadow-md"
                 >
                   {isProcessing ? copy.enhancer.processing : copy.enhancer.run}
                 </button>
@@ -3935,7 +3926,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("relight")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-brand hover:bg-brand-hover text-black font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover text-on-brand font-bold text-xs uppercase rounded-xl shadow-md"
                 >
                   {isProcessing ? copy.relight.processing : copy.relight.run}
                 </button>
@@ -3953,7 +3944,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("angles")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-brand hover:bg-brand-hover text-black font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover text-on-brand font-bold text-xs uppercase rounded-xl shadow-md"
                 >
                   {isProcessing ? copy.angles.processing : copy.angles.run}
                 </button>
@@ -3967,7 +3958,7 @@ export default function LayersStudio({
               <button
                 onClick={() => handleDecompose()}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(198,241,53,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-on-brand font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(46,230,214,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
               >
                 {isProcessing ? (
                   <span>{copy.footer.decomposing.replace('{progress}', progress)}</span>
@@ -3989,7 +3980,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunUpscale}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(198,241,53,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-on-brand font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(46,230,214,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
               >
                 {isProcessing ? (
                   <span>{copy.footer.upscaling.replace('{progress}', progress)}</span>
@@ -4055,7 +4046,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunRemoveBg}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(198,241,53,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-on-brand font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(46,230,214,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
               >
                 {isProcessing ? (
                   <span>{copy.footer.removingBackground.replace('{progress}', progress)}</span>
@@ -4077,7 +4068,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunExpand}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(198,241,53,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand active:scale-[0.98] text-on-brand font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(46,230,214,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
               >
                 {isProcessing ? (
                   <span>{copy.footer.expandingBorders.replace('{progress}', progress)}</span>

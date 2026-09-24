@@ -6,7 +6,6 @@ import { downloadImage } from "../utils/downloadImage.js";
 import { buildResultFilename } from "../utils/resultFile.js";
 import { IMAGE_PICK_IDS, isHiddenEntry, isToolEntry, matchesSearch, resolvePicks } from "../modelPicks.js";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import toast, { Toaster } from "react-hot-toast";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -66,6 +65,7 @@ import {
 import en from "../messages/en/imageStudio.json";
 import zh from "../messages/zh/imageStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { friendlyError, notifyError } from "../utils/notify.js";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -193,7 +193,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     const tooLarge = files.filter((f) => f.size > MAX_IMAGE_SIZE);
     if (tooLarge.length > 0) {
-      alert(
+      notifyError(
         t.tooLargeAlert.replace("{names}", tooLarge.map((f) => f.name).join(", ")),
       );
       return;
@@ -250,7 +250,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
         }),
       );
     } catch (err) {
-      alert(t.uploadFailedAlert.replace("{message}", err.message));
+      notifyError(t.uploadFailedAlert.replace("{message}", friendlyError(err)));
     } finally {
       setUploading(false);
       setLastUploadProgress(0);
@@ -466,7 +466,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
                 <button
                   type="button"
                   onClick={handleDone}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-primary text-black rounded-xl text-xs font-black transition-all hover:scale-105"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-primary text-on-brand rounded-xl text-xs font-black transition-all hover:scale-105"
                 >
                   {t.doneButton.replace("{count}", count)}
                 </button>
@@ -611,7 +611,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
               <button
                 type="button"
                 onClick={handleDone}
-                className="px-4 py-1.5 bg-primary text-black rounded-xl text-xs font-black transition-all hover:scale-105"
+                className="px-4 py-1.5 bg-primary text-on-brand rounded-xl text-xs font-black transition-all hover:scale-105"
               >
                 {t.useSelected}
               </button>
@@ -971,7 +971,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
                     height="14"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#c6f135"
+                    stroke="#2ee6d6"
                     strokeWidth="4"
                   >
                     <polyline points="20 6 9 17 4 12" />
@@ -1197,7 +1197,7 @@ export default function ImageStudio({
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     const tooLarge = files.filter((f) => f.size > MAX_IMAGE_SIZE);
     if (tooLarge.length > 0) {
-      alert(
+      notifyError(
         copy.uploadButton.tooLargeAlert.replace("{names}", tooLarge.map((f) => f.name).join(", "))
       );
       return;
@@ -1211,7 +1211,7 @@ export default function ImageStudio({
       selectedModelId,
     );
     if (!editor) {
-      toast.error(copy.errors.noImageReferenceSupport.replace("{name}", family.name));
+      notifyError(copy.errors.noImageReferenceSupport.replace("{name}", family.name));
       return;
     }
 
@@ -1239,7 +1239,7 @@ export default function ImageStudio({
 
       handleUploadSelect({ urls });
     } catch (err) {
-      alert(copy.uploadButton.uploadFailedAlert.replace("{message}", err.message));
+      notifyError(copy.uploadButton.uploadFailedAlert.replace("{message}", friendlyError(err)));
     } finally {
       setGenerating(false);
     }
@@ -1344,7 +1344,7 @@ export default function ImageStudio({
         selection.selectedModelId,
       );
       if (!target) {
-        toast.error(copy.errors.noImageReferenceSupport.replace("{name}", family.name));
+        notifyError(copy.errors.noImageReferenceSupport.replace("{name}", family.name));
         return;
       }
 
@@ -1421,22 +1421,22 @@ export default function ImageStudio({
 
     if (imageMode) {
       if (uploadedImageUrls.length === 0) {
-        alert(copy.errors.uploadReferenceFirst);
+        notifyError(copy.errors.uploadReferenceFirst);
         return;
       }
       const modelInfo = getI2IModelById(selectedModelId);
       if (modelInfo?.swapField && !swapImageUrl) {
-        alert(copy.errors.uploadSwapFaceFirst);
+        notifyError(copy.errors.uploadSwapFaceFirst);
         return;
       }
     } else {
       const imageCapability = getModelMediaCapabilities(selectedVariant?.model).image;
       if (uploadedImageUrls.length > 0 && imageCapability.maxItems === 0) {
-        alert(copy.errors.noImageReferenceSupport.replace("{name}", selectedModelDisplayName));
+        notifyError(copy.errors.noImageReferenceSupport.replace("{name}", selectedModelDisplayName));
         return;
       }
       if (!prompt.trim()) {
-        alert(copy.errors.enterPromptFirst);
+        notifyError(copy.errors.enterPromptFirst);
         return;
       }
     }
@@ -1511,7 +1511,7 @@ export default function ImageStudio({
       console.error("[ImageStudio] Generation failed:", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
-      else toast.error(errMsg);
+      else notifyError(errMsg);
     } finally {
       setGenerating(false);
       onGenerationEnd?.();
@@ -1536,7 +1536,7 @@ export default function ImageStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <img
@@ -1556,7 +1556,7 @@ export default function ImageStudio({
                     share={{
                       url: entry.url,
                       filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }),
-                      title: "Made with Creator Agency",
+                      title: "Made with Aquora",
                       label: copy.gallery.share,
                       copiedLabel: copy.gallery.linkCopied,
                     }}
@@ -1569,7 +1569,7 @@ export default function ImageStudio({
                       e.stopPropagation();
                       downloadImage(entry.url, buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }));
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -1603,7 +1603,7 @@ export default function ImageStudio({
                   share={{
                     url: entry.url,
                     filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }),
-                    title: "Made with Creator Agency",
+                    title: "Made with Aquora",
                     label: copy.gallery.share,
                     copiedLabel: copy.gallery.linkCopied,
                   }}
@@ -2006,7 +2006,6 @@ export default function ImageStudio({
         batchSize={1}
         onAddHistoryItem={addToHistory}
       />
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

@@ -965,23 +965,34 @@ export default function CreativeCanvas({
 
   return (
     <div className="h-dvh w-full text-sm flex flex-col bg-bg-page text-primary-text overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+        toastOptions={{ style: { background: "var(--bg-elevated, #0f1c2e)", color: "var(--text-primary, #eef6ff)", border: "1px solid var(--border-default, rgba(148,197,255,0.16))", fontSize: "13px" } }}
+      />
       <main className="flex h-full w-full overflow-hidden">
         {/* Left Sidebar: Session List — owner only. Embed visitors don't get
             a session switcher; the iframe is scoped to one localStorage-keyed
             session per embed code. */}
-        <div className={`flex-shrink-0 flex flex-col bg-bg-card border-r border-divider shadow-[4px_0_12px_rgba(0,0,0,0.05)] z-20 transition-all duration-300 ${(showLeftSidebar || inEmbedMode) ? 'overflow-hidden w-0' : 'w-64'}`}>
+        {/* `showLeftSidebar` true means the list is collapsed; `inert` keeps the
+            zero-width list's links and buttons out of the tab order. */}
+        <div
+          inert={showLeftSidebar || inEmbedMode}
+          aria-hidden={showLeftSidebar || inEmbedMode ? true : undefined}
+          className={`flex-shrink-0 flex flex-col bg-bg-card border-r border-divider shadow-[4px_0_12px_rgba(0,0,0,0.05)] z-20 transition-all duration-300 ${(showLeftSidebar || inEmbedMode) ? 'overflow-hidden w-0' : 'w-64'}`}
+        >
           <div className="p-3 border-b border-divider flex items-center justify-between bg-bg-card/50">
             <div className="flex items-center gap-2 overflow-hidden">
-              <Link 
-                href="/"
+              <Link
+                href={backHref}
                 className={`p-2 hover:bg-bg-page rounded text-secondary-text hover:text-primary transition-colors`}
                 title="Go Back"
+                aria-label="Go Back"
               >
                 <FiArrowLeft size={16} />
               </Link>
               <Link
-                href="/"
+                href={backHref}
                 className="flex items-center flex-shrink-0 transition-transform duration-300 hover:scale-[1.02] active:scale-95"
                 aria-label="Home"
               >
@@ -992,6 +1003,7 @@ export default function CreativeCanvas({
               onClick={() => setShowLeftSidebar(!showLeftSidebar)}
               className={`p-1.5 rounded transition-colors ${showLeftSidebar ? "bg-primary/10 text-primary" : "hover:bg-bg-card text-secondary-text hover:text-primary"}`}
               title="Toggle Sessions"
+              aria-label="Toggle Sessions"
             >
               <VscLayoutSidebarLeftOff size={16} />
             </button>
@@ -1079,6 +1091,7 @@ export default function CreativeCanvas({
                   onClick={() => setShowLeftSidebar(!showLeftSidebar)}
                   className={`p-2 hover:bg-bg-card rounded transition-colors ${showLeftSidebar ? "text-primary" : "hidden"}`}
                   title="Toggle Sessions"
+                  aria-label="Toggle Sessions"
                 >
                   <VscLayoutSidebarLeftOff size={18} />
                 </button>

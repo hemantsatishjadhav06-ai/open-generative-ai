@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import toast, { Toaster } from "react-hot-toast";
 import { generateVideo, generateI2V, processV2V, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -81,6 +80,7 @@ import {
   resolveVideoWorkflowVariant,
   validateVideoWorkflowMedia,
 } from "../videoWorkflows.js";
+import { friendlyError, notify, notifyError } from "../utils/notify.js";
 import {
   PROMPT_CONTROL_LABEL_CLASS,
   PROMPT_MEDIA_PREVIEW_CLASS,
@@ -368,7 +368,7 @@ const CheckSvg = () => (
     height="16"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#c6f135"
+    stroke="#2ee6d6"
     strokeWidth="4"
   >
     <polyline points="20 6 9 17 4 12" />
@@ -402,7 +402,7 @@ const VideoReadySvg = () => (
   >
     <polygon points="23 7 16 12 23 17 23 7" />
     <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-    <polyline points="7 10 10 13 15 8" stroke="#c6f135" strokeWidth="2.5" />
+    <polyline points="7 10 10 13 15 8" stroke="#2ee6d6" strokeWidth="2.5" />
   </svg>
 );
 
@@ -1530,13 +1530,13 @@ export default function VideoStudio({
       const validUrls = urls.filter(Boolean);
       if (validUrls.length === 0) return;
       if (selectionAtStart && !isSameSelection(selectionAtStart, selectionRef.current)) {
-        toast.error(copy.errors.modelChangedDuringUpload);
+        notifyError(copy.errors.modelChangedDuringUpload);
         return;
       }
       const resolvedTarget = target || resolveMediaTarget(mediaType);
       if (!resolvedTarget) {
         const family = videoModelCatalog.familyById.get(selectionRef.current.selectedFamilyId);
-        toast.error(copy.errors.modelDoesNotSupportReference.replace('{family}', family.name).replace('{mediaType}', mediaType));
+        notifyError(copy.errors.modelDoesNotSupportReference.replace('{family}', family.name).replace('{mediaType}', mediaType));
         return;
       }
 
@@ -1586,7 +1586,7 @@ export default function VideoStudio({
         );
       });
       if (!slot || !workflowMediaDraftKey || !entry?.url) {
-        toast.error(copy.errors.sourceDoesNotAcceptImages);
+        notifyError(copy.errors.sourceDoesNotAcceptImages);
         return;
       }
       setWorkflowMediaDrafts((drafts) => {
@@ -1620,7 +1620,7 @@ export default function VideoStudio({
       const selectedFiles = Array.from(files);
       const tooLarge = selectedFiles.find((file) => file.size > maxBytes);
       if (tooLarge) {
-        alert(copy.errors.labelExceedsLimit.replace('{label}', label).replace('{limit}', Math.round(maxBytes / 1024 / 1024)));
+        notifyError(copy.errors.labelExceedsLimit.replace('{label}', label).replace('{limit}', Math.round(maxBytes / 1024 / 1024)));
         return [];
       }
       setUploading(true);
@@ -1639,11 +1639,11 @@ export default function VideoStudio({
         );
         const failures = results.flatMap((result, index) =>
           result.status === "rejected"
-            ? [`${selectedFiles[index].name}: ${result.reason?.message || result.reason}`]
+            ? [`${selectedFiles[index].name}: ${friendlyError(result.reason)}`]
             : [],
         );
         if (failures.length > 0) {
-          alert(copy.errors.labelUploadFailed
+          notifyError(copy.errors.labelUploadFailed
             .replace('{label}', label)
             .replace('{message}', failures.join('\n')));
         }
@@ -1652,7 +1652,7 @@ export default function VideoStudio({
         );
       } catch (err) {
         console.error(`[VideoStudio] ${label} upload failed:`, err);
-        alert(copy.errors.labelUploadFailed.replace('{label}', label).replace('{message}', err.message));
+        notifyError(copy.errors.labelUploadFailed.replace('{label}', label).replace('{message}', friendlyError(err)));
         return [];
       } finally {
         setUploading(false);
@@ -1770,7 +1770,7 @@ export default function VideoStudio({
       const target = resolveMediaTarget(mediaType);
       if (!target) {
         const family = videoModelCatalog.familyById.get(selectionRef.current.selectedFamilyId);
-        toast.error(`${family.name} does not support ${mediaType} references.`);
+        notifyError(`${family.name} does not support ${mediaType} references.`);
         return;
       }
       const capability = getModelMediaCapabilities(target.variant.model)[mediaType];
@@ -1816,7 +1816,7 @@ export default function VideoStudio({
     if (droppedFiles && droppedFiles.length > 0) {
       if (selectedWorkflowId) {
         if (workflowUploadSlotRef.current) {
-          toast.error(copy.errors.waitForCurrentUpload);
+          notifyError(copy.errors.waitForCurrentUpload);
           onFilesHandled?.();
           return;
         }
@@ -1907,7 +1907,7 @@ export default function VideoStudio({
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      alert(copy.errors.imageExceeds10MB);
+      notifyError(copy.errors.imageExceeds10MB);
       return;
     }
     setEndImageUploading(true);
@@ -1928,7 +1928,7 @@ export default function VideoStudio({
         setUploadedEndImageUrl(url);
       }
     } catch (err) {
-      alert(`End frame upload failed: ${err.message}`);
+      notifyError(`End frame upload failed: ${friendlyError(err)}`);
     } finally {
       setEndImageUploading(false);
       setEndImageProgress(0);
@@ -1975,7 +1975,7 @@ export default function VideoStudio({
 
   const handleGroupedSelection = useCallback((plan, family, workflowId) => {
     if (!plan) {
-      toast.error(groupCopy.incompatible);
+      notifyError(groupCopy.incompatible);
       return;
     }
     const { selection, adjustments } = plan;
@@ -1986,7 +1986,7 @@ export default function VideoStudio({
     applyUserSelectedVariant(target, target.mode, family, workflowId);
     if (selection.resolution !== undefined) setSelectedResolution(selection.resolution);
     if (adjustments.length) {
-      toast(describeSelectionAdjustments(adjustments));
+      notify(describeSelectionAdjustments(adjustments));
     }
   }, [applyUserSelectedVariant, describeSelectionAdjustments, groupCopy]);
 
@@ -2125,7 +2125,7 @@ export default function VideoStudio({
   // ── generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
     if (mediaUploading || workflowUploadSlotRef.current) {
-      toast.error(copy.errors.waitForCurrentUpload);
+      notifyError(copy.errors.waitForCurrentUpload);
       return;
     }
     const currentModel = getCurrentModel();
@@ -2161,19 +2161,19 @@ export default function VideoStudio({
         };
 
     if (!selectedWorkflowId && uploadedVideoUrls.length > 0 && capabilities.video.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support video references.`);
+      notifyError(`${selectedFamily.name} does not support video references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedImageUrls.length > 0 && capabilities.image.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support image references.`);
+      notifyError(`${selectedFamily.name} does not support image references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedAudioUrls.length > 0 && capabilities.audio.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support audio references.`);
+      notifyError(`${selectedFamily.name} does not support audio references.`);
       return;
     }
     if ((currentModel?.promptRequired || veoContinuation?.promptRequired) && !trimmedPrompt) {
-      alert(copy.errors.noPromptForModel);
+      notifyError(copy.errors.noPromptForModel);
       return;
     }
 
@@ -2184,33 +2184,33 @@ export default function VideoStudio({
         currentModel,
       );
       if (!validation.valid) {
-        alert(validation.message);
+        notify(validation.message);
         return;
       }
     } else if (v2vMode) {
       if (!uploadedVideoUrl) {
-        alert(copy.errors.uploadVideoFirst);
+        notifyError(copy.errors.uploadVideoFirst);
         return;
       }
       if (currentModel?.imageField && !currentModel?.imageOptional && !uploadedImageUrl) {
-        alert(copy.errors.uploadReferenceImageForMotion);
+        notifyError(copy.errors.uploadReferenceImageForMotion);
         return;
       }
     } else if (isExtendMode) {
       if (!requestSource?.requestId || (selectedFamily.id === "seedance-2" && !isContinuationSourceModel(currentModel, requestSource.modelId))) {
-        alert(copy.errors.noContinuationSource.replace("{family}", selectedFamily.name));
+        notifyError(copy.errors.noContinuationSource.replace("{family}", selectedFamily.name));
         return;
       }
     } else if (imageMode) {
       const requiresImage =
         currentModel?.imageField && !currentModel?.imageOptional;
       if (requiresImage && uploadedImageUrls.length === 0) {
-        alert(copy.errors.uploadAtLeastOneReferenceImage);
+        notifyError(copy.errors.uploadAtLeastOneReferenceImage);
         return;
       }
     } else {
       if (!trimmedPrompt) {
-        alert(copy.errors.enterPromptToGenerate);
+        notifyError(copy.errors.enterPromptToGenerate);
         return;
       }
     }
@@ -2362,7 +2362,7 @@ export default function VideoStudio({
       console.error("[VideoStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.videoGenerationFailed);
       if (onGenerationError) onGenerationError(errMsg);
-      else toast.error(errMsg);
+      else notifyError(errMsg);
     } finally {
       setGenerating(false);
       onGenerationEnd?.();
@@ -2541,7 +2541,7 @@ export default function VideoStudio({
               return (
                 <div
                   key={entry.id || idx}
-                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                   onClick={() => setFullscreenUrl(entry.url)}
                 >
                   <video
@@ -2568,7 +2568,7 @@ export default function VideoStudio({
                       share={{
                         url: entry.url,
                         filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "mp4" }),
-                        title: "Made with Creator Agency",
+                        title: "Made with Aquora",
                         label: copy.gallery.share,
                         copiedLabel: copy.gallery.linkCopied,
                       }}
@@ -2581,7 +2581,7 @@ export default function VideoStudio({
                         e.stopPropagation();
                         downloadFile(entry.url, buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "mp4" }));
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -2595,7 +2595,7 @@ export default function VideoStudio({
                           e.stopPropagation();
                           handleExtend(entry.id, entry.model);
                         }}
-                        className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                        className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M5 12h14M12 5l7 7-7 7" />
@@ -2629,7 +2629,7 @@ export default function VideoStudio({
                     share={{
                       url: entry.url,
                       filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "mp4" }),
-                      title: "Made with Creator Agency",
+                      title: "Made with Aquora",
                       label: copy.gallery.share,
                       copiedLabel: copy.gallery.linkCopied,
                     }}
@@ -3494,7 +3494,6 @@ export default function VideoStudio({
         batchSize={1}
         onAddHistoryItem={handleDrawReference}
       />
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

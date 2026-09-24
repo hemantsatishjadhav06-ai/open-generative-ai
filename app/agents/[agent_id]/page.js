@@ -11,7 +11,7 @@ import AgentChatClient from "./AgentChatClient";
  */
 export async function generateMetadata() {
   return {
-    title: 'Agent chat — Creator Agency',
+    title: 'Agent chat — Aquora',
   };
 }
 

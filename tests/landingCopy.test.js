@@ -19,3 +19,30 @@ test('every studio tab has a landing blurb in en and zh', () => {
         assert.ok(zh.landing.blurbs?.[id], `zh.landing.blurbs.${id} missing`);
     }
 });
+
+test('brand is Aquora in both locales, with the new hero tagline', () => {
+    for (const copy of [en, zh]) {
+        assert.equal(copy.shell.brand, 'Aquora');
+        assert.equal(copy.apiKeyModal.title, 'Aquora');
+        assert.match(copy.meta.siteTitle, /^Aquora — /);
+        assert.doesNotMatch(JSON.stringify(copy), /Creator Agency/);
+    }
+    assert.equal(en.landing.h1, 'Make anything. Ship everything.');
+    assert.match(en.meta.description, /^Make anything\. Ship everything\./);
+});
+
+test('package metadata carries the Aquora identity', () => {
+    const pkg = require('../package.json');
+    assert.equal(pkg.name, 'aquora');
+    assert.equal(pkg.build.productName, 'Aquora');
+    assert.equal(pkg.build.appId, 'ai.aquora.studio');
+    assert.match(pkg.description, /^Aquora — AI studio for creators/);
+});
+
+test('settings + change-key copy exists in en and zh', () => {
+    for (const copy of [en, zh]) {
+        assert.ok(copy.settingsModal.removeKey);
+        assert.ok(copy.apiKeyModal.changeKeyTitle);
+        assert.ok(copy.apiKeyModal.changeKeySubtitle);
+    }
+});

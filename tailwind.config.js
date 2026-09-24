@@ -1,46 +1,48 @@
 /** @type {import('tailwindcss').Config} */
 
-// Creator Agency brand tokens.
-// "Volt" lime is the primary; "Pop" magenta is the accent. Surfaces are a
-// violet-tinted near-black. Keep these values in sync with app/globals.css.
+// Aquora brand tokens.
+// Turquoise is the primary; "Pop" electric blue is the accent. Surfaces are a
+// deep navy. Text on turquoise fills uses #04121a; text on blue fills is white;
+// blue *text* on dark surfaces uses pop-400 (#60a5fa) for AA contrast.
+// Keep these values in sync with app/globals.css.
 const brand = {
-    50: '#f8ffe5',
-    100: '#eeffc4',
-    200: '#dfff8e',
-    300: '#d3fb5f',
-    400: '#c6f135',
-    500: '#aedb1e',
-    600: '#6b8f0f',
-    700: '#557311',
-    800: '#435a12',
-    900: '#384a14',
-    950: '#1c2906',
-    DEFAULT: '#c6f135',
-    hover: '#d6fb5a',
+    50: '#effefb',
+    100: '#c9fef4',
+    200: '#94fbea',
+    300: '#57f0dc',
+    400: '#2ee6d6',
+    500: '#0dc9bc',
+    600: '#06a29a',
+    700: '#0a817c',
+    800: '#0e6663',
+    900: '#115552',
+    950: '#033332',
+    DEFAULT: '#2ee6d6',
+    hover: '#57f0dc',
 };
 
 const pop = {
-    50: '#fff0f8',
-    100: '#ffe3f2',
-    200: '#ffc6e6',
-    300: '#ff98d1',
-    400: '#ff5fbd',
-    500: '#ff3cac',
-    600: '#e01f92',
-    700: '#bf0f78',
-    800: '#9c0e62',
-    900: '#811153',
-    950: '#4f0230',
-    DEFAULT: '#ff3cac',
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+    950: '#172554',
+    DEFAULT: '#3b82f6',
 };
 
 const surface = {
-    app: '#08060f',
-    panel: '#0e0b18',
-    card: '#151021',
-    raised: '#1c1730',
-    hover: '#272040',
-    border: 'rgba(255, 255, 255, 0.07)',
+    app: '#050b14',
+    panel: '#0a1422',
+    card: '#0f1c2e',
+    raised: '#15253b',
+    hover: '#1a2d47',
+    border: 'rgba(148, 197, 255, 0.10)',
 };
 
 module.exports = {
@@ -68,8 +70,9 @@ module.exports = {
                 'app-bg': surface.app,
                 'panel-bg': surface.panel,
                 'card-bg': surface.card,
-                secondary: '#a8a3bd',
-                muted: '#5c566f',
+                'on-brand': '#04121a',
+                secondary: '#9fb3c8',
+                muted: '#5b7089',
             },
             fontFamily: {
                 sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
@@ -86,12 +89,12 @@ module.exports = {
                 '3xl': '2rem',
             },
             boxShadow: {
-                'glow': '0 0 20px rgba(198, 241, 53, 0.4)',
-                'glow-accent': '0 0 20px rgba(255, 60, 172, 0.4)',
+                'glow': '0 0 20px rgba(46, 230, 214, 0.4)',
+                'glow-accent': '0 0 20px rgba(59, 130, 246, 0.4)',
                 '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.8)',
             },
             backgroundImage: {
-                'brand-gradient': 'linear-gradient(135deg, #c6f135 0%, #ff3cac 100%)',
+                'brand-gradient': 'linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%)',
             },
         },
     },

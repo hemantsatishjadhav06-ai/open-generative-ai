@@ -26,7 +26,7 @@
     "reelty": "Reelty"
   },
   "shell": {
-    "brand": "Creator Agency",
+    "brand": "Aquora",
     "studioFallback": "Studio",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
@@ -49,7 +49,8 @@
     "subtitle": "Your studio, your rules. Manage your key and preferences.",
     "activeApiKey": "Active MuAPI key",
     "changeKey": "Change key",
-    "close": "Close"
+    "close": "Close",
+    "removeKey": "Remove key from this device"
   },
   "notifications": {
     "generating": "is cooking",
@@ -65,7 +66,7 @@
     "retryHint": "Fix it and hit Generate again."
   },
   "apiKeyModal": {
-    "title": "Creator Agency",
+    "title": "Aquora",
     "chips": [
       "400+ models",
       "17 studios",
@@ -92,11 +93,13 @@
     "invalidKey": "That key didn't work. Copy the key value (not its name) from muapi.ai/access-keys and try again.",
     "keyStoppedTitle": "Your key stopped working",
     "keyStoppedSubtitle": "MuAPI rejected it. Paste a fresh key to keep going.",
-    "reeltyOnly": "Just here for Reelty? Open it →"
+    "reeltyOnly": "Just here for Reelty? Open it →",
+    "changeKeyTitle": "Swap your key",
+    "changeKeySubtitle": "Paste a new MuAPI key. Your current key stays until the new one checks out."
   },
   "meta": {
-    "siteTitle": "Creator Agency — AI studio for creators",
-    "description": "Make images, video, audio, avatars and edits with 400+ AI models in one studio. No gatekeeping, no fluff.",
+    "siteTitle": "Aquora — AI studio for creators",
+    "description": "Make anything. Ship everything. Images, video, audio, avatars and edits with 400+ AI models in one studio.",
     "ogLocale": "en_US"
   },
   "reelty": {
@@ -114,8 +117,8 @@
   },
   "landing": {
     "eyebrow": "AI studio for creators",
-    "h1": "Your whole creative team. One tab.",
-    "sub": "Images, video, audio, avatars and ads — 400+ AI models, one studio. Bring a key, skip the gatekeeping.",
+    "h1": "Make anything. Ship everything.",
+    "sub": "Your whole creative team in one tab: images, video, audio, avatars and ads across 400+ AI models. Bring a key, skip the gatekeeping.",
     "ctaPrimary": "Open the studio",
     "ctaSecondary": "Get a free key",
     "chips": [

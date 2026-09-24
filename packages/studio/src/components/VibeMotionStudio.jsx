@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import toast, { Toaster } from "react-hot-toast";
 import { runMotionGraphics, runMotionGraphicsEdit } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -31,6 +30,7 @@ import {
 import en from "../messages/en/vibeMotionStudio.json";
 import zh from "../messages/zh/vibeMotionStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { notifyError } from "../utils/notify.js";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 async function downloadFile(url, filename) {
@@ -55,7 +55,7 @@ const formatTime = (s) =>
 
 // ── icons ─────────────────────────────────────────────────────────────────────
 const CheckSvg = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c6f135" strokeWidth="4">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2ee6d6" strokeWidth="4">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -223,14 +223,14 @@ export default function VibeMotionStudio({
         console.warn("[VibeMotionStudio] Remix unavailable:", raw.slice(0, 120));
         const msg = copy.errors.staleEditUnavailable;
         if (onGenerationError) onGenerationError(msg);
-        else toast.error(msg);
+        else notifyError(msg);
         setEditMode(false);
         setEditSourceId(null);
       } else {
         console.error("[VibeMotionStudio]", err);
         const errMsg = formatErrorMessage(raw || err, copy.errors.generationFailed);
         if (onGenerationError) onGenerationError(errMsg);
-        else toast.error(errMsg);
+        else notifyError(errMsg);
       }
     } finally {
       setGenerating(false);
@@ -295,11 +295,11 @@ export default function VibeMotionStudio({
           <div className="w-full pt-6 flex justify-center animate-fade-in-up">
             <div className="flex flex-col items-center gap-4 py-16">
               <div className="relative w-20 h-20">
-                <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping" />
+                <div className="absolute inset-0 rounded-full border-2 border-pop/20 animate-ping" />
                 <div className="absolute inset-2 rounded-full border-2 border-brand/30 animate-spin" />
-                <div className="absolute inset-4 rounded-full border-2 border-violet-400/50 animate-[spin_1.5s_linear_infinite_reverse]" />
+                <div className="absolute inset-4 rounded-full border-2 border-pop-400/50 animate-[spin_1.5s_linear_infinite_reverse]" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400 animate-pulse">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-pop-400 animate-pulse">
                     <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
                   </svg>
                 </div>
@@ -326,7 +326,7 @@ export default function VibeMotionStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 {/* Video thumbnail */}
@@ -345,7 +345,7 @@ export default function VibeMotionStudio({
                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm border ${
                   entry.mode === "edit"
                     ? "bg-brand/20 text-brand border-brand/30"
-                    : "bg-violet-600/30 text-violet-300 border-violet-500/30"
+                    : "bg-pop-600/30 text-pop-300 border-pop-500/30"
                 }`}>
                   {entry.mode === "edit" ? copy.card.modeEdit : copy.card.modeGenerated}
                 </div>
@@ -360,7 +360,7 @@ export default function VibeMotionStudio({
                     type="button"
                     title={copy.card.download}
                     onClick={(e) => { e.stopPropagation(); downloadFile(entry.url, `motion-${entry.id || idx}.mp4`); }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -377,7 +377,7 @@ export default function VibeMotionStudio({
                         setPrompt("");
                         setTimeout(() => textareaRef.current?.focus(), 50);
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
+                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-on-brand transition-all border border-white/10"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -638,7 +638,7 @@ export default function VibeMotionStudio({
                     className={promptControlClassName({ active: true })}
                   >
                     <div className="w-4 h-4 bg-brand/20 rounded flex items-center justify-center border border-brand/30">
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#c6f135" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#2ee6d6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
@@ -695,7 +695,6 @@ export default function VibeMotionStudio({
             </PromptAction>
           </PromptFooter>
       </PromptComposer>
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

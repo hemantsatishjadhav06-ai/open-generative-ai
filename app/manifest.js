@@ -1,13 +1,13 @@
 export default function manifest() {
   return {
-    name: 'Creator Agency',
-    short_name: 'Creator Agency',
+    name: 'Aquora',
+    short_name: 'Aquora',
     description: 'Make images, video, audio, avatars and edits with 400+ AI models in one studio.',
     start_url: '/studio',
     scope: '/',
     display: 'standalone',
-    background_color: '#08060f',
-    theme_color: '#08060f',
+    background_color: '#050b14',
+    theme_color: '#050b14',
     // Not 'maskable': the spark has no safe-zone padding and would be cropped.
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { uploadFile, generateI2I } from "../muapi.js";
+import { friendlyError, notify, notifyError } from "../utils/notify.js";
 
 export default function DrawModal({
   isOpen,
@@ -69,7 +70,7 @@ export default function DrawModal({
     "#eab308", // Yellow
     "#22c55e", // Green
     "#3b82f6", // Blue
-    "#ff3cac", // Pop magenta
+    "#2ee6d6", // Aquora turquoise
     "#ffffff", // White
     "#000000", // Black
   ];
@@ -1071,11 +1072,11 @@ export default function DrawModal({
         }
       });
 
-      alert("Generations complete!");
+      notify("Generations complete!", { type: "success" });
       onClose();
     } catch (e) {
       console.error("[DrawModal] Generation failed:", e);
-      alert(`Generation failed: ${e.message}`);
+      notifyError(`Generation failed: ${friendlyError(e)}`);
     } finally {
       setGenerating(false);
     }
@@ -1127,7 +1128,7 @@ export default function DrawModal({
       onClick={handleBackdropClick}
     >
       {/* Modal Box */}
-      <div className="relative w-full max-w-5xl bg-[#0b0b0d] border border-white/10 rounded-2xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden h-[90vh]">
+      <div className="relative w-full max-w-5xl bg-[#050b14] border border-white/10 rounded-2xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden h-[90vh]">
         {/* Header Tab Selector */}
         <div className="flex items-center justify-between border-b border-white/5 p-4 shrink-0 bg-surface-app">
           <div className="flex items-center gap-1.5 bg-surface-panel/60 border border-white/5 p-1 rounded-full select-none">
@@ -1140,7 +1141,7 @@ export default function DrawModal({
               }`}
             >
               Sketch to Video
-              <span className="bg-brand text-black text-[8px] font-black px-1 rounded">
+              <span className="bg-brand text-on-brand text-[8px] font-black px-1 rounded">
                 NEW
               </span>
             </button>
@@ -1177,7 +1178,7 @@ export default function DrawModal({
         </div>
 
         {/* Workspace Body */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto custom-scrollbar relative bg-[#070708]/30">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto custom-scrollbar relative bg-[#050b14]/30">
           {viewState === "setup" ? (
             /* Setup Card */
             <div
@@ -1185,7 +1186,7 @@ export default function DrawModal({
               onDragLeave={handleBgDragLeave}
               onDragOver={handleBgDragOver}
               onDrop={handleBgDrop}
-              className={`border-2 border-dashed rounded-2xl p-8 max-w-md w-full text-center flex flex-col items-center gap-6 bg-[#070708]/50 transition-colors ${
+              className={`border-2 border-dashed rounded-2xl p-8 max-w-md w-full text-center flex flex-col items-center gap-6 bg-[#050b14]/50 transition-colors ${
                 isBgDragging
                   ? "border-brand bg-brand/5"
                   : "border-white/10"
@@ -1469,7 +1470,7 @@ export default function DrawModal({
               </div>
 
               {/* Centered Drawing Toolbar */}
-              <div className="mt-6 bg-[#0f0f11]/90 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-2xl z-20 select-none">
+              <div className="mt-6 bg-[#0a1422]/90 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-2xl z-20 select-none">
                 {/* Pointer tool */}
                 <button
                   onClick={() => {
@@ -1624,7 +1625,7 @@ export default function DrawModal({
                   title="Insert overlay image (or drop an image here)"
                   className={`p-1.5 rounded-lg transition-all ${
                     isOverlayDragging
-                      ? "bg-brand text-black ring-2 ring-brand"
+                      ? "bg-brand text-on-brand ring-2 ring-brand"
                       : activeTool === "image"
                       ? "bg-white text-black"
                       : "text-white/60 hover:text-white"
@@ -1713,7 +1714,7 @@ export default function DrawModal({
                 <button
                   onClick={handleGenerateClick}
                   disabled={generating}
-                  className="ml-1 bg-brand hover:opacity-90 active:scale-[0.97] transition-all text-black font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-brand/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="ml-1 bg-brand hover:opacity-90 active:scale-[0.97] transition-all text-on-brand font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-brand/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {generating ? (
                     <>
@@ -1932,7 +1933,7 @@ export default function DrawModal({
 
               <button
                 onClick={() =>
-                  alert(
+                  notify(
                     "Draw to Edit: paint directly over an image, insert overlay image/text objects, drag/resize elements, or select and delete specific components.",
                   )
                 }

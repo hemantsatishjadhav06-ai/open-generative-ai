@@ -409,7 +409,15 @@ export function uploadFile(apiKey, file, onProgress) {
                 let detail = xhr.statusText;
                 try {
                     const errObj = JSON.parse(xhr.responseText);
-                    detail = errObj.detail || detail;
+                    // Our /api proxy wraps unreachable/non-JSON upstreams in an
+                    // `upstream_*` envelope whose `detail` is raw upstream text:
+                    // surface the envelope code + friendly message instead.
+                    if (typeof errObj.error === 'string' && errObj.error.startsWith('upstream_')) {
+                        detail = `${errObj.error}: ${errObj.message || ''}`.trim();
+                    } else {
+                        const d = [errObj.detail, errObj.message, errObj.error].find((v) => typeof v === 'string' && v);
+                        if (d) detail = d;
+                    }
                 } catch (e) {
                     // fallback to statusText
                 }

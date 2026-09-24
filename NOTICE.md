@@ -1,6 +1,6 @@
 # Third-party notices
 
-Creator Agency includes code from the following open-source projects. Each is
+Aquora includes code from the following open-source projects. Each is
 used under its license; the copyright lines below are reproduced as required.
 
 ## Open Generative AI

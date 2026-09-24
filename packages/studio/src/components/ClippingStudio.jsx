@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import HeroCollage from "./HeroCollage";
-import toast, { Toaster } from "react-hot-toast";
 import { runClipping, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -29,24 +28,10 @@ import {
 import en from "../messages/en/clippingStudio.json";
 import zh from "../messages/zh/clippingStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { notify, notifyError } from "../utils/notify.js";
 
 const MAX_VIDEO_SIZE_MB = 100;
 const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
-const CLIPPING_TOASTER_ID = "clipping-studio";
-const MAX_VISIBLE_ERROR_TOASTS = 3;
-const ERROR_TOAST_DURATION_MS = 7000;
-const activeErrorToastIds = [];
-
-const forgetErrorToast = (toastId) => {
-  const index = activeErrorToastIds.indexOf(toastId);
-  if (index !== -1) activeErrorToastIds.splice(index, 1);
-};
-
-const dismissErrorToast = (toastId) => {
-  forgetErrorToast(toastId);
-  toast.dismiss(toastId, CLIPPING_TOASTER_ID);
-};
-
 // ---------------------------------------------------------------------------
 // Inline SVG Icons
 // ---------------------------------------------------------------------------
@@ -94,82 +79,9 @@ const CopyIcon = () => (
   </svg>
 );
 
-const ErrorToast = ({ toastInstance, message, dismissLabel = "Dismiss notification" }) => (
-  <div
-    className={`pointer-events-auto flex w-[340px] max-w-[calc(100vw-32px)] items-start gap-3 rounded-xl border border-red-400/40 bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)] transition-all duration-200 ${
-      toastInstance.visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-    }`}
-    role="alert"
-  >
-    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-400/40 bg-red-50 text-red-600">
-      <svg
-        width="17"
-        height="17"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v6" />
-        <path d="M12 17h.01" />
-      </svg>
-    </span>
-    <span className="min-w-0 flex-1 py-1 font-medium leading-5 text-zinc-900">{message}</span>
-    <button
-      type="button"
-      onClick={() => dismissErrorToast(toastInstance.id)}
-      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-      aria-label={dismissLabel}
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden="true"
-      >
-        <path d="M18 6 6 18M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
-);
-
-const showErrorToast = (message, copy = en) => {
-  const options = {
-    duration: ERROR_TOAST_DURATION_MS,
-    position: "bottom-right",
-    toasterId: CLIPPING_TOASTER_ID,
-  };
-
-  while (activeErrorToastIds.length >= MAX_VISIBLE_ERROR_TOASTS) {
-    const oldestToastId = activeErrorToastIds.shift();
-    toast.remove(oldestToastId, CLIPPING_TOASTER_ID);
-  }
-
-  const toastId = toast.custom(
-    (toastInstance) => (
-      <ErrorToast
-        toastInstance={toastInstance}
-        message={message}
-        dismissLabel={copy.errors.dismissNotification}
-      />
-    ),
-    options,
-  );
-
-  activeErrorToastIds.push(toastId);
-  setTimeout(
-    () => forgetErrorToast(toastId),
-    ERROR_TOAST_DURATION_MS + 1000,
-  );
-};
+// Errors go to the app shell's notification stack (see utils/notify.js) so
+// every studio reports problems the same way.
+const showErrorToast = (message) => notifyError(message);
 
 const showVideoSizeLimitToast = (copy = en) => {
   showErrorToast(copy.errors.videoExceedsLimit.replace("{mb}", MAX_VIDEO_SIZE_MB), copy);
@@ -398,7 +310,7 @@ export default function ClippingStudio({
   // ── Copy Link & Download Helpers ─────────────────────────────────────────
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert(copy.alerts.urlCopied);
+    notify(copy.alerts.urlCopied, { type: "success" });
   };
 
   const downloadVideo = async (url, title = "clipped_video") => {
@@ -503,7 +415,7 @@ export default function ClippingStudio({
   // ── Dispatch Run / Call submitAndPoll ────────────────────────────────────
   const handleGenerate = async () => {
     if (!videoUrl) {
-      alert(copy.alerts.needVideo);
+      notify(copy.alerts.needVideo);
       return;
     }
 
@@ -633,9 +545,9 @@ export default function ClippingStudio({
                 <div
                   key={entry.id || idx}
                   onClick={() => handleSelectHistory(entry)}
-                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                 >
-                  <div className="aspect-video bg-zinc-950 flex items-center justify-center border-b border-white/5 relative overflow-hidden">
+                  <div className="aspect-video bg-surface-panel flex items-center justify-center border-b border-white/5 relative overflow-hidden">
                     <video
                       src={entry.videoUrl}
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-85 transition-opacity animate-fade-in"
@@ -740,18 +652,18 @@ export default function ClippingStudio({
                     ref={mainVideoRef}
                     src={result.videoUrl}
                     controls
-                    className="w-full flex-1 object-contain bg-zinc-950"
+                    className="w-full flex-1 object-contain bg-surface-panel"
                     preload="auto"
                   />
                 </div>
 
                 {/* Right Side: Highlights list */}
-                <div className="w-full lg:w-[350px] border border-zinc-900 bg-zinc-950/40 backdrop-blur-md rounded-lg p-5 flex flex-col min-h-[350px] lg:min-h-0">
+                <div className="w-full lg:w-[350px] border border-zinc-900 bg-surface-panel/40 backdrop-blur-md rounded-lg p-5 flex flex-col min-h-[350px] lg:min-h-0">
                   <div className="pb-4 border-b border-zinc-900 flex items-center justify-between">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest">
                       {copy.headings.highlightsTimeline}
                     </h3>
-                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                    <span className="text-[10px] font-bold text-zinc-400 bg-surface-card px-2 py-0.5 rounded border border-zinc-800">
                       {copy.headings.matches.replace('{count}', result.coordinates?.length || 0)}
                     </span>
                   </div>
@@ -771,10 +683,10 @@ export default function ClippingStudio({
                               setActiveHighlightIndex(i);
                               seekToHighlight(start);
                             }}
-                            className={`w-full p-4 border rounded-lg text-left transition-all hover:bg-zinc-900/60 flex flex-col gap-2 group/hl ${
+                            className={`w-full p-4 border rounded-lg text-left transition-all hover:bg-surface-card/60 flex flex-col gap-2 group/hl ${
                               isActive 
-                                ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(198,241,53,0.03)]" 
-                                : "border-zinc-800 bg-zinc-900/30 hover:border-zinc-700"
+                                ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(46,230,214,0.03)]" 
+                                : "border-zinc-800 bg-surface-card/30 hover:border-zinc-700"
                             }`}
                           >
                             <div className="flex items-center justify-between w-full">
@@ -815,7 +727,7 @@ export default function ClippingStudio({
                   <h3 className="text-xs font-black text-white uppercase tracking-widest">
                     {copy.headings.extractedVideoClips}
                   </h3>
-                  <span className="text-[10px] font-bold text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800">
+                  <span className="text-[10px] font-bold text-zinc-400 bg-surface-card px-2.5 py-1 rounded border border-zinc-800">
                     {copy.headings.aspectRatioLabel.replace('{ratio}', result.aspectRatio)}
                   </span>
                 </div>
@@ -826,7 +738,7 @@ export default function ClippingStudio({
                       <div
                         key={i}
                         onClick={() => setFullscreenUrl(clipUrl)}
-                        className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                        className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                       >
                         <div className="relative group/vid border-b border-white/5 overflow-hidden bg-black/40">
                           <video
@@ -856,7 +768,7 @@ export default function ClippingStudio({
                                 e.stopPropagation();
                                 copyToClipboard(clipUrl);
                               }}
-                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                             >
                               <CopyIcon />
                             </button>
@@ -867,7 +779,7 @@ export default function ClippingStudio({
                                 e.stopPropagation();
                                 downloadVideo(clipUrl, `clip-${i + 1}.mp4`);
                               }}
-                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                             >
                               <DownloadIcon />
                             </button>
@@ -914,7 +826,7 @@ export default function ClippingStudio({
                     ))}
                   </div>
                 ) : (
-                  <div className="py-20 text-center text-xs text-zinc-500 font-semibold border border-zinc-900 rounded bg-zinc-950/20">
+                  <div className="py-20 text-center text-xs text-zinc-500 font-semibold border border-zinc-900 rounded bg-surface-panel/20">
                     {copy.empty.noClips}
                   </div>
                 )}
@@ -1158,34 +1070,6 @@ export default function ClippingStudio({
           scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
         }
       `}</style>
-      <Toaster
-        toasterId={CLIPPING_TOASTER_ID}
-        position="bottom-right"
-        reverseOrder={false}
-        gutter={8}
-        containerStyle={{ zIndex: 99999, right: 20, bottom: 20 }}
-        toastOptions={{
-          duration: 6000,
-          style: {
-            background: "#0d0d0f",
-            color: "#f4f4f5",
-            border: "1px solid rgba(239,68,68,0.35)",
-            fontSize: "13px",
-            borderRadius: "12px",
-            boxShadow: "0 16px 48px rgba(0,0,0,0.65)",
-            maxWidth: "380px",
-            wordBreak: "break-word",
-            whiteSpace: "pre-wrap",
-            padding: "12px 14px",
-          },
-          error: {
-            iconTheme: {
-              primary: "#f87171",
-              secondary: "#0d0d0f",
-            },
-          },
-        }}
-      />
     </div>
   );
 }

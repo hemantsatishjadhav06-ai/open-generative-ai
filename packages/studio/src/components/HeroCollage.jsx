@@ -56,7 +56,7 @@ function CollageCard({ src, rotate, round, first, size }) {
         aria-hidden="true"
         focusable="false"
       >
-        <path d={SPARK_PATH} fill="#c6f135" />
+        <path d={SPARK_PATH} fill="#2ee6d6" />
       </svg>
       {!failed && (
         <img

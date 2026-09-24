@@ -1,36 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="banner-title banner-desc">
-  <title id="banner-title">Creator Agency</title>
-  <desc id="banner-desc">AI studio for creators. Make images, video, audio — and ship.</desc>
+  <title id="banner-title">Aquora</title>
+  <desc id="banner-desc">AI studio for creators. Make anything. Ship everything.</desc>
   <defs>
     <filter id="soft-blur" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="90"/>
     </filter>
     <linearGradient id="brand-gradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#c6f135"/>
-      <stop offset="1" stop-color="#ff3cac"/>
+      <stop offset="0" stop-color="#2ee6d6"/>
+      <stop offset="1" stop-color="#3b82f6"/>
     </linearGradient>
   </defs>
 
   <!-- Surface -->
-  <rect width="1280" height="640" fill="#08060f"/>
+  <rect width="1280" height="640" fill="#050b14"/>
 
   <!-- Soft blobs -->
-  <circle cx="1040" cy="110" r="260" fill="#c6f135" opacity="0.35" filter="url(#soft-blur)"/>
-  <circle cx="250" cy="580" r="240" fill="#ff3cac" opacity="0.35" filter="url(#soft-blur)"/>
+  <circle cx="1040" cy="110" r="260" fill="#2ee6d6" opacity="0.35" filter="url(#soft-blur)"/>
+  <circle cx="250" cy="580" r="240" fill="#3b82f6" opacity="0.35" filter="url(#soft-blur)"/>
 
   <!-- Spark mark -->
   <g transform="translate(120 236)">
-    <rect width="88" height="88" rx="22" fill="#c6f135"/>
+    <rect width="88" height="88" rx="22" fill="url(#brand-gradient)"/>
     <g transform="translate(12 12) scale(2.6667)">
-      <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" fill="#08060f"/>
+      <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" fill="#04121a"/>
     </g>
   </g>
 
   <!-- Wordmark -->
-  <text x="236" y="312" font-family="'Space Grotesk', Inter, system-ui, sans-serif" font-weight="700" font-size="96" letter-spacing="-0.03em" fill="#f5f3ff">Creator Agency</text>
+  <text x="236" y="312" font-family="'Space Grotesk', Inter, system-ui, sans-serif" font-weight="700" font-size="96" letter-spacing="-0.03em" fill="#eef6ff">Aquora</text>
 
   <!-- Tagline -->
-  <text x="120" y="404" font-family="Inter, system-ui, sans-serif" font-weight="500" font-size="30" fill="#a8a3bd">AI studio for creators. Make images, video, audio — and ship.</text>
+  <text x="120" y="404" font-family="Inter, system-ui, sans-serif" font-weight="500" font-size="30" fill="#9fb3c8">Make anything. Ship everything. AI studio for creators.</text>
 
   <!-- Gradient accent -->
   <rect x="120" y="440" width="168" height="6" rx="3" fill="url(#brand-gradient)"/>

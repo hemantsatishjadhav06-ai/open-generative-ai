@@ -13,19 +13,19 @@ const DEFAULT_POSITION_CLASS =
   "absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-30 animate-fade-in-up";
 
 const DEFAULT_PANEL_CLASS =
-  "w-full bg-gradient-to-b from-[#18181c]/90 via-surface-app/90 to-[#0c0c0e]/95 backdrop-blur-2xl rounded-[2rem] border border-white/[0.08] p-4 flex flex-col gap-3 shadow-[0_15px_50px_rgba(0,0,0,0.8)]";
+  "w-full bg-gradient-to-b from-surface-card/90 via-surface-app/90 to-surface-panel/95 backdrop-blur-2xl rounded-[2rem] border border-white/[0.08] p-4 flex flex-col gap-3 shadow-[0_15px_50px_rgba(0,0,0,0.8)]";
 
 const DEFAULT_TEXTAREA_CLASS =
   "w-full bg-transparent border-none text-white text-sm placeholder:text-white/20 focus:outline-none resize-none pt-1 leading-relaxed min-h-[40px] max-h-[150px] md:max-h-[250px] overflow-y-auto custom-scrollbar disabled:opacity-40";
 
 const DEFAULT_ACTION_CLASS =
-  "bg-brand text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-brand/20 hover:shadow-brand/35 border border-brand/10 z-10 disabled:opacity-50 disabled:cursor-not-allowed";
+  "bg-brand text-on-brand px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-brand/20 hover:shadow-brand/35 border border-brand/10 z-10 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const CONTROL_LAYOUT_CLASS =
   "h-[38px] flex items-center gap-2 rounded-md transition-all border group whitespace-nowrap shadow-inner focus:outline-none focus-visible:border-brand/45 focus-visible:ring-1 focus-visible:ring-brand/30";
 
 const CONTROL_IDLE_CLASS =
-  "text-white bg-surface-panel/60 hover:bg-[#202026]/80 border-white/[0.06]";
+  "text-white bg-surface-panel/60 hover:bg-surface-raised/80 border-white/[0.06]";
 
 const CONTROL_ACTIVE_CLASS =
   "text-brand bg-brand/10 hover:bg-brand/15 border-brand/25";
@@ -216,7 +216,7 @@ export const PromptPopover = forwardRef(function PromptPopover(
       className={joinClasses(
         positionClassName,
         DEFAULT_POPOVER_CLASS,
-        solid ? "bg-[#0c0c0f]" : "bg-[#0c0c0f]/95",
+        solid ? "bg-surface-panel" : "bg-surface-panel/[0.98]",
         className,
       )}
     >
@@ -286,7 +286,7 @@ export function PromptMenuItem({
           height="12"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#c6f135"
+          stroke="#2ee6d6"
           strokeWidth="4.5"
           className="flex-shrink-0"
           aria-hidden="true"
@@ -327,7 +327,7 @@ export function PromptSegmentOption({
         "min-h-7 px-3 py-1 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
         "focus:outline-none focus-visible:ring-1 focus-visible:ring-brand/40",
         selected
-          ? "bg-brand text-black shadow-md shadow-brand/20"
+          ? "bg-brand text-on-brand shadow-md shadow-brand/20"
           : "text-white/40 hover:text-white/70",
         className,
       )}

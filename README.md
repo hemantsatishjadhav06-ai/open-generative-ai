@@ -1,12 +1,14 @@
 <p align="center">
-  <img src="public/banner.svg" alt="Creator Agency — AI studio for creators" width="100%">
+  <img src="public/banner.svg" alt="Aquora — AI studio for creators" width="100%">
 </p>
 
-<p align="center"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-c6f135?style=flat-square&labelColor=08060f"> <img alt="Node 22+" src="https://img.shields.io/badge/node-22%2B-c6f135?style=flat-square&labelColor=08060f"> <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-ff3cac?style=flat-square&labelColor=08060f"> <a href="https://muapi.ai?utm_source=github&utm_medium=badge&utm_campaign=creator-agency"><img alt="Powered by MuAPI" src="https://img.shields.io/badge/powered%20by-MuAPI-ff3cac?style=flat-square&labelColor=08060f"></a></p>
+<p align="center"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2ee6d6?style=flat-square&labelColor=050b14"> <img alt="Node 22+" src="https://img.shields.io/badge/node-22%2B-2ee6d6?style=flat-square&labelColor=050b14"> <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-3b82f6?style=flat-square&labelColor=050b14"> <a href="https://muapi.ai?utm_source=github&utm_medium=badge&utm_campaign=aquora"><img alt="Powered by MuAPI" src="https://img.shields.io/badge/powered%20by-MuAPI-3b82f6?style=flat-square&labelColor=050b14"></a></p>
 
-# Creator Agency
+# Aquora
 
-Make images, video, audio, lip-sync and AI personas in one place. Bring your own [MuAPI](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=creator-agency) key: no signup, no subscription.
+**Make anything. Ship everything.**
+
+Make images, video, audio, lip-sync and AI personas in one place. Bring your own [MuAPI](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=aquora) key: no signup, no subscription.
 
 Who it's for:
 
@@ -58,7 +60,7 @@ Production build: `npm run build && npm run start`.
 
 ## Configuration
 
-- **MuAPI key (required)** — the app asks for it on first launch. Grab one at [muapi.ai/access-keys](https://muapi.ai/access-keys?utm_source=github&utm_medium=readme&utm_campaign=creator-agency) and paste the key value (not its name). It's saved in your browser (`localStorage` plus a same-site cookie) and forwarded to MuAPI only through the app's own `/api` proxy — the server never stores it.
+- **MuAPI key (required)** — the app asks for it on first launch. Grab one at [muapi.ai/access-keys](https://muapi.ai/access-keys?utm_source=github&utm_medium=readme&utm_campaign=aquora) and paste the key value (not its name). It's saved in your browser (`localStorage` plus a same-site cookie) and forwarded to MuAPI only through the app's own `/api` proxy — the server never stores it.
 - **`NEXT_PUBLIC_REELTY_URL` (optional)** — URL of the Reelty deployment shown in the Reelty tab. Falls back to the hosted Reelty instance when unset. It is inlined at build time, so set it as a Railway service variable (the Dockerfile passes it through as a build arg).
 - **`NEXT_PUBLIC_SITE_URL` (optional)** — public origin used for canonical/OG URLs, `robots.txt` and `sitemap.xml`. On Railway `RAILWAY_PUBLIC_DOMAIN` is used automatically; set this once a custom domain is attached.
 - **`NEXT_PUBLIC_ANALYTICS_ENDPOINT` (optional)** — when set, client events are POSTed there via `sendBeacon` and its origin is added to the CSP `connect-src`; events are also available as `window.__ca_events` and the `ca:track` DOM event for any vendor snippet. Nothing is sent anywhere by default.
@@ -84,7 +86,7 @@ npm run electron:build:win      # Windows
 npm run electron:build:linux    # Linux (AppImage + .deb)
 ```
 
-Installers land in `release/`. Local models live in Electron's app-data folder, or wherever `CREATOR_AGENCY_LOCAL_AI_DIR` points (the legacy `OPEN_GENERATIVE_AI_LOCAL_AI_DIR` is still honored). On Apple Silicon the Metal `sd-cli` binary is downloaded at runtime from the upstream Open Generative AI GitHub release (github.com/Anil-matcha/Open-Generative-AI, tag `v1.0.3-binaries`); other platforms use the stock leejet/stable-diffusion.cpp release.
+Installers land in `release/`. Local models live in Electron's app-data folder, or wherever `AQUORA_LOCAL_AI_DIR` points (the legacy `CREATOR_AGENCY_LOCAL_AI_DIR` and `OPEN_GENERATIVE_AI_LOCAL_AI_DIR` are still honored). On Apple Silicon the Metal `sd-cli` binary is downloaded at runtime from the upstream Open Generative AI GitHub release (github.com/Anil-matcha/Open-Generative-AI, tag `v1.0.3-binaries`); other platforms use the stock leejet/stable-diffusion.cpp release.
 
 ## Tests
 
@@ -108,7 +110,7 @@ electron/                       Desktop shell + local inference
 
 ## Credits
 
-Creator Agency is built on [Open Generative AI](https://github.com/Anil-matcha/Open-Generative-AI) (MIT) by Anil Chandra Naidu Matcha and contributors; media generation runs on [MuAPI](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=creator-agency). Full third-party notices: [NOTICE.md](NOTICE.md).
+Aquora (formerly Creator Agency) is built on [Open Generative AI](https://github.com/Anil-matcha/Open-Generative-AI) (MIT) by Anil Chandra Naidu Matcha and contributors; media generation runs on [MuAPI](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=aquora). Full third-party notices: [NOTICE.md](NOTICE.md).
 
 ## License
 

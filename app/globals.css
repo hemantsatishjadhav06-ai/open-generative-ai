@@ -3,34 +3,36 @@
 @tailwind utilities;
 
 /*
-  Creator Agency theme tokens. Fonts are self-hosted through next/font in
+  Aquora theme tokens (turquoise primary, electric-blue accent, deep navy). Fonts are self-hosted through next/font in
   app/layout.js, which exposes --font-inter and --font-display on <body>.
   Keep the color values in sync with tailwind.config.js.
 */
 :root {
-  --color-primary: #c6f135;
-  --color-primary-hover: #d6fb5a;
-  --color-accent: #ff3cac;
-  --color-accent-hover: #e01f92;
+  --color-primary: #2ee6d6;
+  --color-primary-hover: #57f0dc;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-text: #60a5fa;
+  --color-on-brand: #04121a;
 
-  --bg-app: #08060f;
-  --bg-panel: #0e0b18;
-  --bg-card: #151021;
-  --bg-raised: #1c1730;
+  --bg-app: #050b14;
+  --bg-panel: #0a1422;
+  --bg-card: #0f1c2e;
+  --bg-raised: #15253b;
 
-  --text-primary: #f5f3ff;
-  --text-secondary: #a8a3bd;
-  --text-muted: #5c566f;
+  --text-primary: #eef6ff;
+  --text-secondary: #9fb3c8;
+  --text-muted: #5b7089;
 
-  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color: rgba(148, 197, 255, 0.10);
   --border-radius-xl: 0.75rem;
 
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
 
-  --brand-gradient: linear-gradient(135deg, #c6f135 0%, #ff3cac 100%);
-  --shadow-glow: 0 0 20px rgba(198, 241, 53, 0.4);
-  --shadow-glow-accent: 0 0 20px rgba(255, 60, 172, 0.4);
+  --brand-gradient: linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%);
+  --shadow-glow: 0 0 20px rgba(46, 230, 214, 0.4);
+  --shadow-glow-accent: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,48 +102,48 @@ h2,
 /* ── Design Agent: brand palette ─────────────────────────────────────────
    The vendored design-agent package ships its own neutral-grey tokens.
    Remap its variables and the handful of utilities it uses onto the
-   Creator Agency violet surfaces, scoped to the studio wrapper. Plain CSS
+   Aquora deep-navy surfaces, scoped to the studio wrapper. Plain CSS
    (outside @layer) so Tailwind never purges it. */
 .design-agent-studio {
-  --bg-page: #08060f;
-  --bg-card: #0e0b18;
-  --bg-card-hover: #1c1730;
-  --bg-elevated: #151021;
-  --text-primary: #f5f3ff;
-  --text-secondary: #a8a3bd;
-  --text-muted: #5c566f;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --primary: #c6f135;
-  --secondary: #ff3cac;
+  --bg-page: #050b14;
+  --bg-card: #0a1422;
+  --bg-card-hover: #15253b;
+  --bg-elevated: #0f1c2e;
+  --text-primary: #eef6ff;
+  --text-secondary: #9fb3c8;
+  --text-muted: #5b7089;
+  --border-subtle: rgba(148, 197, 255, 0.10);
+  --border-default: rgba(148, 197, 255, 0.16);
+  --primary: #2ee6d6;
+  --secondary: #3b82f6;
   --color-success: #34d399;
   --color-success-bg: rgba(52, 211, 153, 0.12);
   --color-warning: #fbbf24;
   --color-warning-bg: rgba(251, 191, 36, 0.12);
   --color-error: #ff5c7a;
   --color-error-bg: rgba(255, 92, 122, 0.12);
-  color: #f5f3ff;
+  color: #eef6ff;
 }
-.design-agent-studio .bg-bg-page { background-color: #08060f; }
-.design-agent-studio .bg-bg-page\/20 { background-color: rgb(8 6 15 / 0.2); }
-.design-agent-studio .bg-bg-page\/30 { background-color: rgb(8 6 15 / 0.3); }
-.design-agent-studio .bg-bg-page\/50 { background-color: rgb(8 6 15 / 0.5); }
-.design-agent-studio .bg-bg-card { background-color: #0e0b18; }
-.design-agent-studio .bg-bg-card\/50 { background-color: rgb(14 11 24 / 0.5); }
-.design-agent-studio .bg-bg-card\/90 { background-color: rgb(14 11 24 / 0.9); }
-.design-agent-studio .bg-bg-card-hover { background-color: #1c1730; }
-.design-agent-studio .hover\:bg-bg-page:hover { background-color: #08060f; }
-.design-agent-studio .hover\:bg-bg-card:hover { background-color: #151021; }
-.design-agent-studio .hover\:bg-bg-card-hover:hover { background-color: #1c1730; }
+.design-agent-studio .bg-bg-page { background-color: #050b14; }
+.design-agent-studio .bg-bg-page\/20 { background-color: rgb(5 11 20 / 0.2); }
+.design-agent-studio .bg-bg-page\/30 { background-color: rgb(5 11 20 / 0.3); }
+.design-agent-studio .bg-bg-page\/50 { background-color: rgb(5 11 20 / 0.5); }
+.design-agent-studio .bg-bg-card { background-color: #0a1422; }
+.design-agent-studio .bg-bg-card\/50 { background-color: rgb(10 20 34 / 0.5); }
+.design-agent-studio .bg-bg-card\/90 { background-color: rgb(10 20 34 / 0.9); }
+.design-agent-studio .bg-bg-card-hover { background-color: #15253b; }
+.design-agent-studio .hover\:bg-bg-page:hover { background-color: #050b14; }
+.design-agent-studio .hover\:bg-bg-card:hover { background-color: #0f1c2e; }
+.design-agent-studio .hover\:bg-bg-card-hover:hover { background-color: #15253b; }
 .design-agent-studio .text-primary-text,
 .design-agent-studio .text-text-main,
-.design-agent-studio .hover\:text-primary-text:hover { color: #f5f3ff; }
-.design-agent-studio .text-secondary-text { color: #a8a3bd; }
+.design-agent-studio .hover\:text-primary-text:hover { color: #eef6ff; }
+.design-agent-studio .text-secondary-text { color: #9fb3c8; }
 .design-agent-studio .border-divider,
 .design-agent-studio .border-border-main { border-color: rgba(255, 255, 255, 0.08); }
 .design-agent-studio .bg-divider,
 .design-agent-studio .bg-border-main { background-color: rgba(255, 255, 255, 0.08); }
-.design-agent-studio .bg-primary-text { background-color: #f5f3ff; }
+.design-agent-studio .bg-primary-text { background-color: #eef6ff; }
 .design-agent-studio .from-divider {
   --tw-gradient-from: rgba(255, 255, 255, 0.08) var(--tw-gradient-from-position);
   --tw-gradient-to: rgba(255, 255, 255, 0) var(--tw-gradient-to-position);

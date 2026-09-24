@@ -295,7 +295,7 @@ function useSharePayload(share) {
 
   const prefetch = () => {
     if (!share?.url || fileRef.current || pendingRef.current) return;
-    pendingRef.current = fetchResultFile(share.url, share.filename || "creator-agency-result")
+    pendingRef.current = fetchResultFile(share.url, share.filename || "aquora-result")
       .then((file) => {
         fileRef.current = file;
         return file;
@@ -336,7 +336,7 @@ export function GenerationShareButton({ share, onNotice, onError }) {
         event.stopPropagation();
         runShare(onNotice, onError);
       }}
-      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
+      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-on-brand transition-all border border-white/10"
     >
       <ActionIcon kind="share" />
     </button>
@@ -441,7 +441,7 @@ export default function MobileGenerationActions({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 min-w-[178px] overflow-hidden rounded-xl border border-white/15 bg-[#151515]/95 p-1.5 shadow-2xl backdrop-blur-xl">
+        <div className="absolute right-0 top-12 z-50 min-w-[178px] overflow-hidden rounded-xl border border-white/15 bg-[#0f1c2e]/95 p-1.5 shadow-2xl backdrop-blur-xl">
           {availableActions.map((action) => (
             <button
               key={`${action.kind}-${action.label}`}

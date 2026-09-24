@@ -1,15 +1,19 @@
 const path = require('path');
 
-const LOCAL_AI_DIR_ENV = 'CREATOR_AGENCY_LOCAL_AI_DIR';
-// Pre-rebrand name, still honored when the new one is unset.
-const LEGACY_LOCAL_AI_DIR_ENV = 'OPEN_GENERATIVE_AI_LOCAL_AI_DIR';
+const LOCAL_AI_DIR_ENV = 'AQUORA_LOCAL_AI_DIR';
+// Pre-rebrand names, still honored (in this order) when the new one is unset.
+const LEGACY_LOCAL_AI_DIR_ENVS = ['CREATOR_AGENCY_LOCAL_AI_DIR', 'OPEN_GENERATIVE_AI_LOCAL_AI_DIR'];
+// Kept for callers that imported the single legacy name.
+const LEGACY_LOCAL_AI_DIR_ENV = LEGACY_LOCAL_AI_DIR_ENVS[LEGACY_LOCAL_AI_DIR_ENVS.length - 1];
 
 function normalizeDirOverride(value) {
     return typeof value === 'string' ? value.trim() : '';
 }
 
 function resolveLocalAiPaths({ userDataPath, env = process.env } = {}) {
-    const customDir = normalizeDirOverride(env[LOCAL_AI_DIR_ENV]) || normalizeDirOverride(env[LEGACY_LOCAL_AI_DIR_ENV]);
+    const customDir = [LOCAL_AI_DIR_ENV, ...LEGACY_LOCAL_AI_DIR_ENVS]
+        .map((name) => normalizeDirOverride(env[name]))
+        .find(Boolean) || '';
 
     if (!customDir && !userDataPath) {
         throw new Error(`userDataPath is required when ${LOCAL_AI_DIR_ENV} is not set`);
@@ -28,5 +32,6 @@ function resolveLocalAiPaths({ userDataPath, env = process.env } = {}) {
 module.exports = {
     LOCAL_AI_DIR_ENV,
     LEGACY_LOCAL_AI_DIR_ENV,
+    LEGACY_LOCAL_AI_DIR_ENVS,
     resolveLocalAiPaths,
 };

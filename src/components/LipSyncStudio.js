@@ -49,7 +49,7 @@ export function LipSyncStudio() {
                 <div class="absolute top-4 right-4 text-primary animate-pulse">🎙</div>
             </div>
         </div>
-        <h1 class="text-2xl sm:text-4xl md:text-7xl font-black text-white tracking-widest uppercase mb-4 selection:bg-primary selection:text-black text-center px-4">${t('lipsync.title')}</h1>
+        <h1 class="text-2xl sm:text-4xl md:text-7xl font-black text-white tracking-widest uppercase mb-4 selection:bg-primary selection:text-on-brand text-center px-4">${t('lipsync.title')}</h1>
         <p class="text-secondary text-sm font-medium tracking-wide opacity-60">${t('lipsync.subtitle')}</p>
     `;
     container.appendChild(hero);
@@ -301,7 +301,7 @@ export function LipSyncStudio() {
     const generateBtn = document.createElement('button');
     generateBtn.id = 'ls-generate-btn';
     generateBtn.type = 'button';
-    generateBtn.className = 'ml-auto px-6 py-2.5 bg-primary text-black font-black text-sm rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
+    generateBtn.className = 'ml-auto px-6 py-2.5 bg-primary text-on-brand font-black text-sm rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
     generateBtn.textContent = t('common.generate');
 
     bottomRow.appendChild(modelBtn);
@@ -502,7 +502,7 @@ export function LipSyncStudio() {
     regenerateBtn.textContent = t('lipsync.regenerate');
 
     const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'bg-primary text-black px-6 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-glow active:scale-95';
+    downloadBtn.className = 'bg-primary text-on-brand px-6 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-glow active:scale-95';
     downloadBtn.textContent = t('lipsync.download');
 
     const newBtn = document.createElement('button');
@@ -544,7 +544,7 @@ export function LipSyncStudio() {
             thumb.innerHTML = `
                 <video src="${entry.url}" preload="metadata" muted class="w-full aspect-square object-cover"></video>
                 <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
-                    <button class="hist-download p-1.5 bg-primary rounded-lg text-black hover:scale-110 transition-transform" title="Download">
+                    <button class="hist-download p-1.5 bg-primary rounded-lg text-on-brand hover:scale-110 transition-transform" title="Download">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                     </button>
                 </div>

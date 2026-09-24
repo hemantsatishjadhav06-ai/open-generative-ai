@@ -26,7 +26,7 @@
     "reelty": "Reelty"
   },
   "shell": {
-    "brand": "Creator Agency",
+    "brand": "Aquora",
     "studioFallback": "工作室",
     "expandSidebar": "展开侧边栏",
     "collapseSidebar": "收起侧边栏",
@@ -49,7 +49,8 @@
     "subtitle": "你的工作室，你说了算。在这里管理密钥和偏好。",
     "activeApiKey": "当前 MuAPI 密钥",
     "changeKey": "更换密钥",
-    "close": "关闭"
+    "close": "关闭",
+    "removeKey": "从此设备移除密钥"
   },
   "notifications": {
     "generating": "正在生成",
@@ -65,7 +66,7 @@
     "retryHint": "改一下，再点一次生成。"
   },
   "apiKeyModal": {
-    "title": "Creator Agency",
+    "title": "Aquora",
     "chips": [
       "400+ 模型",
       "17 个工作室",
@@ -92,11 +93,13 @@
     "invalidKey": "这个密钥不可用。请从 muapi.ai/access-keys 复制密钥的值（不是名称）后重试。",
     "keyStoppedTitle": "你的密钥失效了",
     "keyStoppedSubtitle": "MuAPI 拒绝了它。粘贴一个新密钥继续。",
-    "reeltyOnly": "只想用 Reelty？直接打开 →"
+    "reeltyOnly": "只想用 Reelty？直接打开 →",
+    "changeKeyTitle": "更换密钥",
+    "changeKeySubtitle": "粘贴新的 MuAPI 密钥。新密钥通过验证前，当前密钥保持不变。"
   },
   "meta": {
-    "siteTitle": "Creator Agency — 创作者的 AI 工作室",
-    "description": "在一个工作室里用 400+ 个 AI 模型做图像、视频、音频和数字人。不设门槛，不整虚的。",
+    "siteTitle": "Aquora — 创作者的 AI 工作室",
+    "description": "想做就做，做完就发。在一个工作室里用 400+ 个 AI 模型做图像、视频、音频和数字人。",
     "ogLocale": "zh_CN"
   },
   "reelty": {
@@ -114,8 +117,8 @@
   },
   "landing": {
     "eyebrow": "创作者的 AI 工作室",
-    "h1": "整个创意团队，一个标签页。",
-    "sub": "图像、视频、音频、数字人和广告 — 400+ 个 AI 模型，一个工作室。带上密钥，直接开做。",
+    "h1": "想做就做，做完就发。",
+    "sub": "整个创意团队，一个标签页：图像、视频、音频、数字人和广告，400+ 个 AI 模型。带上密钥，直接开做。",
     "ctaPrimary": "打开工作室",
     "ctaSecondary": "免费领取密钥",
     "chips": [

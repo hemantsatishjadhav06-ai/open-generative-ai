@@ -15,8 +15,8 @@ test('slugifyPrompt makes short, safe filename slugs', async () => {
 
 test('buildResultFilename uses the prompt slug, then the id, then the index', async () => {
     const { buildResultFilename } = await load();
-    assert.match(buildResultFilename({ prompt: 'Neon city', id: 'abc', idx: 0, ext: 'jpg' }), /^creator-agency-neon-city-\d+\.jpg$/);
-    assert.match(buildResultFilename({ prompt: '霓虹城市', id: 'abc', idx: 0, ext: 'mp4' }), /^creator-agency-abc-\d+\.mp4$/);
-    assert.match(buildResultFilename({ idx: 3, ext: 'jpg' }), /^creator-agency-3-\d+\.jpg$/);
+    assert.match(buildResultFilename({ prompt: 'Neon city', id: 'abc', idx: 0, ext: 'jpg' }), /^aquora-neon-city-\d+\.jpg$/);
+    assert.match(buildResultFilename({ prompt: '霓虹城市', id: 'abc', idx: 0, ext: 'mp4' }), /^aquora-abc-\d+\.mp4$/);
+    assert.match(buildResultFilename({ idx: 3, ext: 'jpg' }), /^aquora-3-\d+\.jpg$/);
     assert.ok(!buildResultFilename({ prompt: 'x', ext: 'jpg' }).includes('muapi'));
 });

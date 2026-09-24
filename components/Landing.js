@@ -7,20 +7,20 @@ import { TABS } from '@/lib/studios';
 
 const SPARK_PATH = 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z';
 const GITHUB_URL = 'https://github.com/hemantsatishjadhav06-ai/open-generative-ai';
-const KEY_URL = 'https://muapi.ai/access-keys?utm_source=creator-agency&utm_medium=landing';
-const MUAPI_URL = 'https://muapi.ai?utm_source=creator-agency&utm_medium=landing';
+const KEY_URL = 'https://muapi.ai/access-keys?utm_source=aquora&utm_medium=landing';
+const MUAPI_URL = 'https://muapi.ai?utm_source=aquora&utm_medium=landing';
 
 const GLOW_STYLE = {
   background:
-    'radial-gradient(50% 45% at 20% 0%, rgba(198, 241, 53, 0.16) 0%, rgba(198, 241, 53, 0) 70%),' +
-    'radial-gradient(45% 40% at 100% 20%, rgba(255, 60, 172, 0.14) 0%, rgba(255, 60, 172, 0) 70%)',
+    'radial-gradient(50% 45% at 20% 0%, rgba(46, 230, 214, 0.16) 0%, rgba(46, 230, 214, 0) 70%),' +
+    'radial-gradient(45% 40% at 100% 20%, rgba(59, 130, 246, 0.14) 0%, rgba(59, 130, 246, 0) 70%)',
 };
 
 function Spark({ size = 18 }) {
   return (
-    <span className="w-8 h-8 bg-brand rounded-xl shadow-glow flex items-center justify-center flex-shrink-0" aria-hidden="true">
+    <span className="w-8 h-8 bg-brand-gradient rounded-xl shadow-glow flex items-center justify-center flex-shrink-0" aria-hidden="true">
       <svg width={size} height={size} viewBox="0 0 24 24" focusable="false">
-        <path d={SPARK_PATH} className="fill-surface-app" />
+        <path d={SPARK_PATH} className="fill-on-brand" />
       </svg>
     </span>
   );
@@ -73,7 +73,7 @@ export default function Landing({ locale = 'en' }) {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href={localizeStudioPath(locale)}
-              className="inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-3 font-semibold text-surface-app shadow-glow transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-app"
+              className="inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-3 font-semibold text-on-brand shadow-glow transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-app"
             >
               {copy.ctaPrimary} →
             </Link>
@@ -110,7 +110,7 @@ export default function Landing({ locale = 'en' }) {
                   href={localizeStudioPath(locale, tab.id)}
                   className={`group flex h-full flex-col gap-3 rounded-2xl border bg-surface-card p-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 ${tab.id === 'reelty' ? 'border-pop/30 hover:border-pop/60' : 'border-surface-border hover:border-brand/40'}`}
                 >
-                  <span className={tab.id === 'reelty' ? 'text-pop' : 'text-brand'} aria-hidden="true">{tab.icon}</span>
+                  <span className={tab.id === 'reelty' ? 'text-pop-400' : 'text-brand'} aria-hidden="true">{tab.icon}</span>
                   <span className="font-display text-[15px] font-semibold leading-tight text-white">
                     {common.tabs?.[tab.id] || tab.label}
                   </span>
@@ -124,12 +124,12 @@ export default function Landing({ locale = 'en' }) {
         {/* Reelty */}
         <section aria-labelledby="reelty" className="pb-16">
           <div className="relative overflow-hidden rounded-2xl border border-pop/40 bg-surface-panel p-6 shadow-glow-accent sm:p-10">
-            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-pop">{copy.reeltyKicker}</p>
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-pop-400">{copy.reeltyKicker}</p>
             <h2 id="reelty" className="font-display mt-3 text-2xl font-bold tracking-tight sm:text-4xl">{copy.reeltyTitle}</h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-secondary sm:text-base">{copy.reeltyBody}</p>
             <Link
               href={localizeStudioPath(locale, 'reelty')}
-              className="mt-6 inline-flex items-center justify-center rounded-2xl bg-pop px-6 py-3 font-semibold text-surface-app transition-colors hover:bg-pop-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-pop/60"
+              className="mt-6 inline-flex items-center justify-center rounded-2xl bg-pop-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-pop-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-pop/60"
             >
               {copy.reeltyCta} →
             </Link>

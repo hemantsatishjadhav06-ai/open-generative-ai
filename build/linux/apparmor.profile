@@ -1,7 +1,7 @@
 abi <abi/4.0>,
 include <tunables/global>
 
-profile creator-agency /opt/Creator\ Agency/creator-agency flags=(unconfined) {
+profile aquora /opt/Aquora/aquora flags=(unconfined) {
   userns,
-  include if exists <local/creator-agency>
+  include if exists <local/aquora>
 }

@@ -20,8 +20,8 @@ const spaceGrotesk = Space_Grotesk({
   display: 'swap',
 });
 
-const SITE_TITLE = 'Creator Agency — AI studio for creators';
-const SITE_DESCRIPTION = 'Make images, video, audio, avatars and edits with 400+ AI models in one studio. No gatekeeping, no fluff.';
+const SITE_TITLE = 'Aquora — AI studio for creators';
+const SITE_DESCRIPTION = 'Make anything. Ship everything. Images, video, audio, avatars and edits with 400+ AI models in one studio.';
 
 // Plain-string title (no `%s` template): app/agents/layout.js and the studio
 // pages export fully suffixed titles of their own. og:image/twitter:image
@@ -30,7 +30,7 @@ export const metadata = {
   metadataBase: getSiteUrl(),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
-  applicationName: 'Creator Agency',
+  applicationName: 'Aquora',
   alternates: {
     canonical: '/',
     languages: { en: '/', 'zh-CN': '/zh', 'x-default': '/' },
@@ -38,7 +38,7 @@ export const metadata = {
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    siteName: 'Creator Agency',
+    siteName: 'Aquora',
     type: 'website',
     url: '/',
     locale: 'en_US',
@@ -51,7 +51,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#08060f',
+  themeColor: '#050b14',
   colorScheme: 'dark',
 };
 

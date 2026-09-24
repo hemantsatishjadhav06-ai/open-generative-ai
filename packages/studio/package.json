@@ -1,7 +1,7 @@
 {
   "name": "studio",
   "version": "1.0.0",
-  "description": "Creator Agency studio components (image, video, audio, agents, workflows)",
+  "description": "Aquora studio components (image, video, audio, agents, workflows)",
   "main": "src/index.js",
   "module": "src/index.js",
   "exports": {
@@ -27,6 +27,7 @@
     "./MotionControlStudio": "./src/components/MotionControlStudio.jsx",
     "./balance": "./src/balance.js",
     "./formatError": "./src/utils/formatError.js",
+    "./notify": "./src/utils/notify.js",
     "./useEscapeKey": "./src/components/prompt/useEscapeKey.js"
   },
   "files": [

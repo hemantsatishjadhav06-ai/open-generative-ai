@@ -69,7 +69,7 @@ export default function McpCliStudio({ locale = 'en' }) {
   const copy = resolveCopy(en, zh, locale);
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-[#08060f] text-white">
+    <div className="w-full h-full overflow-y-auto bg-[#050b14] text-white">
       <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-12">
 
         {/* Hero */}

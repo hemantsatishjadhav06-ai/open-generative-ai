@@ -8,10 +8,10 @@ import {
   FaGithub, FaExternalLinkAlt, FaDollarSign, FaRocket, FaCreditCard 
 } from "react-icons/fa";
 import { registerAppInterest, getAppInterests } from '../muapi.js';
-import toast, { Toaster } from 'react-hot-toast';
 import en from '../messages/en/appsStudio.json';
 import zh from '../messages/zh/appsStudio.json';
 import { resolveCopy } from '../i18nUtils';
+import { notifyError, notifySuccess } from "../utils/notify.js";
 
 const templateApps = [
   {
@@ -153,11 +153,11 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
     try {
       await registerAppInterest(apiKey, selectedApp.name);
       setRequestedApps(prev => [...prev, selectedApp.name]);
-      toast.success(copy.toast.requestSuccess);
+      notifySuccess(copy.toast.requestSuccess);
       setTimeout(() => setSelectedApp(null), 1500);
     } catch (error) {
       console.error(error);
-      toast.error(copy.toast.requestError);
+      notifyError(copy.toast.requestError);
     } finally {
       setIsRequesting(false);
     }
@@ -178,7 +178,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
     return (
       <div 
         key={app.name}
-        className="group bg-[#0e0b18] border border-white/5 rounded-lg flex flex-col overflow-hidden transition-all duration-300 hover:border-white/10 hover:bg-[#0f0f0f] hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1"
+        className="group bg-[#0a1422] border border-white/5 rounded-lg flex flex-col overflow-hidden transition-all duration-300 hover:border-white/10 hover:bg-surface-card hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1"
       >
         {/* Thumbnail Section */}
         <div className="relative h-44 w-full overflow-hidden bg-white/5">
@@ -258,8 +258,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col items-center bg-[#08060f] overflow-y-auto custom-scrollbar relative">
-      <Toaster position="bottom-right" reverseOrder={false} />
+    <div className="h-full w-full flex flex-col items-center bg-[#050b14] overflow-y-auto custom-scrollbar relative">
       
       <div className="flex flex-col gap-10 items-center w-full max-w-7xl pt-12 pb-24 px-6">
         
@@ -284,7 +283,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
             { icon: FaCreditCard, step: "02", title: copy.steps.collect.title, body: copy.steps.collect.body },
             { icon: FaDollarSign, step: "03", title: copy.steps.keep.title, body: copy.steps.keep.body },
           ].map(({ icon: Icon, step, title, body }) => (
-            <div key={step} className="flex items-start gap-4 bg-[#0e0b18] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors">
+            <div key={step} className="flex items-start gap-4 bg-[#0a1422] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors">
               <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center text-brand border border-white/5">
                 <Icon className="text-lg" />
               </div>
@@ -316,7 +315,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
       {selectedApp && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedApp(null)} />
-          <div className="relative bg-[#0e0b18] border border-white/10 w-full max-w-md rounded-2xl p-8 space-y-8 animate-scale-up shadow-2xl">
+          <div className="relative bg-[#0a1422] border border-white/10 w-full max-w-md rounded-2xl p-8 space-y-8 animate-scale-up shadow-2xl">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-20 h-20 rounded-[28px] bg-brand/10 border border-brand/20 flex items-center justify-center text-4xl text-brand mb-2">
                 <selectedApp.icon />
@@ -338,7 +337,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
               <button
                 onClick={handleRequestAccess}
                 disabled={isRequesting}
-                className="w-full py-4 bg-brand text-black rounded-md text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand/90 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                className="w-full py-4 bg-brand text-on-brand rounded-md text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand/90 transition-all shadow-lg active:scale-95 disabled:opacity-50"
               >
                 {isRequesting ? copy.modal.sending : copy.modal.getTemplate}
               </button>

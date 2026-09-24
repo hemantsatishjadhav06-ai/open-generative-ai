@@ -24,13 +24,13 @@ test('pickBinaryAssetForPlatform prefers native linux arm64 assets', () => {
 
 test('getBundledBinaryResourceDir resolves linux arm64 bundled path', () => {
     const bundledDir = getBundledBinaryResourceDir({
-        resourcesPath: '/opt/Creator Agency/resources',
+        resourcesPath: '/opt/Aquora/resources',
         platform: 'linux',
         arch: 'arm64',
     });
 
     assert.equal(
         bundledDir,
-        '/opt/Creator Agency/resources/local-ai/linux-arm64/bin'
+        '/opt/Aquora/resources/local-ai/linux-arm64/bin'
     );
 });

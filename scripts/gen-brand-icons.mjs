@@ -1,11 +1,13 @@
-// Generates the raster brand icons from app/icon.svg. Run once after the
-// logo changes and commit the output (sharp is NOT a build dependency; this
+// Generates the Aquora raster brand assets from app/icon.svg (turquoise→blue
+// gradient square, dark spark) and public/banner.svg. Run once after the
+// logo or banner changes and commit the output (sharp is NOT a build dependency; this
 // uses the copy already in node_modules via next).
 //
 //   node scripts/gen-brand-icons.mjs
 //
-// Writes public/icon-192.png, public/icon-512.png, app/apple-icon.png (180)
-// and app/favicon.ico (16 + 32 PNGs in an ICO container).
+// Writes public/icon-192.png, public/icon-512.png, app/apple-icon.png (180),
+// app/favicon.ico (16 + 32 PNGs in an ICO container) and public/banner.png
+// (1280x640, also the Electron installer icon).
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -46,4 +48,6 @@ await writeFile(join(ROOT, 'public', 'icon-192.png'), p192);
 await writeFile(join(ROOT, 'public', 'icon-512.png'), p512);
 await writeFile(join(ROOT, 'app', 'apple-icon.png'), p180);
 await writeFile(join(ROOT, 'app', 'favicon.ico'), ico([{ size: 16, data: p16 }, { size: 32, data: p32 }]));
-console.log('Wrote public/icon-192.png, public/icon-512.png, app/apple-icon.png, app/favicon.ico');
+const banner = await readFile(join(ROOT, 'public', 'banner.svg'));
+await writeFile(join(ROOT, 'public', 'banner.png'), await sharp(banner).resize(1280, 640).png().toBuffer());
+console.log('Wrote public/icon-192.png, public/icon-512.png, app/apple-icon.png, app/favicon.ico, public/banner.png');

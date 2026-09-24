@@ -11,16 +11,16 @@ export default function GlobalError({ error, reset }) {
 
   return (
     <html lang="en">
-      <body style={{ margin: 0, background: '#08060f', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <body style={{ margin: 0, background: '#050b14', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
         <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}>
           <div style={{ maxWidth: 420, textAlign: 'center' }}>
             <h1 style={{ fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Something broke.</h1>
-            <p style={{ marginTop: 8, fontSize: 14, color: '#a8a3bd' }}>Try again, or head back to the studio.</p>
+            <p style={{ marginTop: 8, fontSize: 14, color: '#9fb3c8' }}>Try again, or head back to the studio.</p>
             <div style={{ marginTop: 32, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => reset()}
-                style={{ background: '#c6f135', color: '#08060f', border: 0, borderRadius: 16, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                style={{ background: '#2ee6d6', color: '#04121a', border: 0, borderRadius: 16, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
               >
                 Try again
               </button>

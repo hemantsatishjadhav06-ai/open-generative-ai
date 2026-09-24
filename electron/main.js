@@ -6,7 +6,7 @@ const { register: registerWan2gp } = require('./lib/wan2gpProvider');
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
     try {
-        dialog.showErrorBox('Creator Agency — Unexpected error', err && err.stack ? err.stack : String(err));
+        dialog.showErrorBox('Aquora — Unexpected error', err && err.stack ? err.stack : String(err));
     } catch (_) {
         // dialog unavailable this early; the console log above is the fallback
     }
@@ -38,9 +38,9 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
         },
         ...(isMac ? { titleBarStyle: 'hiddenInset' } : {}),
-        backgroundColor: '#08060f',
+        backgroundColor: '#050b14',
         show: false,
-        title: 'Creator Agency',
+        title: 'Aquora',
     });
 
     const indexPath = path.join(__dirname, '../dist/index.html');
@@ -77,7 +77,7 @@ app.whenReady().then(() => {
         console.error('Failed to register local-ai/wan2gp handlers:', err);
         dialog.showErrorBox(
             'Local AI features unavailable',
-            `Creator Agency started, but local model support failed to initialize:\n\n${err.message}`
+            `Aquora started, but local model support failed to initialize:\n\n${err.message}`
         );
     }
 

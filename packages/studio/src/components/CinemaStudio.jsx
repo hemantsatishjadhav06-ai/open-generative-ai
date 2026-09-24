@@ -336,13 +336,13 @@ function ScrollColumn({ title, items, columnKey, value, onChange }) {
     <section className="flex w-[170px] shrink-0 snap-center flex-col md:w-[190px]">
       <div className="mb-3 flex items-center justify-between px-1">
         <h3 className="text-xs font-semibold text-white/75">{title}</h3>
-        <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-b from-brand to-[#ff3cac] shadow-[0_0_6px_rgba(198,241,53,0.5)]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-b from-brand to-[#3b82f6] shadow-[0_0_6px_rgba(46,230,214,0.5)]" />
       </div>
 
-      <div className="relative h-[320px] overflow-hidden rounded-2xl border border-white/[0.06] bg-[#08060f] shadow-inner">
-        <div className="pointer-events-none absolute inset-x-2 top-1/2 z-0 h-[82px] -translate-y-1/2 rounded-xl border border-brand/20 bg-gradient-to-r from-brand/15 to-pop-500/10 shadow-[0_0_15px_rgba(198,241,53,0.1)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-gradient-to-b from-[#08060f] via-[#08060f]/85 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 bg-gradient-to-t from-[#08060f] via-[#08060f]/85 to-transparent" />
+      <div className="relative h-[320px] overflow-hidden rounded-2xl border border-white/[0.06] bg-[#050b14] shadow-inner">
+        <div className="pointer-events-none absolute inset-x-2 top-1/2 z-0 h-[82px] -translate-y-1/2 rounded-xl border border-brand/20 bg-gradient-to-r from-brand/15 to-pop-500/10 shadow-[0_0_15px_rgba(46,230,214,0.1)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-gradient-to-b from-[#050b14] via-[#050b14]/85 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 bg-gradient-to-t from-[#050b14] via-[#050b14]/85 to-transparent" />
 
         <div
           ref={listRef}
@@ -447,7 +447,7 @@ function CameraControlsOverlay({
         aria-modal="true"
         aria-labelledby="camera-config-title"
         aria-describedby="camera-config-description"
-        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0b18]/95 shadow-[0_24px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl animate-scale-up"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0a1422]/95 shadow-[0_24px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl animate-scale-up"
       >
         <div className="flex items-start justify-between border-b border-white/[0.05] px-5 py-5 md:px-7 md:py-6">
           <div>
@@ -884,7 +884,7 @@ export default function CinemaStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.timestamp ?? idx}
-                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-brand/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-brand/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <img
@@ -955,7 +955,7 @@ export default function CinemaStudio({
                         window.open(entry.url, "_blank");
                       }
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -1103,6 +1103,8 @@ export default function CinemaStudio({
                     : imageInputRef.current?.click()
                 }
                 disabled={isUploadingImage}
+                aria-label={uploadedImage ? copy.media.removeReference : copy.media.addReference}
+                title={uploadedImage ? copy.media.removeReference : copy.media.addReference}
                 className={promptMediaButtonClassName({
                   active: Boolean(uploadedImage) || isImageDragging,
                 }) + (isImageDragging ? " ring-2 ring-brand ring-offset-1 ring-offset-black scale-105" : "")}

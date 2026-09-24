@@ -8,7 +8,8 @@ import axios from 'axios';
 // would statically pull every studio (and the model catalog) into first paint.
 import { getUserBalance } from 'studio/balance';
 import { formatErrorMessage } from 'studio/formatError';
-import useEscapeKey, { useFocusReturn } from 'studio/useEscapeKey';
+import { STUDIO_NOTIFY_EVENT } from 'studio/notify';
+import useEscapeKey from 'studio/useEscapeKey';
 import ApiKeyModal from './ApiKeyModal';
 import { getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
 // Tab/category ids, icons, and English `label` fallbacks are stable
@@ -56,7 +57,7 @@ const REELTY_URL = process.env.NEXT_PUBLIC_REELTY_URL || 'https://web-production
 const REELTY_OPEN_URL = (() => {
   try {
     const u = new URL(REELTY_URL);
-    u.searchParams.set('utm_source', 'creator-agency');
+    u.searchParams.set('utm_source', 'aquora');
     u.searchParams.set('utm_medium', 'embed');
     return u.toString();
   } catch {
@@ -136,7 +137,9 @@ const getNavigationCategory = (tabId) => (
 );
 
 const STORAGE_KEY = 'muapi_key';
-const NOTIFICATIONS_STORAGE_KEY = 'creator_agency_notifications_v1';
+const NOTIFICATIONS_STORAGE_KEY = 'aquora_notifications_v1';
+// Pre-rebrand key: still read (once) so notifications survive the rename.
+const LEGACY_NOTIFICATIONS_STORAGE_KEY = 'creator_agency_notifications_v1';
 const MAX_VISIBLE_NOTIFICATIONS = 3;
 
 // The key cookie is real server-side auth for the /agents/* SSR pages, so
@@ -152,7 +155,10 @@ const loadStoredNotifications = () => {
   if (typeof window === 'undefined') return [];
 
   try {
-    const stored = JSON.parse(window.sessionStorage.getItem(NOTIFICATIONS_STORAGE_KEY) || '[]');
+    const raw = window.sessionStorage.getItem(NOTIFICATIONS_STORAGE_KEY)
+      ?? window.sessionStorage.getItem(LEGACY_NOTIFICATIONS_STORAGE_KEY);
+    window.sessionStorage.removeItem(LEGACY_NOTIFICATIONS_STORAGE_KEY);
+    const stored = JSON.parse(raw || '[]');
     const now = Date.now();
     return Array.isArray(stored)
       ? stored.filter((notification) => isLiveNotification(notification, now)).slice(0, MAX_VISIBLE_NOTIFICATIONS)
@@ -179,9 +185,9 @@ function BrandMark({ size = 'md' }) {
   const box = size === 'sm' ? 'w-6 h-6 rounded-lg' : 'w-8 h-8 rounded-xl shadow-glow';
   const icon = size === 'sm' ? 13 : 18;
   return (
-    <div className={`${box} bg-brand flex items-center justify-center flex-shrink-0`} aria-hidden="true">
+    <div className={`${box} bg-brand-gradient flex items-center justify-center flex-shrink-0`} aria-hidden="true">
       <svg width={icon} height={icon} viewBox="0 0 24 24" focusable="false">
-        <path d={SPARK_PATH} className="fill-surface-app" />
+        <path d={SPARK_PATH} className="fill-on-brand" />
       </svg>
     </div>
   );
@@ -323,17 +329,40 @@ export default function StandaloneShell({ locale = 'en' }) {
   const pushNotification = useCallback((notif) => {
     const now = Date.now();
     const id = `notif-${Date.now()}-${Math.random()}`;
-    const ttl = 12000;
-    const entry = { ...notif, id, expiresAt: notif.type === 'error' ? null : now + ttl };
+    // Generation failures stay until dismissed; studio notices (validation
+    // hints, upload errors) and successes time out.
+    const ttl = notif.source === 'studio' ? 8000 : 12000;
+    const sticky = notif.type === 'error' && notif.source !== 'studio';
+    const entry = { ...notif, id, expiresAt: sticky ? null : now + ttl };
+    const isDuplicate = (notification) => notif.source === 'studio'
+      && notification.source === 'studio'
+      && notification.message === notif.message
+      && notification.tabId === notif.tabId;
     setNotifications((previous) => {
       const next = [
-        ...previous.filter((notification) => isLiveNotification(notification, now)),
+        ...previous.filter((notification) => isLiveNotification(notification, now) && !isDuplicate(notification)),
         entry,
       ].slice(-MAX_VISIBLE_NOTIFICATIONS);
       persistNotifications(next);
       return next;
     });
   }, []);
+
+  // Studio notices (validation hints, upload errors) arrive as a cancelable
+  // window event; claiming it keeps the studio from falling back to alert().
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
+  useEffect(() => {
+    const onStudioNotify = (event) => {
+      const message = event.detail?.message;
+      if (!message) return;
+      event.preventDefault();
+      const tabId = activeTabRef.current;
+      pushNotification({ type: event.detail.type || 'info', source: 'studio', tabId, label: tabLabel(tabId), message });
+    };
+    window.addEventListener(STUDIO_NOTIFY_EVENT, onStudioNotify);
+    return () => window.removeEventListener(STUDIO_NOTIFY_EVENT, onStudioNotify);
+  }, [pushNotification, tabLabel]);
 
   const dismissNotification = useCallback((id) => {
     setNotifications((previous) => {
@@ -638,9 +667,37 @@ export default function StandaloneShell({ locale = 'en' }) {
   }, [apiKey, fetchBalance]);
 
   // Settings dialog: Esc/backdrop close it and focus returns to the trigger.
-  const closeSettings = useCallback(() => setShowSettings(false), []);
+  const closeMobileNav = useCallback(() => setIsMobileOpen(false), []);
+  useEscapeKey(isMobileOpen, closeMobileNav);
+  // Focus goes to the dialog's Close button on open (autoFocus) and back to
+  // the Settings button that opened it on close.
+  const settingsTriggerRef = useRef(null);
+  const openSettings = useCallback((event) => {
+    settingsTriggerRef.current = event?.currentTarget || null;
+    setShowSettings(true);
+  }, []);
+  const closeSettings = useCallback(() => {
+    setShowSettings(false);
+    const trigger = settingsTriggerRef.current;
+    if (trigger && typeof trigger.focus === 'function') window.setTimeout(() => trigger.focus(), 0);
+  }, []);
+  // "Change key" opens a cancelable key overlay; the current key stays until
+  // the new one is saved.
+  const [changingKey, setChangingKey] = useState(false);
+  const startKeyChange = useCallback(() => {
+    setShowSettings(false);
+    setChangingKey(true);
+  }, []);
+  const handleChangedKeySave = useCallback(async (key) => {
+    const result = await handleKeySave(key);
+    if (!result) setChangingKey(false);
+    return result;
+  }, [handleKeySave]);
+  const handleKeyRemove = useCallback(() => {
+    setShowSettings(false);
+    handleKeyChange();
+  }, [handleKeyChange]);
   useEscapeKey(showSettings, closeSettings);
-  useFocusReturn(showSettings);
 
   // Reelty: after 8s without a load event, offer to open it in a new tab.
   useEffect(() => {
@@ -707,7 +764,7 @@ export default function StandaloneShell({ locale = 'en' }) {
           <a
             href={studioPath('image')}
             onClick={(e) => { if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) { e.preventDefault(); handleTabChange('image'); } }}
-            className="h-9 px-4 inline-flex items-center rounded-full bg-brand text-surface-app text-xs font-bold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 whitespace-nowrap"
+            className="h-9 px-4 inline-flex items-center rounded-full bg-brand text-on-brand text-xs font-bold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 whitespace-nowrap"
           >
             {copy.shell.unlockStudios}
           </a>
@@ -879,7 +936,7 @@ export default function StandaloneShell({ locale = 'en' }) {
             </div>
 
             <button
-              onClick={() => setShowSettings(true)}
+              onClick={openSettings}
               className="flex items-center justify-center gap-2 min-h-[40px] min-w-[40px] px-2.5 sm:px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-[13px] font-bold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-colors"
               aria-label={copy.shell.settings}
               aria-haspopup="dialog"
@@ -925,7 +982,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                           group relative flex items-center rounded-xl transition-all duration-150 font-semibold
                           ${isCollapsed ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3 text-left'}
                           ${isCategoryActive
-                            ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20 shadow-[0_0_15px_rgba(198,241,53,0.08)]'
+                            ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20 shadow-[0_0_15px_rgba(46,230,214,0.08)]'
                             : isCategoryOpen
                               ? 'bg-white/[0.06] text-white border border-white/[0.08]'
                               : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
@@ -949,7 +1006,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                           className={categoryItemClass}
                         >
                           {isCategoryActive && (
-                            <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(198,241,53,0.6)]" />
+                            <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(46,230,214,0.6)]" />
                           )}
                           <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-brand' : 'text-white/55 group-hover:text-white'}`}>
                             {category.icon}
@@ -976,7 +1033,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                         className={categoryItemClass}
                       >
                         {isCategoryActive && (
-                          <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(198,241,53,0.6)]" />
+                          <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(46,230,214,0.6)]" />
                         )}
 
                         <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-brand' : 'text-white/55 group-hover:text-white'}`}>
@@ -1033,7 +1090,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                                 `}
                               >
                                 {isActive && (
-                                  <span className="absolute -left-[11px] top-2 bottom-2 w-0.5 rounded-full bg-brand shadow-[0_0_7px_rgba(198,241,53,0.7)]" />
+                                  <span className="absolute -left-[11px] top-2 bottom-2 w-0.5 rounded-full bg-brand shadow-[0_0_7px_rgba(46,230,214,0.7)]" />
                                 )}
                                 <span className={`flex-shrink-0 ${isActive ? 'text-brand' : 'text-white/45 group-hover:text-white/80'}`}>
                                   {tab.icon}
@@ -1225,7 +1282,7 @@ export default function StandaloneShell({ locale = 'en' }) {
         <div
           aria-live="polite"
           aria-label={copy.notifications.ariaLabel}
-          className="fixed top-16 right-5 z-[200] flex max-h-[calc(100vh-80px)] w-[340px] max-w-[calc(100vw-32px)] flex-col gap-2 overflow-x-hidden overflow-y-auto global-notif-stack pointer-events-none"
+          className="fixed top-16 right-4 sm:right-5 z-[200] flex max-h-[calc(100vh-80px)] w-[340px] max-w-[calc(100vw-32px)] flex-col gap-2 overflow-x-hidden overflow-y-auto global-notif-stack pointer-events-none max-sm:[&>*:not(:last-child)]:hidden"
           data-testid="global-notification-stack"
         >
           {activeGenerations.map((generation) => (
@@ -1251,6 +1308,7 @@ export default function StandaloneShell({ locale = 'en' }) {
 
           {notifications.map((notif) => {
             const messageText = typeof notif.message === 'string' ? notif.message : String(notif.message?.message || notif.message || '');
+            const isStudioNotice = notif.source === 'studio';
             return (
               <div
                 key={notif.id}
@@ -1259,7 +1317,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                 data-notification-tab={notif.tabId}
                 className="pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface-raised px-3.5 py-3 text-[13px] text-white shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
                 style={{
-                  borderColor: notif.type === 'success' ? 'rgba(198,241,53,0.5)' : 'rgba(255,60,172,0.45)',
+                  borderColor: notif.type === 'success' ? 'rgba(46,230,214,0.5)' : 'rgba(59,130,246,0.45)',
                   animation: 'slideInRight 280ms cubic-bezier(0.16,1,0.3,1) forwards',
                 }}
               >
@@ -1267,7 +1325,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                   className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
                     notif.type === 'success'
                       ? 'border-brand/40 bg-brand/15 text-brand'
-                      : 'border-pop/40 bg-pop/15 text-pop'
+                      : 'border-pop/40 bg-pop/15 text-pop-400'
                   }`}
                 >
                   {notif.type === 'success' ? (
@@ -1286,27 +1344,34 @@ export default function StandaloneShell({ locale = 'en' }) {
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold leading-5 text-white">
                     {notif.label}
-                    <span className="font-normal text-white/60">
-                      {' '}
-                      {notif.type === 'success' ? copy.notifications.generationComplete : copy.notifications.generationFailed}
-                    </span>
+                    {!isStudioNotice && (
+                      <span className="font-normal text-white/60">
+                        {' '}
+                        {notif.type === 'success' ? copy.notifications.generationComplete : copy.notifications.generationFailed}
+                      </span>
+                    )}
                   </p>
-                  {notif.type === 'error' && messageText && (
+                  {isStudioNotice && (
+                    <p className={`mt-0.5 text-[12px] font-medium leading-4 ${notif.type === 'error' ? 'text-pop-300' : 'text-white/80'}`}>
+                      {messageText}
+                    </p>
+                  )}
+                  {!isStudioNotice && notif.type === 'error' && messageText && (
                     <p className="mt-0.5 line-clamp-2 text-[12px] font-medium leading-4 text-pop-300" title={notif.rawMessage || messageText}>
                       {messageText}
                     </p>
                   )}
-                  {notif.type === 'error' && (
+                  {!isStudioNotice && notif.type === 'error' && (
                     <p className="mt-0.5 text-[12px] leading-4 text-white/50">
                       {copy.notifications.retryHint}
                     </p>
                   )}
-                  {notif.type === 'success' && (
+                  {!isStudioNotice && notif.type === 'success' && (
                     <p className="mt-0.5 text-[12px] leading-4 text-white/60">
                       {copy.notifications.resultReady}
                     </p>
                   )}
-                  {notif.type === 'success' && (
+                  {!isStudioNotice && notif.type === 'success' && (
                     <button
                       type="button"
                       onClick={() => handleOpenNotification(notif)}
@@ -1377,20 +1442,41 @@ export default function StandaloneShell({ locale = 'en' }) {
 
             <div className="flex gap-3">
               <button
-                onClick={handleKeyChange}
-                className="flex-1 h-10 rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-semibold transition-all"
+                type="button"
+                onClick={startKeyChange}
+                className="flex-1 h-10 rounded-md bg-brand text-on-brand hover:bg-brand-hover text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
               >
                 {copy.settingsModal.changeKey}
               </button>
               <button
+                type="button"
                 onClick={closeSettings}
-                className="flex-1 h-10 rounded-md bg-white/5 text-white/80 hover:bg-white/10 text-xs font-semibold transition-all border border-white/5"
+                autoFocus
+                className="flex-1 h-10 rounded-md bg-white/5 text-white/80 hover:bg-white/10 text-xs font-semibold transition-all border border-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
               >
                 {copy.settingsModal.close}
               </button>
             </div>
+            <button
+              type="button"
+              onClick={handleKeyRemove}
+              className="mt-4 w-full text-center text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
+            >
+              {copy.settingsModal.removeKey}
+            </button>
           </div>
         </div>
+      )}
+
+      {changingKey && !authPrompt && (
+        <ApiKeyModal
+          overlay
+          locale={locale}
+          title={copy.apiKeyModal.changeKeyTitle}
+          subtitle={copy.apiKeyModal.changeKeySubtitle}
+          onSave={handleChangedKeySave}
+          onClose={() => setChangingKey(false)}
+        />
       )}
 
       {/* MuAPI rejected the saved key: ask for a fresh one without leaving the studio. */}

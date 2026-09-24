@@ -5,6 +5,7 @@ const path = require('node:path');
 const {
     LOCAL_AI_DIR_ENV,
     LEGACY_LOCAL_AI_DIR_ENV,
+    LEGACY_LOCAL_AI_DIR_ENVS,
     resolveLocalAiPaths,
 } = require('../electron/lib/localInferencePaths');
 
@@ -53,7 +54,8 @@ test('resolveLocalAiPaths still honors the legacy env var, and the new name wins
     const legacyDir = path.join(process.cwd(), 'fixtures', 'legacy-ai-store');
     const newDir = path.join(process.cwd(), 'fixtures', 'new-ai-store');
 
-    assert.equal(LOCAL_AI_DIR_ENV, 'CREATOR_AGENCY_LOCAL_AI_DIR');
+    assert.equal(LOCAL_AI_DIR_ENV, 'AQUORA_LOCAL_AI_DIR');
+    assert.deepEqual(LEGACY_LOCAL_AI_DIR_ENVS, ['CREATOR_AGENCY_LOCAL_AI_DIR', 'OPEN_GENERATIVE_AI_LOCAL_AI_DIR']);
     assert.equal(
         resolveLocalAiPaths({ env: { [LEGACY_LOCAL_AI_DIR_ENV]: legacyDir } }).dataDir,
         path.resolve(legacyDir),
@@ -61,5 +63,15 @@ test('resolveLocalAiPaths still honors the legacy env var, and the new name wins
     assert.equal(
         resolveLocalAiPaths({ env: { [LEGACY_LOCAL_AI_DIR_ENV]: legacyDir, [LOCAL_AI_DIR_ENV]: newDir } }).dataDir,
         path.resolve(newDir),
+    );
+});
+
+test('resolveLocalAiPaths honors the Creator Agency-era env var ahead of the original one', () => {
+    const caDir = path.join(process.cwd(), 'fixtures', 'ca-ai-store');
+    const ogDir = path.join(process.cwd(), 'fixtures', 'og-ai-store');
+
+    assert.equal(
+        resolveLocalAiPaths({ env: { CREATOR_AGENCY_LOCAL_AI_DIR: caDir, OPEN_GENERATIVE_AI_LOCAL_AI_DIR: ogDir } }).dataDir,
+        path.resolve(caDir),
     );
 });

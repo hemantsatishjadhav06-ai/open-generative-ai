@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import toast, { Toaster } from "react-hot-toast";
 import { processLipSync, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -38,6 +37,7 @@ import {
 import en from "../messages/en/lipSyncStudio.json";
 import zh from "../messages/zh/lipSyncStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { friendlyError, notifyError } from "../utils/notify.js";
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -322,7 +322,7 @@ function HistoryThumb({ entry, isActive, onSelect, onDownload }) {
             e.stopPropagation();
             onDownload(entry);
           }}
-          className="p-1.5 bg-primary rounded-lg text-black hover:scale-110 transition-transform"
+          className="p-1.5 bg-primary rounded-lg text-on-brand hover:scale-110 transition-transform"
           title="Download"
         >
           <svg
@@ -553,7 +553,7 @@ export default function LipSyncStudio({
       const file = Array.isArray(files) ? files[0] : files;
       if (!file) return;
       if (file.size > 10 * 1024 * 1024) {
-        alert(copy.errors.imageTooLarge);
+        notifyError(copy.errors.imageTooLarge);
         return;
       }
       setImageState(UPLOAD_STATE.UPLOADING);
@@ -567,7 +567,7 @@ export default function LipSyncStudio({
         setImageState(UPLOAD_STATE.READY);
       } catch (err) {
         setImageState(UPLOAD_STATE.IDLE);
-        alert(copy.errors.imageUploadFailed.replace("{message}", err.message));
+        notifyError(copy.errors.imageUploadFailed.replace("{message}", friendlyError(err)));
       } finally {
         setImageProgress(0);
       }
@@ -580,7 +580,7 @@ export default function LipSyncStudio({
       const file = Array.isArray(files) ? files[0] : files;
       if (!file) return;
       if (file.size > 50 * 1024 * 1024) {
-        alert(copy.errors.videoTooLarge);
+        notifyError(copy.errors.videoTooLarge);
         return;
       }
       setVideoState(UPLOAD_STATE.UPLOADING);
@@ -594,7 +594,7 @@ export default function LipSyncStudio({
         setVideoState(UPLOAD_STATE.READY);
       } catch (err) {
         setVideoState(UPLOAD_STATE.IDLE);
-        alert(copy.errors.videoUploadFailed.replace("{message}", err.message));
+        notifyError(copy.errors.videoUploadFailed.replace("{message}", friendlyError(err)));
       } finally {
         setVideoProgress(0);
       }
@@ -611,7 +611,7 @@ export default function LipSyncStudio({
       const file = Array.isArray(files) ? files[0] : files;
       if (!file) return;
       if (file.size > 10 * 1024 * 1024) {
-        alert(copy.errors.audioTooLarge);
+        notifyError(copy.errors.audioTooLarge);
         return;
       }
       setAudioState(UPLOAD_STATE.UPLOADING);
@@ -625,7 +625,7 @@ export default function LipSyncStudio({
         setAudioState(UPLOAD_STATE.READY);
       } catch (err) {
         setAudioState(UPLOAD_STATE.IDLE);
-        alert(copy.errors.audioUploadFailed.replace("{message}", err.message));
+        notifyError(copy.errors.audioUploadFailed.replace("{message}", friendlyError(err)));
       } finally {
         setAudioProgress(0);
       }
@@ -716,15 +716,15 @@ export default function LipSyncStudio({
   // ── Generation ──────────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!audioUrl) {
-      alert(copy.errors.needAudio);
+      notifyError(copy.errors.needAudio);
       return;
     }
     if (inputMode === "image" && !imageUrl) {
-      alert(copy.errors.needImage);
+      notifyError(copy.errors.needImage);
       return;
     }
     if (inputMode === "video" && !videoUrl) {
-      alert(copy.errors.needVideo);
+      notifyError(copy.errors.needVideo);
       return;
     }
 
@@ -774,7 +774,7 @@ export default function LipSyncStudio({
       console.error("[LipSyncStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
-      else toast.error(errMsg);
+      else notifyError(errMsg);
     } finally {
       setIsGenerating(false);
       onGenerationEnd?.();
@@ -836,7 +836,7 @@ export default function LipSyncStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -866,7 +866,7 @@ export default function LipSyncStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `lipsync-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -1205,7 +1205,6 @@ export default function LipSyncStudio({
           />
         </div>
       )}
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

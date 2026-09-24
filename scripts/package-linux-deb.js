@@ -5,9 +5,9 @@ const { execFileSync } = require('child_process');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
-const PRODUCT_NAME = PACKAGE_JSON.build?.productName || 'Creator Agency';
-const PACKAGE_NAME = 'creator-agency';
-const COMMAND_NAME = 'creator-agency';
+const PRODUCT_NAME = PACKAGE_JSON.build?.productName || 'Aquora';
+const PACKAGE_NAME = 'aquora';
+const COMMAND_NAME = 'aquora';
 const INSTALL_DIR_NAME = PACKAGE_NAME;
 const LINUX_DEPENDS = [
     'libasound2t64 | libasound2',
@@ -126,7 +126,7 @@ function main() {
     }
 
     const executableName = detectExecutableName(appDir);
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'creator-agency-deb-'));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'aquora-deb-'));
     const packageRoot = path.join(tempRoot, 'pkgroot');
     const installDir = path.join(packageRoot, 'opt', INSTALL_DIR_NAME);
     const wrapperPath = path.join(packageRoot, 'usr', 'bin', COMMAND_NAME);
@@ -174,9 +174,9 @@ Version: ${version}
 Section: graphics
 Priority: optional
 Architecture: ${debArch}
-Maintainer: Creator Agency
+Maintainer: Aquora
 Depends: ${LINUX_DEPENDS}
-Description: Creator Agency - AI studio for creators (images, video, audio, agents, workflows)
+Description: Aquora - AI studio for creators (images, video, audio, agents, workflows)
 `,
         0o644
     );

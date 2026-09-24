@@ -17,7 +17,7 @@ export function slugifyPrompt(prompt, max = 40) {
 
 export function buildResultFilename({ prompt, id, idx, ext } = {}) {
   const base = slugifyPrompt(prompt) || (id != null && id !== "" ? String(id) : "") || String(idx ?? "result");
-  return `creator-agency-${base}-${Date.now()}.${ext || "bin"}`;
+  return `aquora-${base}-${Date.now()}.${ext || "bin"}`;
 }
 
 export async function fetchResultFile(url, filename) {

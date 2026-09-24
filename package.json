@@ -1,6 +1,6 @@
 {
-  "name": "creator-agency",
-  "description": "Creator Agency — AI studio for creators (images, video, audio, agents, workflows) with Reelty built in",
+  "name": "aquora",
+  "description": "Aquora — AI studio for creators (images, video, audio, agents, workflows) with Reelty built in",
   "homepage": "https://github.com/hemantsatishjadhav06-ai/open-generative-ai",
   "private": true,
   "version": "2.0.0",
@@ -39,9 +39,9 @@
     "electron:build:all": "vite build && electron-builder --mac --win --linux"
   },
   "build": {
-    "appId": "agency.creator.studio",
-    "productName": "Creator Agency",
-    "copyright": "Copyright © 2026 Creator Agency",
+    "appId": "ai.aquora.studio",
+    "productName": "Aquora",
+    "copyright": "Copyright © 2026 Aquora",
     "directories": {
       "output": "release"
     },
@@ -93,7 +93,7 @@
     "linux": {
       "icon": "public/banner.png",
       "category": "Utility",
-      "maintainer": "Creator Agency",
+      "maintainer": "Aquora",
       "extraFiles": [
         {
           "from": "build/linux/apparmor.profile",

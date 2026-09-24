@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import toast, { Toaster } from "react-hot-toast";
 import { processMotionControl, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -36,6 +35,7 @@ import {
 import en from "../messages/en/motionControlStudio.json";
 import zh from "../messages/zh/motionControlStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { notifyError, notifySuccess } from "../utils/notify.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 async function downloadFile(url, filename) {
@@ -417,7 +417,7 @@ function AssetsDropdown({
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
               activeTab === tab
-                ? "bg-brand text-black shadow-sm"
+                ? "bg-brand text-on-brand shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
@@ -477,7 +477,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectImage(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-on-brand font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsImage}
                   </button>
@@ -488,7 +488,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectVideo(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-on-brand font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsVideo}
                   </button>
@@ -642,6 +642,10 @@ export default function MotionControlStudio({
   const optionsBtnRef = useRef(null);
   const assetsBtnRef = useRef(null);
   const textareaRef = useRef(null);
+  // The duration and options popovers render inline (not via MenuDropdown,
+  // which handles its own Esc), so close whichever popover is open on Esc.
+  const closeDropdown = useCallback(() => setOpenDropdown(null), []);
+  useEscapeKey(Boolean(openDropdown), closeDropdown);
 
   // ── Generation State ────────────────────────────────────────────────────────
   const [isGenerating, setIsGenerating] = useState(false);
@@ -763,7 +767,7 @@ export default function MotionControlStudio({
   // ── Video Upload ────────────────────────────────────────────────────────────
   const handleUploadVideo = async (file) => {
     if (file.size > 100 * 1024 * 1024) {
-      toast.error(copy.errors.videoTooLarge);
+      notifyError(copy.errors.videoTooLarge);
       return;
     }
     setVideoState(UPLOAD_STATE.UPLOADING);
@@ -779,7 +783,7 @@ export default function MotionControlStudio({
       setVideoState(UPLOAD_STATE.IDLE);
       setVideoName("");
       setVideoUrl(null);
-      toast.error(copy.errors.videoUploadFailed.replace("{message}", formatErrorMessage(err)));
+      notifyError(copy.errors.videoUploadFailed.replace("{message}", formatErrorMessage(err)));
     }
   };
 
@@ -793,11 +797,11 @@ export default function MotionControlStudio({
   // ── Character Images Upload ─────────────────────────────────────────────────
   const handleAddImage = async (file) => {
     if (characterImages.length >= maxImagesAllowed) {
-      toast.error(copy.errors.maxImagesExceeded.replace("{max}", String(maxImagesAllowed)));
+      notifyError(copy.errors.maxImagesExceeded.replace("{max}", String(maxImagesAllowed)));
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      toast.error(copy.errors.imageTooLarge);
+      notifyError(copy.errors.imageTooLarge);
       return;
     }
     setIsImageUploading(true);
@@ -808,7 +812,7 @@ export default function MotionControlStudio({
       setCharacterImages((prev) => [...prev, { url, name: file.name }]);
       handleAddImageAsset(url, file.name);
     } catch (err) {
-      toast.error(copy.errors.imageUploadFailed.replace("{message}", formatErrorMessage(err)));
+      notifyError(copy.errors.imageUploadFailed.replace("{message}", formatErrorMessage(err)));
     } finally {
       setIsImageUploading(false);
     }
@@ -835,11 +839,11 @@ export default function MotionControlStudio({
   // ── Handle Generation ───────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!videoUrl) {
-      toast.error(copy.errors.missingVideo);
+      notifyError(copy.errors.missingVideo);
       return;
     }
     if (characterImages.length === 0) {
-      toast.error(copy.errors.missingImages);
+      notifyError(copy.errors.missingImages);
       return;
     }
 
@@ -890,10 +894,10 @@ export default function MotionControlStudio({
       saveHistory([newEntry, ...history]);
       handleAddResultAsset(outputUrl, `motion-${newEntry.id}.mp4`);
       onGenerationComplete?.(newEntry);
-      toast.success("Motion control video generated successfully!");
+      notifySuccess("Motion control video generated successfully!");
     } catch (err) {
       const msg = formatErrorMessage(err) || copy.errors.generationFailed;
-      toast.error(msg);
+      notifyError(msg);
       onGenerationError?.(msg);
     } finally {
       clearInterval(timerRef.current);
@@ -907,8 +911,7 @@ export default function MotionControlStudio({
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-[#08060f] relative overflow-hidden">
-      <Toaster position="top-right" />
+    <div className="w-full h-full flex flex-col items-center justify-center bg-[#050b14] relative overflow-hidden">
 
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-3">
@@ -917,7 +920,7 @@ export default function MotionControlStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-brand/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-brand/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -947,7 +950,7 @@ export default function MotionControlStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `motion-control-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -961,9 +964,9 @@ export default function MotionControlStudio({
                       setVideoUrl(entry.url);
                       setVideoName(copy.defaults.selectedVideo);
                       setVideoState(UPLOAD_STATE.READY);
-                      toast.success("Loaded video as reference motion!");
+                      notifySuccess("Loaded video as reference motion!");
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-brand hover:bg-brand hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-brand hover:bg-brand hover:text-on-brand transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="17 1 21 5 17 9" />
@@ -1208,7 +1211,8 @@ export default function MotionControlStudio({
 
               {openDropdown === "duration" && (
                 <PromptPopover
-                  className="w-64 p-3 flex flex-col gap-3 z-50"
+                  fitViewport
+                  className="w-64 max-w-[calc(100vw-32px)] p-3 flex flex-col gap-3 z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <PromptPopoverHeader className="mb-0">
@@ -1237,7 +1241,7 @@ export default function MotionControlStudio({
                         }}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
                           duration === d
-                            ? "bg-brand text-black font-bold shadow-sm"
+                            ? "bg-brand text-on-brand font-bold shadow-sm"
                             : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/10"
                         }`}
                       >
@@ -1270,6 +1274,8 @@ export default function MotionControlStudio({
               <button
                 ref={optionsBtnRef}
                 type="button"
+                aria-label={copy.labels?.quality || "Quality options"}
+                aria-expanded={openDropdown === "options"}
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpenDropdown(openDropdown === "options" ? null : "options");
@@ -1284,7 +1290,8 @@ export default function MotionControlStudio({
 
               {openDropdown === "options" && (
                 <PromptPopover
-                  className="w-72 p-3.5 flex flex-col gap-3 z-50"
+                  fitViewport
+                  className="w-72 max-w-[calc(100vw-32px)] p-3.5 flex flex-col gap-3 z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <PromptPopoverHeader className="mb-0">
@@ -1326,7 +1333,7 @@ export default function MotionControlStudio({
                             onClick={() => setQuality(q)}
                             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
                               quality === q
-                                ? "bg-brand text-black shadow-sm"
+                                ? "bg-brand text-on-brand shadow-sm"
                                 : "text-white/50 hover:text-white bg-white/[0.04]"
                             }`}
                           >

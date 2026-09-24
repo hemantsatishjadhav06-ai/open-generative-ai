@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import { generateImage } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import MobileGenerationActions, {
@@ -10,6 +9,7 @@ import MobileGenerationActions, {
 import en from "../messages/en/aiInfluencerStudio.json";
 import zh from "../messages/zh/aiInfluencerStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { notifyError } from "../utils/notify.js";
 
 const CDN = "https://cdn.muapi.ai/influencer";
 
@@ -319,7 +319,7 @@ function HoverPill({ label, img, onClick }) {
           className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none"
           style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))" }}
         >
-          <div className="w-[72px] h-[72px] rounded-xl overflow-hidden border border-white/20 bg-[#1a1a1a]"
+          <div className="w-[72px] h-[72px] rounded-xl overflow-hidden border border-white/20 bg-[#15253b]"
             style={{ transform: "rotate(-3deg)" }}>
             <img src={img} alt={label} className="w-full h-full object-cover" />
           </div>
@@ -435,7 +435,7 @@ export default function AiInfluencerStudio({
     } catch (err) {
       const message = formatErrorMessage(err, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(message);
-      else toast.error(message);
+      else notifyError(message);
     } finally {
       setIsGeneratingInternal(false);
       onGenerationEnd?.();
@@ -479,12 +479,12 @@ export default function AiInfluencerStudio({
   const TAGS_VISIBLE = 7; // how many pills to show before "show more"
 
   return (
-    <div className="flex h-full bg-[#0e0b18] text-white overflow-hidden select-none font-sans">
+    <div className="flex h-full bg-[#0a1422] text-white overflow-hidden select-none font-sans">
 
       {/* ════════════════════════════════════════════════════════════
           LEFT — Builder / Options Panel
       ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col w-[320px] shrink-0 border-r border-white/[0.07] bg-[#151021] overflow-hidden">
+      <div className="flex flex-col w-[320px] shrink-0 border-r border-white/[0.07] bg-[#0f1c2e] overflow-hidden">
 
         {/* Builder header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07] shrink-0">
@@ -571,7 +571,7 @@ export default function AiInfluencerStudio({
       {/* ════════════════════════════════════════════════════════════
           CENTER — Current Character Preview
       ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0e0b18]">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0a1422]">
 
         {/* Center top bar: aspect ratio + generate */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/[0.07] shrink-0">
@@ -630,7 +630,7 @@ export default function AiInfluencerStudio({
         {/* Preview area */}
         <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
           <div
-            className="relative rounded-2xl overflow-hidden bg-[#151021] border border-white/[0.07] shadow-2xl flex items-center justify-center"
+            className="relative rounded-2xl overflow-hidden bg-[#0f1c2e] border border-white/[0.07] shadow-2xl flex items-center justify-center"
             style={{ aspectRatio: arMap[aspectRatio] ?? "3/4", maxHeight: "100%", maxWidth: "100%" }}
           >
             {isGenerating ? (
@@ -707,7 +707,7 @@ export default function AiInfluencerStudio({
             value={customPrompt}
             onChange={(e) => setCustomPrompt(e.target.value)}
             placeholder={copy.customPrompt.placeholder}
-            className="w-full h-9 bg-[#161616] border border-white/[0.07] rounded-xl px-3 text-[12px] text-gray-200 placeholder-gray-600 outline-none focus:border-brand-400/40 transition-colors"
+            className="w-full h-9 bg-surface-card border border-white/[0.07] rounded-xl px-3 text-[12px] text-gray-200 placeholder-gray-600 outline-none focus:border-brand-400/40 transition-colors"
           />
         </div>
       </div>
@@ -715,7 +715,7 @@ export default function AiInfluencerStudio({
       {/* ════════════════════════════════════════════════════════════
           RIGHT — Generated Characters History Gallery
       ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col w-[160px] shrink-0 border-l border-white/[0.07] bg-[#151021] overflow-hidden">
+      <div className="flex flex-col w-[160px] shrink-0 border-l border-white/[0.07] bg-[#0f1c2e] overflow-hidden">
 
         {/* Gallery header */}
         <div className="px-3 py-3 border-b border-white/[0.07] shrink-0">
@@ -787,7 +787,6 @@ export default function AiInfluencerStudio({
           )}
         </div>
       </div>
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
     </div>
   );
 }

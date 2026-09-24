@@ -1,29 +1,29 @@
 :root {
   /* Brand Colors */
-  --color-primary: #c6f135;
-  /* Electric Cyan */
-  --color-primary-hover: #aedb1e;
-  --color-accent: #ff3cac;
-  /* Creative Purple */
-  --color-accent-hover: #e01f92;
+  --color-primary: #2ee6d6;
+  /* Aquora turquoise */
+  --color-primary-hover: #57f0dc;
+  --color-accent: #3b82f6;
+  /* Electric blue */
+  --color-accent-hover: #2563eb;
   --color-danger: #ef4444;
 
   /* Backgrounds - Strict Dark Mode */
-  --bg-app: #08060f;
-  /* Deepest Black */
-  --bg-panel: #0e0b18;
+  --bg-app: #050b14;
+  /* Deep navy */
+  --bg-panel: #0a1422;
   /* Panel Background */
-  --bg-card: #151021;
+  --bg-card: #0f1c2e;
   /* Card/Input Background */
-  --bg-glass: rgba(10, 10, 10, 0.8);
+  --bg-glass: rgba(5, 11, 20, 0.8);
 
   /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
+  --text-primary: #eef6ff;
+  --text-secondary: #9fb3c8;
+  --text-muted: #5b7089;
 
   /* UI Elements */
-  --border-color: #27272a;
+  --border-color: rgba(148, 197, 255, 0.10);
   --border-light: rgba(255, 255, 255, 0.1);
 
   --border-radius-sm: 6px;
@@ -36,8 +36,8 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px rgba(176, 251, 93, 0.4);
-  --shadow-glow-accent: 0 0 20px rgba(255, 60, 172, 0.4);
+  --shadow-glow: 0 0 20px rgba(46, 230, 214, 0.4);
+  --shadow-glow-accent: 0 0 20px rgba(59, 130, 246, 0.4);
   --backdrop-blur: blur(20px);
 
   /* Transitions */

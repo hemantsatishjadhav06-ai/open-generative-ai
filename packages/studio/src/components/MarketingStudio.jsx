@@ -29,6 +29,7 @@ import {
 import en from "../messages/en/marketingStudio.json";
 import zh from "../messages/zh/marketingStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { friendlyError, notifyError } from "../utils/notify.js";
 
 const SCROLLBAR_STYLE = `
   .custom-scrollbar-thin::-webkit-scrollbar {
@@ -42,14 +43,14 @@ const SCROLLBAR_STYLE = `
     border-radius: 10px;
   }
   .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(198, 241, 53, 0.3);
+    background: rgba(46, 230, 214, 0.3);
   }
 `;
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
 const CheckSvg = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c6f135" strokeWidth="4">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2ee6d6" strokeWidth="4">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -260,7 +261,7 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
                   e.stopPropagation();
                   onPreview(item);
                 }}
-                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-brand hover:text-black transition-all border border-white/10 z-20 text-white"
+                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-brand hover:text-on-brand transition-all border border-white/10 z-20 text-white"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -437,7 +438,7 @@ export default function MarketingStudio({
         try {
           const url = await uploadFile(apiKey, file, (pct) => setUploadProgress(p => ({ ...p, additional: pct })));
           setAdditionalImages(prev => [...prev, url].slice(0, 6));
-        } catch (err) { alert(err.message); }
+        } catch (err) { notifyError(friendlyError(err)); }
       }
     } else {
       const file = files[0];
@@ -445,14 +446,14 @@ export default function MarketingStudio({
         const url = await uploadFile(apiKey, file, (pct) => setUploadProgress(p => ({ ...p, [target]: pct })));
         if (target === 'product') setProductImage(url);
         else setAvatarImage(url);
-      } catch (err) { alert(err.message); }
+      } catch (err) { notifyError(friendlyError(err)); }
     }
     setUploadProgress(p => ({ ...p, [target]: 0 }));
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return alert(copy.errors.missingScript);
-    if (!productImage) return alert(copy.errors.missingProductImage);
+    if (!prompt.trim()) return notifyError(copy.errors.missingScript);
+    if (!productImage) return notifyError(copy.errors.missingProductImage);
 
     onGenerationStart?.();
     setIsGenerating(true);
@@ -502,7 +503,7 @@ export default function MarketingStudio({
               <div
                 key={entry.id}
                 onClick={() => setFullscreenUrl(entry.url)}
-                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a1422] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
               >
                 <video 
                   src={entry.url} 
@@ -518,7 +519,7 @@ export default function MarketingStudio({
                   />
                    <button
                     onClick={(e) => { e.stopPropagation(); downloadFile(entry.url, `marketing-ad-${entry.id}.mp4`); }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-on-brand transition-all border border-white/10"
                     title={copy.buttons.download}
                    >
                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -969,7 +970,7 @@ export default function MarketingStudio({
                       setPreviewAvatar(null);
                       setDropdown(null);
                     }}
-                    className="bg-brand text-black px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-brand/20"
+                    className="bg-brand text-on-brand px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-brand/20"
                   >
                     <CheckSvg />
                     {copy.buttons.selectAvatar}

@@ -80,7 +80,7 @@ export default function AgentChatClient({ agentDetails, initialHistory, userData
             <button
               type="button"
               onClick={() => router.refresh()}
-              className="h-10 px-5 rounded-xl bg-brand text-surface-app text-sm font-semibold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+              className="h-10 px-5 rounded-xl bg-brand text-on-brand text-sm font-semibold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             >
               Try again
             </button>
