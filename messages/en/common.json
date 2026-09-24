@@ -22,7 +22,8 @@
     "images": "Images",
     "video": "Video",
     "audio": "Audio",
-    "agents-automation": "Agents & Automation"
+    "agents-automation": "Agents & Automation",
+    "reelty": "Reelty"
   },
   "shell": {
     "brand": "Creator Agency",
@@ -35,12 +36,18 @@
     "settings": "Settings",
     "dropHere": "Drop it here",
     "dropHereHint": "Images, video or audio — all good",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "balanceOk": "MuAPI balance",
+    "balanceLoading": "Checking balance…",
+    "balanceUnavailable": "Balance unavailable",
+    "keyNotWorking": "Key not working",
+    "unlockStudios": "Unlock all studios",
+    "switchLanguage": "Switch language"
   },
   "settingsModal": {
     "title": "Settings",
     "subtitle": "Your studio, your rules. Manage your key and preferences.",
-    "activeApiKey": "Active API key",
+    "activeApiKey": "Active MuAPI key",
     "changeKey": "Change key",
     "close": "Close"
   },
@@ -52,18 +59,101 @@
     "open": "Open →",
     "openResult": "Open {label} result",
     "dismissNotification": "Dismiss notification",
-    "ariaLabel": "Generation activity and notifications"
+    "ariaLabel": "Generation activity and notifications",
+    "unreachable": "Couldn't reach the AI service. Try again in a sec.",
+    "badKey": "That key didn't work. Check it and try again.",
+    "retryHint": "Fix it and hit Generate again."
   },
   "apiKeyModal": {
     "title": "Creator Agency",
-    "subtitlePrefix": "Drop your",
-    "subtitleSuffix": "key and start making.",
+    "chips": [
+      "400+ models",
+      "17 studios",
+      "Reelty inside"
+    ],
+    "subtitle": "Paste your API key and start making.",
     "close": "Close",
     "label": "API key",
     "placeholder": "Paste your key",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
     "missingKeyError": "Add your API key first",
     "submit": "Let's go",
+    "checking": "Checking…",
     "needKey": "No key yet?",
-    "getOneFree": "Grab one free →"
+    "getOneFree": "Get a free MuAPI key →",
+    "helpSummary": "Where do I find it?",
+    "helpSteps": [
+      "Make a free MuAPI account.",
+      "Open Access keys and copy the key value (not its name).",
+      "Paste it here."
+    ],
+    "helpNote": "Saved on this device and only used for your MuAPI requests.",
+    "invalidKey": "That key didn't work. Copy the key value (not its name) from muapi.ai/access-keys and try again.",
+    "keyStoppedTitle": "Your key stopped working",
+    "keyStoppedSubtitle": "MuAPI rejected it. Paste a fresh key to keep going.",
+    "reeltyOnly": "Just here for Reelty? Open it →"
+  },
+  "meta": {
+    "siteTitle": "Creator Agency — AI studio for creators",
+    "description": "Make images, video, audio, avatars and edits with 400+ AI models in one studio. No gatekeeping, no fluff.",
+    "ogLocale": "en_US"
+  },
+  "reelty": {
+    "tagline": "AI real-estate marketing. Listing photos in — tour video, captions and ads out.",
+    "openFull": "Open Reelty",
+    "iframeTitle": "Reelty — AI real-estate marketing studio",
+    "loading": "Loading Reelty…",
+    "slow": "Reelty is taking a sec — open it in a new tab ↗"
+  },
+  "notFound": {
+    "title": "This page doesn't exist",
+    "body": "Wrong link or it moved.",
+    "cta": "Back to studio",
+    "popular": "Jump into a studio"
+  },
+  "landing": {
+    "eyebrow": "AI studio for creators",
+    "h1": "Your whole creative team. One tab.",
+    "sub": "Images, video, audio, avatars and ads — 400+ AI models, one studio. Bring a key, skip the gatekeeping.",
+    "ctaPrimary": "Open the studio",
+    "ctaSecondary": "Get a free key",
+    "chips": [
+      "400+ models",
+      "17 studios",
+      "Reelty inside"
+    ],
+    "studiosHeading": "17 studios",
+    "studiosSub": "Pick a lane. Everything runs on the same key.",
+    "blurbs": {
+      "image": "Text or image in, 100+ image models out.",
+      "layers": "Enhance, relight, re-angle and edit in layers.",
+      "video": "Text or images to video with Kling, Veo, Sora.",
+      "audio": "Music and sound from a single prompt.",
+      "clipping": "Pull the best moments out of long videos.",
+      "motion-control": "Drive a character with reference-video motion.",
+      "vibe-motion": "Kinetic type, charts and logo reveals from text.",
+      "lipsync": "Portrait plus audio becomes a talking video.",
+      "body-swap": "Recast anyone in a video with your character.",
+      "cinema": "Real camera, lens and aperture controls.",
+      "marketing": "Product shots in, video ads out.",
+      "workflows": "Chain steps into repeatable pipelines.",
+      "agents": "Agents that plan and generate for you.",
+      "design-agent": "A canvas agent that designs with you.",
+      "apps": "Ready-to-ship AI app templates.",
+      "ai-influencer": "Consistent AI personas, post after post.",
+      "reelty": "Listing videos and ads for real estate."
+    },
+    "reeltyKicker": "Reelty inside",
+    "reeltyTitle": "Built for real-estate creators",
+    "reeltyBody": "Listing videos, walkthrough edits and property ads — a whole studio, one tab over.",
+    "reeltyCta": "Open Reelty",
+    "trust": "Bring your own MuAPI key. It stays in your browser — nothing is stored server-side.",
+    "footerRuns": "Runs on MuAPI",
+    "footerOss": "Open source (MIT)",
+    "footerGithub": "GitHub",
+    "langSwitch": "中文",
+    "langSwitchLabel": "Switch language",
+    "studiosNavLabel": "All studios"
   }
 }

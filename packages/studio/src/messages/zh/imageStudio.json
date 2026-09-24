@@ -24,7 +24,15 @@
     "allProviders": "所有提供商",
     "searchPlaceholder": "搜索模型...",
     "modelsSuffix": "个模型",
-    "noModelsFound": "未找到相关模型"
+    "noModelsFound": "没有匹配的模型。试试“photo”“text”或“fast”。",
+    "categoryTools": "工具",
+    "picksHeading": "精选",
+    "allModelsHeading": "全部模型",
+    "pickHintAllRounder": "综合最强",
+    "pickHintText": "图片里的文字清晰准确",
+    "pickHintTypography": "海报、Logo、封面",
+    "pickHintPhotoreal": "照片级真实感",
+    "pickHintFast": "又快又便宜"
   },
   "gallery": {
     "generatedImageAlt": "生成的图像",
@@ -33,11 +41,14 @@
     "deleteConfirm": "确定要删除这个生成的项目吗？",
     "deleteFailed": "删除项目失败",
     "noPrompt": "未提供提示词",
-    "modelFallback": "图像工作室"
+    "modelFallback": "图像工作室",
+    "share": "分享",
+    "linkCopied": "链接已复制"
   },
   "emptyState": {
-    "heading": "开始使用",
-    "subtitle": "描述一个场景、角色、情绪或风格 — 让它跃然眼前"
+    "heading": "做点什么。",
+    "subtitle": "输入一个场景、一种情绪、一个角色，剩下的交给我们。",
+    "modelLabel": "模型"
   },
   "promptBar": {
     "placeholderMultiImage": "已选择 {count} 张图片 — 描述转换效果（可选）",
@@ -64,5 +75,22 @@
   },
   "fullscreen": {
     "previewAlt": "全屏预览"
+  },
+  "controls": {
+    "batchLabel": "每次生成张数",
+    "batchDecrease": "减少张数",
+    "batchIncrease": "增加张数"
+  },
+  "aspectRatioHints": {
+    "9:16": "抖音 · 快手 · Reels",
+    "16:9": "YouTube · 封面",
+    "1:1": "动态帖子",
+    "4:5": "小红书 / IG 帖子",
+    "3:4": "竖版帖子",
+    "4:3": "经典",
+    "21:9": "电影感",
+    "9:21": "长竖屏",
+    "2:3": "海报",
+    "3:2": "照片"
   }
 }

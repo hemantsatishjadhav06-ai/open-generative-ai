@@ -1,223 +1,68 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ImageStudio, VideoStudio, ClippingStudio, MotionControlStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, AiInfluencerStudio, LayersStudio, getUserBalance } from 'studio';
-
-const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
-  ssr: false,
-  loading: () => <div className="h-full w-full bg-surface-app flex items-center justify-center text-secondary">Loading design studio…</div>
-});
 import axios from 'axios';
+// Only light-weight subpath imports from 'studio' here: importing the barrel
+// would statically pull every studio (and the model catalog) into first paint.
+import { getUserBalance } from 'studio/balance';
+import { formatErrorMessage } from 'studio/formatError';
+import useEscapeKey, { useFocusReturn } from 'studio/useEscapeKey';
 import ApiKeyModal from './ApiKeyModal';
 import { getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
-
 // Tab/category ids, icons, and English `label` fallbacks are stable
 // identifiers, not locale copy — the actual rendered label is resolved
 // per-locale from `copy.tabs`/`copy.categories` via tabLabel()/categoryLabel()
 // inside the component below, with these English strings as the fallback
 // when a locale bundle is missing the key.
-const TABS = [
-  {
-    id: 'image',
-    label: 'Image Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <circle cx="8.5" cy="8.5" r="1.5"/>
-        <polyline points="21 15 16 10 5 21"/>
-      </svg>
-    )
-  },
-  {
-    id: 'layers',
-    label: 'Layers Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-        <polyline points="2 17 12 22 22 17"/>
-        <polyline points="2 12 12 17 22 12"/>
-      </svg>
-    )
-  },
-  {
-    id: 'video',
-    label: 'Video Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="23 7 16 12 23 17 23 7"/>
-        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-      </svg>
-    )
-  },
-  {
-    id: 'audio',
-    label: 'Audio Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18V5l12-2v13"/>
-        <circle cx="6" cy="18" r="3"/>
-        <circle cx="18" cy="16" r="3"/>
-      </svg>
-    )
-  },
-  {
-    id: 'clipping',
-    label: 'AI Clipping',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="6" cy="6" r="3"/>
-        <circle cx="6" cy="18" r="3"/>
-        <line x1="20" y1="4" x2="8.12" y2="15.88"/>
-        <line x1="14.47" y1="14.47" x2="20" y2="20"/>
-        <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-      </svg>
-    )
-  },
-  {
-    id: 'motion-control',
-    label: 'Motion Control',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="5" r="3"/>
-        <line x1="12" y1="8" x2="12" y2="14"/>
-        <path d="M9 11l3 3 3-3"/>
-        <path d="M7 21l5-5 5 5"/>
-      </svg>
-    )
-  },
-  {
-    id: 'vibe-motion',
-    label: 'Vibe Motion',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-    )
-  },
-  {
-    id: 'lipsync',
-    label: 'Lip Sync',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-        <line x1="12" y1="19" x2="12" y2="22"/>
-      </svg>
-    )
-  },
-  {
-    id: 'body-swap',
-    label: 'Body Swap',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="8.5" cy="7" r="4"/>
-        <polyline points="17 11 19 13 23 9"/>
-        <path d="M23 13v-2"/>
-      </svg>
-    )
-  },
-  {
-    id: 'cinema',
-    label: 'Cinema Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-        <line x1="7" y1="2" x2="7" y2="22"/>
-        <line x1="17" y1="2" x2="17" y2="22"/>
-        <line x1="2" y1="12" x2="22" y2="12"/>
-        <line x1="2" y1="7" x2="7" y2="7"/>
-        <line x1="2" y1="17" x2="7" y2="17"/>
-        <line x1="17" y1="17" x2="22" y2="17"/>
-        <line x1="17" y1="7" x2="22" y2="7"/>
-      </svg>
-    )
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        <line x1="8" y1="9" x2="16" y2="9"/>
-        <line x1="8" y1="13" x2="14" y2="13"/>
-      </svg>
-    )
-  },
-  {
-    id: 'workflows',
-    label: 'Workflows',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="6" height="6" rx="1"/>
-        <rect x="15" y="3" width="6" height="6" rx="1"/>
-        <rect x="9" y="15" width="6" height="6" rx="1"/>
-        <path d="M6 9v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9"/>
-        <path d="M12 13v2"/>
-      </svg>
-    )
-  },
-  {
-    id: 'agents',
-    label: 'Agents',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="11" width="18" height="10" rx="2"/>
-        <circle cx="12" cy="5" r="2"/>
-        <path d="M12 7v4"/>
-        <line x1="8" y1="16" x2="8.01" y2="16"/>
-        <line x1="16" y1="16" x2="16.01" y2="16"/>
-      </svg>
-    )
-  },
-  {
-    id: 'design-agent',
-    label: 'Design Agent',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-        <path d="M2 2l7.586 7.586"/>
-        <circle cx="11" cy="11" r="2"/>
-      </svg>
-    )
-  },
-  {
-    id: 'apps',
-    label: 'Explore Apps',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
-      </svg>
-    )
-  },
-  {
-    id: 'ai-influencer',
-    label: 'AI Influencer Studio',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>
-    )
-  },
-  {
-    id: 'reelty',
-    label: 'Reelty',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 13V5.5L8 2l5 3.5V13"/>
-        <path d="M3 13h10"/>
-        <path d="M16 8l5 3-5 3z"/>
-        <rect x="3" y="16" width="18" height="5" rx="1"/>
-      </svg>
-    )
+import { TABS, STUDIO_TAB_IDS } from '@/lib/studios';
+import { classifyBalanceError } from '@/lib/apiKeyStatus';
+import { track, installAnalytics } from '@/lib/analytics';
+
+const StudioLoading = () => (
+  <div className="h-full w-full bg-surface-app flex items-center justify-center">
+    <div className="animate-spin text-brand text-3xl" aria-label="Loading">◌</div>
+  </div>
+);
+
+// Each studio is its own async chunk and only mounts once its tab is opened.
+const ImageStudio = dynamic(() => import('studio/ImageStudio'), { ssr: false, loading: StudioLoading });
+const VideoStudio = dynamic(() => import('studio/VideoStudio'), { ssr: false, loading: StudioLoading });
+const ClippingStudio = dynamic(() => import('studio/ClippingStudio'), { ssr: false, loading: StudioLoading });
+const MotionControlStudio = dynamic(() => import('studio/MotionControlStudio'), { ssr: false, loading: StudioLoading });
+const VibeMotionStudio = dynamic(() => import('studio/VibeMotionStudio'), { ssr: false, loading: StudioLoading });
+const LipSyncStudio = dynamic(() => import('studio/LipSyncStudio'), { ssr: false, loading: StudioLoading });
+const RecastStudio = dynamic(() => import('studio/RecastStudio'), { ssr: false, loading: StudioLoading });
+const CinemaStudio = dynamic(() => import('studio/CinemaStudio'), { ssr: false, loading: StudioLoading });
+const AudioStudio = dynamic(() => import('studio/AudioStudio'), { ssr: false, loading: StudioLoading });
+const MarketingStudio = dynamic(() => import('studio/MarketingStudio'), { ssr: false, loading: StudioLoading });
+const WorkflowStudio = dynamic(() => import('studio/WorkflowStudio'), { ssr: false, loading: StudioLoading });
+const AgentStudio = dynamic(() => import('studio/AgentStudio'), { ssr: false, loading: StudioLoading });
+const AppsStudio = dynamic(() => import('studio/AppsStudio'), { ssr: false, loading: StudioLoading });
+const AiInfluencerStudio = dynamic(() => import('studio/AiInfluencerStudio'), { ssr: false, loading: StudioLoading });
+const LayersStudio = dynamic(() => import('studio/LayersStudio'), { ssr: false, loading: StudioLoading });
+const DesignAgentStudio = dynamic(() => import('studio/DesignAgentStudio'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-surface-app flex items-center justify-center text-secondary">Loading design studio…</div>
+});
+
+const SPARK_PATH = 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z';
+
+// Reelty is a separate app embedded in the Reelty tab. NEXT_PUBLIC_* is
+// inlined at build time (middleware.js derives the CSP frame-src from the
+// same variable, so the two stay consistent).
+const REELTY_URL = process.env.NEXT_PUBLIC_REELTY_URL || 'https://web-production-0e433.up.railway.app';
+const REELTY_OPEN_URL = (() => {
+  try {
+    const u = new URL(REELTY_URL);
+    u.searchParams.set('utm_source', 'creator-agency');
+    u.searchParams.set('utm_medium', 'embed');
+    return u.toString();
+  } catch {
+    return REELTY_URL;
   }
-];
+})();
 
 const NAVIGATION_CATEGORIES = [
   {
@@ -291,8 +136,17 @@ const getNavigationCategory = (tabId) => (
 );
 
 const STORAGE_KEY = 'muapi_key';
-const NOTIFICATIONS_STORAGE_KEY = 'open_gen_notifications_v1';
+const NOTIFICATIONS_STORAGE_KEY = 'creator_agency_notifications_v1';
 const MAX_VISIBLE_NOTIFICATIONS = 3;
+
+// The key cookie is real server-side auth for the /agents/* SSR pages, so
+// mark it Secure whenever the app is served over https.
+const cookieSecureSuffix = () =>
+  (typeof window !== 'undefined' && window.location.protocol === 'https:') ? '; Secure' : '';
+
+// Errors are sticky (expiresAt null) until dismissed; everything else times out.
+const isLiveNotification = (notification, now) =>
+  notification.expiresAt == null || notification.expiresAt > now;
 
 const loadStoredNotifications = () => {
   if (typeof window === 'undefined') return [];
@@ -301,7 +155,7 @@ const loadStoredNotifications = () => {
     const stored = JSON.parse(window.sessionStorage.getItem(NOTIFICATIONS_STORAGE_KEY) || '[]');
     const now = Date.now();
     return Array.isArray(stored)
-      ? stored.filter((notification) => notification.expiresAt > now).slice(0, MAX_VISIBLE_NOTIFICATIONS)
+      ? stored.filter((notification) => isLiveNotification(notification, now)).slice(0, MAX_VISIBLE_NOTIFICATIONS)
       : [];
   } catch {
     return [];
@@ -321,9 +175,20 @@ const persistNotifications = (notifications) => {
   }
 };
 
+function BrandMark({ size = 'md' }) {
+  const box = size === 'sm' ? 'w-6 h-6 rounded-lg' : 'w-8 h-8 rounded-xl shadow-glow';
+  const icon = size === 'sm' ? 13 : 18;
+  return (
+    <div className={`${box} bg-brand flex items-center justify-center flex-shrink-0`} aria-hidden="true">
+      <svg width={icon} height={icon} viewBox="0 0 24 24" focusable="false">
+        <path d={SPARK_PATH} className="fill-surface-app" />
+      </svg>
+    </div>
+  );
+}
+
 export default function StandaloneShell({ locale = 'en' }) {
   const params = useParams();
-  const router = useRouter();
   const slugParam = params?.slug;
   const slug = useMemo(() => slugParam || [], [slugParam]);
   const idFromParams = params?.id;
@@ -339,6 +204,12 @@ export default function StandaloneShell({ locale = 'en' }) {
     [copy],
   );
   const studioPath = useCallback((tabId) => localizeStudioPath(locale, tabId), [locale]);
+
+  // Language toggle target: same tab, other locale. Only on /studio routes
+  // (the /workflow/[id] routes have no /zh mirror).
+  const otherLocale = locale === 'zh' ? 'en' : 'zh';
+  const otherLocaleConfig = getLocaleConfig(otherLocale);
+  const showLanguageToggle = !idFromParams && !tabFromParams;
 
   // Helper to extract workflow details precisely from either route structure
   const getWorkflowInfo = useCallback(() => {
@@ -362,23 +233,39 @@ export default function StandaloneShell({ locale = 'en' }) {
     if (slug.includes('design-agent')) return 'design-agent';
     if (slug.includes('apps')) return 'apps';
     const firstSegment = slug[0];
-    if (firstSegment && TABS.find(t => t.id === firstSegment)) return firstSegment;
+    if (firstSegment && STUDIO_TAB_IDS.includes(firstSegment)) return firstSegment;
     return 'image';
   };
-  
+
   const [apiKey, setApiKey] = useState(null);
   const [activeTab, setActiveTab] = useState(getInitialTab());
+  // Studios mount on first visit and then stay mounted (state survives tab
+  // switches) — nothing loads for tabs the user never opens.
+  const [visitedTabs, setVisitedTabs] = useState(() => new Set([getInitialTab()]));
+  useEffect(() => {
+    setVisitedTabs((prev) => (prev.has(activeTab) ? prev : new Set(prev).add(activeTab)));
+  }, [activeTab]);
+  const shouldMount = (id) => activeTab === id || visitedTabs.has(id);
 
   const [balance, setBalance] = useState(null);
+  // 'loading' | 'ok' | 'error' | 'unauthorized'
+  const [balanceState, setBalanceState] = useState('loading');
+  // null | { message } — shown as an overlay key prompt when MuAPI rejects the key.
+  const [authPrompt, setAuthPrompt] = useState(null);
+  const authPromptDismissedRef = useRef(false);
+  const revalidatingRef = useRef(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
 
-  // Sidebar Collapsed & Mobile Drawer State
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('sidebar_collapsed') === 'true';
-    return false;
-  });
+  // Reelty embed: loading/slow states for the skeleton over the iframe.
+  const [reeltyLoaded, setReeltyLoaded] = useState(false);
+  const [reeltySlow, setReeltySlow] = useState(false);
+  const reeltyMounted = shouldMount('reelty');
+
+  // Sidebar Collapsed & Mobile Drawer State. The stored preference is read in
+  // the mount effect below (not during render) so SSR and first paint agree.
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState(() => (
     getNavigationCategory(getInitialTab())?.id || NAVIGATION_CATEGORIES[0].id
@@ -388,7 +275,11 @@ export default function StandaloneShell({ locale = 'en' }) {
   const toggleSidebar = useCallback(() => {
     setIsSidebarCollapsed(prev => {
       const next = !prev;
-      localStorage.setItem('sidebar_collapsed', next ? 'true' : 'false');
+      try {
+        localStorage.setItem('sidebar_collapsed', next ? 'true' : 'false');
+      } catch {
+        // storage can be unavailable (private mode); the toggle still works
+      }
       return next;
     });
   }, []);
@@ -421,6 +312,8 @@ export default function StandaloneShell({ locale = 'en' }) {
   const [notifications, setNotifications] = useState([]);
   const [notificationsHydrated, setNotificationsHydrated] = useState(false);
   const [generationCounts, setGenerationCounts] = useState({});
+  // Start timestamps per tab, for generation duration analytics.
+  const generationStartedAt = useRef({});
 
   useEffect(() => {
     setNotifications(loadStoredNotifications());
@@ -431,10 +324,10 @@ export default function StandaloneShell({ locale = 'en' }) {
     const now = Date.now();
     const id = `notif-${Date.now()}-${Math.random()}`;
     const ttl = 12000;
-    const entry = { ...notif, id, expiresAt: now + ttl };
+    const entry = { ...notif, id, expiresAt: notif.type === 'error' ? null : now + ttl };
     setNotifications((previous) => {
       const next = [
-        ...previous.filter((notification) => notification.expiresAt > now),
+        ...previous.filter((notification) => isLiveNotification(notification, now)),
         entry,
       ].slice(-MAX_VISIBLE_NOTIFICATIONS);
       persistNotifications(next);
@@ -457,12 +350,13 @@ export default function StandaloneShell({ locale = 'en' }) {
   }, [notifications, notificationsHydrated]);
 
   useEffect(() => {
-    if (notifications.length === 0) return undefined;
+    const timed = notifications.filter((notification) => typeof notification.expiresAt === 'number');
+    if (timed.length === 0) return undefined;
 
-    const nextExpiry = Math.min(...notifications.map((notification) => notification.expiresAt));
+    const nextExpiry = Math.min(...timed.map((notification) => notification.expiresAt));
     const timer = window.setTimeout(() => {
       const now = Date.now();
-      setNotifications((previous) => previous.filter((notification) => notification.expiresAt > now));
+      setNotifications((previous) => previous.filter((notification) => isLiveNotification(notification, now)));
     }, Math.max(0, nextExpiry - Date.now()));
 
     return () => window.clearTimeout(timer);
@@ -472,31 +366,53 @@ export default function StandaloneShell({ locale = 'en' }) {
     try {
       const data = await getUserBalance(key);
       setBalance(data.balance);
+      setBalanceState('ok');
+      track('key_check', { ok: true });
     } catch (err) {
       console.error('Balance fetch failed:', err);
+      setBalanceState(classifyBalanceError(err));
+      // Only a 401/403 means the key is bad; anything else is the network/service.
+      track('key_check', { ok: false, status: typeof err?.status === 'number' ? err.status : 'network' });
     }
   }, []);
 
+  const takeDuration = useCallback((tabId) => {
+    const queue = generationStartedAt.current[tabId];
+    const startedAt = queue && queue.shift();
+    return startedAt ? Date.now() - startedAt : undefined;
+  }, []);
+
   const makeSuccessCallback = useCallback((tabId) => (data) => {
-    const tab = TABS.find(t => t.id === tabId);
+    track('generation_completed', {
+      tab: tabId,
+      model: typeof data?.model === 'string' ? data.model : (data?.model?.id || data?.model?.name),
+      type: data?.type,
+      duration_ms: takeDuration(tabId),
+    });
     pushNotification({
       type: 'success',
       tabId,
-      label: tab?.label || tabId,
+      label: tabLabel(tabId),
       resultUrl: data?.url || null,
     });
-  }, [pushNotification]);
+  }, [pushNotification, tabLabel, takeDuration]);
 
   const makeErrorCallback = useCallback((tabId) => (errorOrMessage) => {
-    const tab = TABS.find(t => t.id === tabId);
-    const message = typeof errorOrMessage === 'string'
+    track('generation_failed', { tab: tabId, duration_ms: takeDuration(tabId) });
+    const message = formatErrorMessage(errorOrMessage, copy.notifications.generationFailed, {
+      unreachable: copy.notifications.unreachable,
+      auth: copy.notifications.badKey,
+    });
+    const rawMessage = typeof errorOrMessage === 'string'
       ? errorOrMessage
-      : (errorOrMessage?.message || errorOrMessage?.error || String(errorOrMessage || 'Generation failed'));
-    pushNotification({ type: 'error', tabId, label: tab?.label || tabId, message });
+      : String(errorOrMessage?.message || errorOrMessage?.error || errorOrMessage || '');
+    pushNotification({ type: 'error', tabId, label: tabLabel(tabId), message, rawMessage: rawMessage.slice(0, 300) });
     if (apiKey) void fetchBalance(apiKey);
-  }, [apiKey, fetchBalance, pushNotification]);
+  }, [apiKey, copy, fetchBalance, pushNotification, tabLabel, takeDuration]);
 
   const makeGenerationStartCallback = useCallback((tabId) => () => {
+    (generationStartedAt.current[tabId] ||= []).push(Date.now());
+    track('generation_started', { tab: tabId });
     setGenerationCounts((previous) => ({
       ...previous,
       [tabId]: (previous[tabId] || 0) + 1,
@@ -538,7 +454,7 @@ export default function StandaloneShell({ locale = 'en' }) {
       const localeAwarePath = rootPath && path.startsWith(rootPath) ? path.slice(rootPath.length) : path;
       const segments = localeAwarePath.split('/').filter(Boolean);
       const tabId = segments[1] || 'image';
-      if (TABS.find(t => t.id === tabId)) {
+      if (STUDIO_TAB_IDS.includes(tabId)) {
         setActiveTab(tabId);
       }
     };
@@ -596,32 +512,94 @@ export default function StandaloneShell({ locale = 'en' }) {
   }, [activeTab]);
 
   useEffect(() => {
+    installAnalytics();
     setHasMounted(true);
+    try {
+      setIsSidebarCollapsed(localStorage.getItem('sidebar_collapsed') === 'true');
+    } catch {
+      // storage unavailable: keep the expanded default
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       setApiKey(stored);
       fetchBalance(stored);
       // Sync cookie immediately on mount to establish identity for background requests
-      document.cookie = `muapi_key=${stored}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `muapi_key=${stored}; path=/; max-age=31536000; SameSite=Lax${cookieSecureSuffix()}`;
     }
   }, [fetchBalance]);
 
-  const handleKeySave = useCallback((key) => {
-    localStorage.setItem(STORAGE_KEY, key);
-    setApiKey(key);
-    fetchBalance(key);
-    document.cookie = `muapi_key=${key}; path=/; max-age=31536000; SameSite=Lax`;
-  }, [fetchBalance]);
+  // Analytics: page/tab views and the key wall.
+  useEffect(() => {
+    track('studio_view', { tab: activeTab, locale });
+  }, [activeTab, locale]);
+
+  useEffect(() => {
+    if (hasMounted && !apiKey) track('key_wall_view');
+  }, [hasMounted, apiKey]);
+
+  // Validates the key against the balance endpoint BEFORE persisting it.
+  // Returns a string (shown inline by ApiKeyModal) when MuAPI rejects it;
+  // network/5xx failures let the key through with an amber balance pill.
+  const handleKeySave = useCallback(async (key) => {
+    const trimmed = key.trim();
+    try {
+      const data = await getUserBalance(trimmed);
+      setBalance(data.balance);
+      setBalanceState('ok');
+      track('key_check', { ok: true });
+    } catch (err) {
+      const kind = classifyBalanceError(err);
+      track('key_check', { ok: false, status: typeof err?.status === 'number' ? err.status : 'network' });
+      if (kind === 'unauthorized') return copy.apiKeyModal.invalidKey;
+      setBalanceState('error');
+    }
+    localStorage.setItem(STORAGE_KEY, trimmed);
+    document.cookie = `muapi_key=${trimmed}; path=/; max-age=31536000; SameSite=Lax${cookieSecureSuffix()}`;
+    setApiKey(trimmed);
+    authPromptDismissedRef.current = false;
+    setAuthPrompt(null);
+    track('key_saved');
+    return null;
+  }, [copy]);
 
   const handleKeyChange = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setApiKey(null);
     setBalance(null);
-    document.cookie = "muapi_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    setBalanceState('loading');
+    setAuthPrompt(null);
+    authPromptDismissedRef.current = false;
+    document.cookie = `muapi_key=; path=/; max-age=0; SameSite=Lax${cookieSecureSuffix()}`;
+    track('key_removed');
   }, []);
 
-  // Inject API key into all outgoing Axios requests (prop-based approach)
-  // We use an interceptor to be selective and NOT send the key to external domains like S3
+  // MuAPI said 401/403 somewhere (muapi.js dispatches 'muapi:auth-required').
+  // Re-check against the balance endpoint first, so a 403 about one specific
+  // request or a burst of poll failures can't raise a false/duplicate prompt.
+  useEffect(() => {
+    if (!apiKey) return undefined;
+    const handler = async () => {
+      if (revalidatingRef.current || authPromptDismissedRef.current) return;
+      revalidatingRef.current = true;
+      try {
+        const data = await getUserBalance(apiKey);
+        setBalance(data.balance);
+        setBalanceState('ok');
+      } catch (err) {
+        if (classifyBalanceError(err) === 'unauthorized') {
+          setBalanceState('unauthorized');
+          setAuthPrompt({ message: copy.apiKeyModal.invalidKey });
+        }
+      } finally {
+        revalidatingRef.current = false;
+      }
+    };
+    window.addEventListener('muapi:auth-required', handler);
+    return () => window.removeEventListener('muapi:auth-required', handler);
+  }, [apiKey, copy]);
+
+  // Inject the API key into outgoing Axios requests — same-origin only, so
+  // third-party hosts such as S3 never receive it.
   useEffect(() => {
     // Safety: Clear any global defaults that might have been set previously
     delete axios.defaults.headers.common['x-api-key'];
@@ -629,14 +607,13 @@ export default function StandaloneShell({ locale = 'en' }) {
     if (!apiKey) return;
 
     const interceptorId = axios.interceptors.request.use((config) => {
-      // Check if URL is local/proxied
-      const isRelative = config.url.startsWith('/') || !config.url.startsWith('http');
-      const isInternalProxy = config.url.includes('/api/app') || config.url.includes('/api/workflow') || config.url.includes('/api/agents') || config.url.includes('/api/api') || config.url.includes('/api/v1');
-
-      if (isRelative || isInternalProxy) {
+      const url = typeof config.url === 'string' ? config.url : '';
+      const isAbsolute = /^https?:\/\//i.test(url);
+      const isSameOrigin = isAbsolute && typeof window !== 'undefined' && url.startsWith(`${window.location.origin}/`);
+      if (!isAbsolute || isSameOrigin) {
+        config.headers = config.headers || {};
         config.headers['x-api-key'] = apiKey;
       }
-      
       return config;
     });
 
@@ -645,12 +622,32 @@ export default function StandaloneShell({ locale = 'en' }) {
     };
   }, [apiKey]);
 
-  // Poll for balance every 30 seconds if key is present
+  // Refresh the balance every 60s while the tab is visible, and right away
+  // when the user comes back to it.
   useEffect(() => {
-    if (!apiKey) return;
-    const interval = setInterval(() => fetchBalance(apiKey), 30000);
-    return () => clearInterval(interval);
+    if (!apiKey) return undefined;
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') fetchBalance(apiKey);
+    };
+    const interval = setInterval(refreshIfVisible, 60000);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+    };
   }, [apiKey, fetchBalance]);
+
+  // Settings dialog: Esc/backdrop close it and focus returns to the trigger.
+  const closeSettings = useCallback(() => setShowSettings(false), []);
+  useEscapeKey(showSettings, closeSettings);
+  useFocusReturn(showSettings);
+
+  // Reelty: after 8s without a load event, offer to open it in a new tab.
+  useEffect(() => {
+    if (!reeltyMounted || reeltyLoaded) return undefined;
+    const timer = setTimeout(() => setReeltySlow(true), 8000);
+    return () => clearTimeout(timer);
+  }, [reeltyMounted, reeltyLoaded]);
 
   // Drag and Drop Handlers
   const handleDragOver = useCallback((e) => {
@@ -696,9 +693,67 @@ export default function StandaloneShell({ locale = 'en' }) {
     </div>
   );
 
-  if (!apiKey) {
-    return <ApiKeyModal onSave={handleKeySave} locale={locale} />;
+  // Reelty doesn't use MuAPI, so it opens without the key wall.
+  if (!apiKey && activeTab === 'reelty') {
+    return (
+      <div className="h-screen bg-surface-app flex flex-col overflow-hidden text-white">
+        <header className="flex-shrink-0 h-14 border-b border-white/[0.05] flex items-center justify-between px-4 bg-surface-panel/80 backdrop-blur-md gap-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <BrandMark />
+            <span className="font-display font-bold tracking-tight text-[13px] sm:text-[15px] whitespace-nowrap text-white">
+              {copy.shell.brand}
+            </span>
+          </div>
+          <a
+            href={studioPath('image')}
+            onClick={(e) => { if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) { e.preventDefault(); handleTabChange('image'); } }}
+            className="h-9 px-4 inline-flex items-center rounded-full bg-brand text-surface-app text-xs font-bold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 whitespace-nowrap"
+          >
+            {copy.shell.unlockStudios}
+          </a>
+        </header>
+        <iframe
+          src={REELTY_URL}
+          title={copy.reelty.iframeTitle}
+          referrerPolicy="strict-origin-when-cross-origin"
+          className="flex-1 w-full border-0 bg-surface-app"
+          allow="clipboard-write; fullscreen; clipboard-read"
+        />
+      </div>
+    );
   }
+
+  if (!apiKey) {
+    return <ApiKeyModal onSave={handleKeySave} locale={locale} onOpenReelty={() => handleTabChange('reelty')} />;
+  }
+
+  const balanceDotClass = {
+    ok: 'bg-green-500 animate-pulse',
+    loading: 'bg-white/40 animate-pulse',
+    error: 'bg-amber-400',
+    unauthorized: 'bg-red-500',
+  }[balanceState];
+  const balanceTitle = {
+    ok: copy.shell.balanceOk,
+    loading: copy.shell.balanceLoading,
+    error: copy.shell.balanceUnavailable,
+    unauthorized: copy.shell.keyNotWorking,
+  }[balanceState];
+  const balanceText = balanceState === 'ok' && balance !== null
+    ? `$${balance}`
+    : balanceState === 'unauthorized'
+      ? copy.shell.keyNotWorking
+      : balanceState === 'error'
+        ? copy.shell.balanceUnavailable
+        : '$---';
+  const balanceTextIsLong = balanceState === 'unauthorized' || balanceState === 'error';
+
+  const studioCallbacks = (tabId) => ({
+    onGenerationStart: makeGenerationStartCallback(tabId),
+    onGenerationEnd: makeGenerationEndCallback(tabId),
+    onGenerationComplete: makeSuccessCallback(tabId),
+    onGenerationError: makeErrorCallback(tabId),
+  });
 
   return (
     <div 
@@ -727,14 +782,15 @@ export default function StandaloneShell({ locale = 'en' }) {
 
       {/* Header */}
       {isHeaderVisible && (
-        <header className="flex-shrink-0 h-14 border-b border-white/[0.05] flex items-center justify-between px-4 bg-surface-panel/80 backdrop-blur-md z-50 gap-4">
+        <header className="flex-shrink-0 h-14 border-b border-white/[0.05] flex items-center justify-between px-4 bg-surface-panel/80 backdrop-blur-md z-50 gap-2 sm:gap-4">
           {/* Left: Mobile menu toggle + Logo + Desktop Sidebar Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile drawer toggle */}
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="md:hidden p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+              className="md:hidden p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
               aria-label={copy.shell.toggleNavMenu}
+              aria-expanded={isMobileOpen}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -771,13 +827,9 @@ export default function StandaloneShell({ locale = 'en' }) {
             </div>
 
             {/* Logo & wordmark */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-brand rounded-xl shadow-glow flex items-center justify-center" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" focusable="false">
-                  <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" fill="#08060f"/>
-                </svg>
-              </div>
-              <span className="font-display font-bold tracking-tight text-[15px] hidden sm:block text-white">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <BrandMark />
+              <span className="font-display font-bold tracking-tight text-[13px] sm:text-[15px] whitespace-nowrap text-white">
                 {copy.shell.brand}
               </span>
             </div>
@@ -792,18 +844,45 @@ export default function StandaloneShell({ locale = 'en' }) {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex-shrink-0 flex items-center gap-3">
-            <div className="flex items-center gap-2.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 transition-colors">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-bold text-white/90">
-                ${balance !== null ? `${balance}` : '---'}
+          <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
+            {showLanguageToggle && (
+              <a
+                href={localizeStudioPath(otherLocale, activeTab)}
+                hrefLang={otherLocaleConfig.htmlLang}
+                lang={otherLocaleConfig.htmlLang}
+                aria-label={copy.shell.switchLanguage}
+                title={copy.shell.switchLanguage}
+                className="hidden sm:inline-flex px-2.5 py-1.5 rounded-md border border-white/10 bg-white/5 text-[12px] font-bold text-white/70 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+              >
+                {otherLocale === 'zh' ? otherLocaleConfig.nativeName : 'EN'}
+              </a>
+            )}
+
+            <div
+              title={balanceTitle}
+              aria-label={balanceTitle}
+              className="flex items-center gap-2 sm:gap-2.5 bg-white/5 px-2 sm:px-3 py-1.5 rounded-full border border-white/5 transition-colors"
+            >
+              <div className={`w-2 h-2 rounded-full ${balanceDotClass}`} />
+              <span className={`text-xs font-bold text-white/90 whitespace-nowrap ${balanceTextIsLong ? 'hidden sm:inline' : ''}`}>
+                {balanceText}
               </span>
+              {balanceState === 'unauthorized' && (
+                <button
+                  type="button"
+                  onClick={() => { authPromptDismissedRef.current = false; setAuthPrompt({ message: copy.apiKeyModal.invalidKey }); }}
+                  className="text-xs font-semibold text-brand hover:text-brand-hover whitespace-nowrap"
+                >
+                  {copy.settingsModal.changeKey}
+                </button>
+              )}
             </div>
 
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-[13px] font-bold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-colors"
+              className="flex items-center justify-center gap-2 min-h-[40px] min-w-[40px] px-2.5 sm:px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-[13px] font-bold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-colors"
               aria-label={copy.shell.settings}
+              aria-haspopup="dialog"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />
@@ -842,6 +921,48 @@ export default function StandaloneShell({ locale = 'en' }) {
                   const isCategoryOpen = !isCollapsed && expandedCategoryId === category.id;
                   const categoryPanelId = `navigation-category-${category.id}`;
                   const categoryLabelText = categoryLabel(category.id);
+                  const categoryItemClass = `
+                          group relative flex items-center rounded-xl transition-all duration-150 font-semibold
+                          ${isCollapsed ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3 text-left'}
+                          ${isCategoryActive
+                            ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20 shadow-[0_0_15px_rgba(198,241,53,0.08)]'
+                            : isCategoryOpen
+                              ? 'bg-white/[0.06] text-white border border-white/[0.08]'
+                              : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                          }
+                        `;
+                  // A category with a single tab (Audio, Reelty) is a direct
+                  // link rather than an accordion of itself.
+                  const singleTab = category.tabIds.length === 1
+                    ? TABS.find((t) => t.id === category.tabIds[0])
+                    : null;
+
+                  if (singleTab) {
+                    return (
+                      <div key={category.id} className="relative">
+                        <a
+                          href={studioPath(singleTab.id)}
+                          onClick={(event) => handleNavigationItemClick(event, singleTab.id)}
+                          aria-current={activeTab === singleTab.id ? 'page' : undefined}
+                          aria-label={categoryLabelText}
+                          title={isCollapsed ? categoryLabelText : undefined}
+                          className={categoryItemClass}
+                        >
+                          {isCategoryActive && (
+                            <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(198,241,53,0.6)]" />
+                          )}
+                          <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-brand' : 'text-white/55 group-hover:text-white'}`}>
+                            {category.icon}
+                          </span>
+                          {!isCollapsed && (
+                            <span className="flex-1 min-w-0 text-[12px] leading-4 tracking-tight">
+                              {categoryLabelText}
+                            </span>
+                          )}
+                        </a>
+                      </div>
+                    );
+                  }
 
                   return (
                     <div key={category.id} className="relative">
@@ -852,16 +973,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                         aria-expanded={isCategoryOpen}
                         aria-controls={isCollapsed ? undefined : categoryPanelId}
                         title={isCollapsed ? categoryLabelText : undefined}
-                        className={`
-                          group relative flex items-center rounded-xl transition-all duration-150 font-semibold
-                          ${isCollapsed ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3 text-left'}
-                          ${isCategoryActive
-                            ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20 shadow-[0_0_15px_rgba(198,241,53,0.08)]'
-                            : isCategoryOpen
-                              ? 'bg-white/[0.06] text-white border border-white/[0.08]'
-                              : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
-                          }
-                        `}
+                        className={categoryItemClass}
                       >
                         {isCategoryActive && (
                           <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(198,241,53,0.6)]" />
@@ -899,7 +1011,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                           id={categoryPanelId}
                           role="group"
                           aria-label={`${categoryLabelText} ${copy.shell.toolsSuffix}`}
-                          className="mt-1 ml-2 pl-2 border-l border-white/[0.08] space-y-1 max-h-64 overflow-y-auto scrollbar-none"
+                          className="mt-1 ml-2 pl-2 border-l border-white/[0.08] space-y-1"
                         >
                           {category.tabIds.map((tabId) => {
                             const tab = TABS.find((item) => item.id === tabId);
@@ -966,6 +1078,20 @@ export default function StandaloneShell({ locale = 'en' }) {
                   </a>
                 </div>
               )}
+
+              {showLanguageToggle && (isMobileOpen || !isSidebarCollapsed) && (
+                <div className="sm:hidden mt-3 pt-3 border-t border-white/[0.07]">
+                  <a
+                    href={localizeStudioPath(otherLocale, activeTab)}
+                    hrefLang={otherLocaleConfig.htmlLang}
+                    lang={otherLocaleConfig.htmlLang}
+                    aria-label={copy.shell.switchLanguage}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-white/60 hover:text-white hover:bg-white/[0.04]"
+                  >
+                    {otherLocale === 'zh' ? otherLocaleConfig.nativeName : 'EN'}
+                  </a>
+                </div>
+              )}
             </nav>
           </aside>
         )}
@@ -973,51 +1099,50 @@ export default function StandaloneShell({ locale = 'en' }) {
         {/* Studio Content */}
         <div className="flex-1 min-h-0 h-full relative overflow-hidden bg-surface-app">
         <div className={activeTab === 'image' ? "h-full w-full" : "hidden"}>
-          <ImageStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('image')} onGenerationEnd={makeGenerationEndCallback('image')} onGenerationComplete={makeSuccessCallback('image')} onGenerationError={makeErrorCallback('image')} />
+          {shouldMount('image') && <ImageStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('image')} />}
         </div>
         <div className={activeTab === 'layers' ? "h-full w-full" : "hidden"}>
-          <LayersStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('layers')} onGenerationEnd={makeGenerationEndCallback('layers')} onGenerationComplete={makeSuccessCallback('layers')} onGenerationError={makeErrorCallback('layers')} />
+          {shouldMount('layers') && <LayersStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('layers')} />}
         </div>
         <div className={activeTab === 'video' ? "h-full w-full" : "hidden"}>
-          <VideoStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('video')} onGenerationEnd={makeGenerationEndCallback('video')} onGenerationComplete={makeSuccessCallback('video')} onGenerationError={makeErrorCallback('video')} />
+          {shouldMount('video') && <VideoStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('video')} />}
         </div>
         <div className={activeTab === 'clipping' ? "h-full w-full" : "hidden"}>
-          <ClippingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('clipping')} onGenerationEnd={makeGenerationEndCallback('clipping')} onGenerationComplete={makeSuccessCallback('clipping')} onGenerationError={makeErrorCallback('clipping')} />
+          {shouldMount('clipping') && <ClippingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('clipping')} />}
         </div>
         <div className={activeTab === 'motion-control' ? "h-full w-full" : "hidden"}>
-          <MotionControlStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('motion-control')} onGenerationEnd={makeGenerationEndCallback('motion-control')} onGenerationComplete={makeSuccessCallback('motion-control')} onGenerationError={makeErrorCallback('motion-control')} />
+          {shouldMount('motion-control') && <MotionControlStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('motion-control')} />}
         </div>
         <div className={activeTab === 'vibe-motion' ? "h-full w-full" : "hidden"}>
-          <VibeMotionStudio apiKey={apiKey} locale={locale} onGenerationStart={makeGenerationStartCallback('vibe-motion')} onGenerationEnd={makeGenerationEndCallback('vibe-motion')} onGenerationComplete={makeSuccessCallback('vibe-motion')} onGenerationError={makeErrorCallback('vibe-motion')} />
+          {shouldMount('vibe-motion') && <VibeMotionStudio apiKey={apiKey} locale={locale} {...studioCallbacks('vibe-motion')} />}
         </div>
         <div className={activeTab === 'lipsync' ? "h-full w-full" : "hidden"}>
-          <LipSyncStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('lipsync')} onGenerationEnd={makeGenerationEndCallback('lipsync')} onGenerationComplete={makeSuccessCallback('lipsync')} onGenerationError={makeErrorCallback('lipsync')} />
+          {shouldMount('lipsync') && <LipSyncStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('lipsync')} />}
         </div>
         <div className={activeTab === 'body-swap' ? "h-full w-full" : "hidden"}>
-          <RecastStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('body-swap')} onGenerationEnd={makeGenerationEndCallback('body-swap')} onGenerationComplete={makeSuccessCallback('body-swap')} onGenerationError={makeErrorCallback('body-swap')} />
+          {shouldMount('body-swap') && <RecastStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('body-swap')} />}
         </div>
         <div className={activeTab === 'cinema' ? "h-full w-full" : "hidden"}>
-          <CinemaStudio apiKey={apiKey} locale={locale} onGenerationStart={makeGenerationStartCallback('cinema')} onGenerationEnd={makeGenerationEndCallback('cinema')} onGenerationComplete={makeSuccessCallback('cinema')} onGenerationError={makeErrorCallback('cinema')} />
+          {shouldMount('cinema') && <CinemaStudio apiKey={apiKey} locale={locale} {...studioCallbacks('cinema')} />}
         </div>
         <div className={activeTab === 'audio' ? "h-full w-full" : "hidden"}>
-          <AudioStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('audio')} onGenerationEnd={makeGenerationEndCallback('audio')} onGenerationComplete={makeSuccessCallback('audio')} onGenerationError={makeErrorCallback('audio')} />
+          {shouldMount('audio') && <AudioStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('audio')} />}
         </div>
         <div className={activeTab === 'marketing' ? "h-full w-full" : "hidden"}>
-          <MarketingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('marketing')} onGenerationEnd={makeGenerationEndCallback('marketing')} onGenerationComplete={makeSuccessCallback('marketing')} onGenerationError={makeErrorCallback('marketing')} />
+          {shouldMount('marketing') && <MarketingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('marketing')} />}
         </div>
         <div className={activeTab === 'workflows' ? "h-full w-full" : "hidden"}>
-          <WorkflowStudio
-            apiKey={apiKey}
-            isHeaderVisible={isHeaderVisible}
-            onToggleHeader={setIsHeaderVisible}
-            onGenerationStart={makeGenerationStartCallback('workflows')}
-            onGenerationEnd={makeGenerationEndCallback('workflows')}
-            onGenerationComplete={makeSuccessCallback('workflows')}
-            onGenerationError={makeErrorCallback('workflows')}
-          />
+          {shouldMount('workflows') && (
+            <WorkflowStudio
+              apiKey={apiKey}
+              isHeaderVisible={isHeaderVisible}
+              onToggleHeader={setIsHeaderVisible}
+              {...studioCallbacks('workflows')}
+            />
+          )}
         </div>
         <div className={activeTab === 'agents' ? "h-full w-full" : "hidden"}>
-          <AgentStudio apiKey={apiKey} locale={locale} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />
+          {shouldMount('agents') && <AgentStudio apiKey={apiKey} locale={locale} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         </div>
         <div className={activeTab === 'design-agent' ? "h-full w-full" : "hidden"}>
           {activeTab === 'design-agent' && (
@@ -1025,33 +1150,72 @@ export default function StandaloneShell({ locale = 'en' }) {
               apiKey={apiKey}
               isHeaderVisible={isHeaderVisible}
               onToggleHeader={setIsHeaderVisible}
-              onGenerationStart={makeGenerationStartCallback('design-agent')}
-              onGenerationEnd={makeGenerationEndCallback('design-agent')}
-              onGenerationComplete={makeSuccessCallback('design-agent')}
-              onGenerationError={makeErrorCallback('design-agent')}
+              backHref={studioPath()}
+              brandSlot={(
+                <span className="flex items-center gap-2 pl-1 pr-2">
+                  <BrandMark size="sm" />
+                  <span className="font-display font-bold text-[13px] tracking-tight text-white hidden sm:inline">{copy.shell.brand}</span>
+                </span>
+              )}
+              {...studioCallbacks('design-agent')}
             />
           )}
         </div>
         <div className={activeTab === 'apps' ? "h-full w-full" : "hidden"}>
-          <AppsStudio apiKey={apiKey} locale={locale} />
+          {shouldMount('apps') && <AppsStudio apiKey={apiKey} locale={locale} />}
         </div>
         <div className={activeTab === 'ai-influencer' ? "h-full w-full" : "hidden"}>
-          <AiInfluencerStudio
-            apiKey={apiKey}
-            locale={locale}
-            onGenerationStart={makeGenerationStartCallback('ai-influencer')}
-            onGenerationEnd={makeGenerationEndCallback('ai-influencer')}
-            onGenerationComplete={makeSuccessCallback('ai-influencer')}
-            onGenerationError={makeErrorCallback('ai-influencer')}
-          />
+          {shouldMount('ai-influencer') && (
+            <AiInfluencerStudio
+              apiKey={apiKey}
+              locale={locale}
+              {...studioCallbacks('ai-influencer')}
+            />
+          )}
         </div>
-        <div className={activeTab === 'reelty' ? "h-full w-full" : "hidden"}>
-          <iframe
-            src={process.env.NEXT_PUBLIC_REELTY_URL || 'https://web-production-0e433.up.railway.app'}
-            title="Reelty — AI marketing studio"
-            className="h-full w-full border-0 bg-white"
-            allow="clipboard-write; fullscreen; clipboard-read"
-          />
+        <div className={activeTab === 'reelty' ? 'flex h-full w-full flex-col' : 'hidden'}>
+          <div className="shrink-0 h-10 px-4 flex items-center justify-between gap-3 border-b border-white/[0.06] bg-surface-panel/80 text-[12px]">
+            <span className="truncate text-white/70">
+              <span className="font-semibold text-brand">Reelty</span> · {copy.reelty.tagline}
+            </span>
+            <a
+              href={REELTY_OPEN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 font-semibold text-white/70 hover:text-brand transition-colors"
+            >
+              {copy.reelty.openFull} ↗
+            </a>
+          </div>
+          <div className="relative flex-1 min-h-0 bg-surface-app">
+            {reeltyMounted && (
+              <iframe
+                src={REELTY_URL}
+                title={copy.reelty.iframeTitle}
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="clipboard-write; fullscreen; clipboard-read"
+                className="h-full w-full border-0 bg-transparent"
+                onLoad={() => setReeltyLoaded(true)}
+              />
+            )}
+            {!reeltyLoaded && (
+              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center gap-3 bg-surface-app">
+                <div className="h-2 w-40 rounded-full bg-brand/40 animate-pulse" />
+                {reeltySlow ? (
+                  <a
+                    href={REELTY_OPEN_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="pointer-events-auto text-[12px] text-white/60 hover:text-brand underline-offset-2 hover:underline"
+                  >
+                    {copy.reelty.slow}
+                  </a>
+                ) : (
+                  <p className="text-[12px] text-white/50">{copy.reelty.loading}</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -1069,96 +1233,104 @@ export default function StandaloneShell({ locale = 'en' }) {
               key={generation.tabId}
               role="status"
               data-generation-tab={generation.tabId}
-              className="pointer-events-auto flex items-center gap-3 rounded-xl border border-brand-500/50 bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
+              className="pointer-events-auto flex items-center gap-3 rounded-xl border border-brand/40 bg-surface-raised px-3.5 py-3 text-[13px] text-white shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
               data-testid="generation-activity"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand-500/50 bg-brand-50">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/40 bg-brand/15">
                 <span
-                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand-600/30 border-t-brand-600"
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand/30 border-t-brand"
                   aria-hidden="true"
                 />
               </span>
-              <p className="min-w-0 flex-1 font-semibold leading-5 text-zinc-900">
+              <p className="min-w-0 flex-1 font-semibold leading-5 text-white">
                 {generation.label} {copy.notifications.generating}
                 {generation.count > 1 ? ` (${generation.count})` : ''}
               </p>
             </div>
           ))}
 
-          {notifications.map((notif) => (
-            <div
-              key={notif.id}
-              role={notif.type === 'error' ? 'alert' : 'status'}
-              data-notification-type={notif.type}
-              data-notification-tab={notif.tabId}
-              className="pointer-events-auto flex items-start gap-3 rounded-xl border bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
-              style={{
-                borderColor: notif.type === 'success' ? 'rgba(174,219,30,0.5)' : 'rgba(239,68,68,0.4)',
-                animation: 'slideInRight 280ms cubic-bezier(0.16,1,0.3,1) forwards',
-              }}
-            >
-              <span
-                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
-                  notif.type === 'success'
-                    ? 'border-brand-500/50 bg-brand-50 text-brand-700'
-                    : 'border-red-400/40 bg-red-50 text-red-600'
-                }`}
+          {notifications.map((notif) => {
+            const messageText = typeof notif.message === 'string' ? notif.message : String(notif.message?.message || notif.message || '');
+            return (
+              <div
+                key={notif.id}
+                role={notif.type === 'error' ? 'alert' : 'status'}
+                data-notification-type={notif.type}
+                data-notification-tab={notif.tabId}
+                className="pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface-raised px-3.5 py-3 text-[13px] text-white shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
+                style={{
+                  borderColor: notif.type === 'success' ? 'rgba(198,241,53,0.5)' : 'rgba(255,60,172,0.45)',
+                  animation: 'slideInRight 280ms cubic-bezier(0.16,1,0.3,1) forwards',
+                }}
               >
-                {notif.type === 'success' ? (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m5 12 4 4L19 6" />
-                  </svg>
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v6" />
-                    <path d="M12 17h.01" />
-                  </svg>
-                )}
-              </span>
+                <span
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                    notif.type === 'success'
+                      ? 'border-brand/40 bg-brand/15 text-brand'
+                      : 'border-pop/40 bg-pop/15 text-pop'
+                  }`}
+                >
+                  {notif.type === 'success' ? (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                  ) : (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 7v6" />
+                      <path d="M12 17h.01" />
+                    </svg>
+                  )}
+                </span>
 
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold leading-5 text-zinc-900">
-                  {notif.label}
-                  <span className="font-normal text-zinc-500">
-                    {' '}
-                    {notif.type === 'success' ? copy.notifications.generationComplete : copy.notifications.generationFailed}
-                  </span>
-                </p>
-                {notif.type === 'error' && notif.message && (
-                  <p className="mt-0.5 line-clamp-2 text-[12px] font-medium leading-4 text-red-600" title={typeof notif.message === 'string' ? notif.message : String(notif.message?.message || notif.message)}>
-                    {typeof notif.message === 'string' ? notif.message : String(notif.message?.message || notif.message)}
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold leading-5 text-white">
+                    {notif.label}
+                    <span className="font-normal text-white/60">
+                      {' '}
+                      {notif.type === 'success' ? copy.notifications.generationComplete : copy.notifications.generationFailed}
+                    </span>
                   </p>
-                )}
-                {notif.type === 'success' && (
-                  <p className="mt-0.5 text-[12px] leading-4 text-zinc-500">
-                    {copy.notifications.resultReady}
-                  </p>
-                )}
-                {notif.type === 'success' && (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenNotification(notif)}
-                    className="mt-1.5 text-[11px] font-bold text-brand-700 transition-colors hover:text-brand-800"
-                    aria-label={copy.notifications.openResult.replace('{label}', notif.label)}
-                  >
-                    {copy.notifications.open}
-                  </button>
-                )}
+                  {notif.type === 'error' && messageText && (
+                    <p className="mt-0.5 line-clamp-2 text-[12px] font-medium leading-4 text-pop-300" title={notif.rawMessage || messageText}>
+                      {messageText}
+                    </p>
+                  )}
+                  {notif.type === 'error' && (
+                    <p className="mt-0.5 text-[12px] leading-4 text-white/50">
+                      {copy.notifications.retryHint}
+                    </p>
+                  )}
+                  {notif.type === 'success' && (
+                    <p className="mt-0.5 text-[12px] leading-4 text-white/60">
+                      {copy.notifications.resultReady}
+                    </p>
+                  )}
+                  {notif.type === 'success' && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenNotification(notif)}
+                      className="mt-1.5 text-[11px] font-bold text-brand transition-colors hover:text-brand-hover"
+                      aria-label={copy.notifications.openResult.replace('{label}', notif.label)}
+                    >
+                      {copy.notifications.open}
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => dismissNotification(notif.id)}
+                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                  aria-label={copy.notifications.dismissNotification}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => dismissNotification(notif.id)}
-                className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-                aria-label={copy.notifications.dismissNotification}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -1179,18 +1351,24 @@ export default function StandaloneShell({ locale = 'en' }) {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in-up">
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in-up"
+          onClick={(e) => { if (e.target === e.currentTarget) closeSettings(); }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-modal-title"
+        >
           <div className="bg-surface-panel border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
-            <h2 className="font-display text-white font-bold text-lg mb-2">{copy.settingsModal.title}</h2>
+            <h2 id="settings-modal-title" className="font-display text-white font-bold text-lg mb-2">{copy.settingsModal.title}</h2>
             <p className="text-secondary text-[13px] mb-8">
               {copy.settingsModal.subtitle}
             </p>
 
             <div className="space-y-4 mb-8">
               <div className="bg-white/5 border border-white/[0.06] rounded-xl p-4">
-                <label className="block text-xs font-semibold text-secondary mb-2">
+                <p className="block text-xs font-semibold text-secondary mb-2">
                    {copy.settingsModal.activeApiKey}
-                </label>
+                </p>
                 <div className="text-[13px] font-mono text-white/80">
                   {apiKey.slice(0, 8)}••••••••••••••••
                 </div>
@@ -1205,7 +1383,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                 {copy.settingsModal.changeKey}
               </button>
               <button
-                onClick={() => setShowSettings(false)}
+                onClick={closeSettings}
                 className="flex-1 h-10 rounded-md bg-white/5 text-white/80 hover:bg-white/10 text-xs font-semibold transition-all border border-white/5"
               >
                 {copy.settingsModal.close}
@@ -1213,6 +1391,18 @@ export default function StandaloneShell({ locale = 'en' }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* MuAPI rejected the saved key: ask for a fresh one without leaving the studio. */}
+      {authPrompt && (
+        <ApiKeyModal
+          overlay
+          locale={locale}
+          title={copy.apiKeyModal.keyStoppedTitle}
+          subtitle={copy.apiKeyModal.keyStoppedSubtitle}
+          onSave={handleKeySave}
+          onClose={() => { setAuthPrompt(null); authPromptDismissedRef.current = true; }}
+        />
       )}
     </div>
   );

@@ -1,6 +1,24 @@
 const SUCCESS_STATUSES = new Set(["completed", "succeeded", "success"]);
 const FAILURE_STATUSES = new Set(["failed", "error", "cancelled", "canceled"]);
 
+// Turns a raw upstream/proxy error body into one short, human-readable line.
+// JSON bodies surface their message/detail/error; HTML error pages (502s,
+// maintenance pages) never reach the UI verbatim.
+export function describeApiError(errText) {
+  const text = String(errText || "").trim();
+  if (!text) return "No details from the AI service.";
+  try {
+    const j = JSON.parse(text);
+    const m = j?.message || j?.detail || j?.error;
+    if (typeof m === "string") return m.slice(0, 160);
+    if (m) return JSON.stringify(m).slice(0, 160);
+  } catch {
+    // not JSON
+  }
+  if (/^\s*</.test(text)) return "The AI service returned an unexpected response. Try again in a moment.";
+  return text.slice(0, 100);
+}
+
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 function getGenerationErrorDetail(result) {
@@ -54,7 +72,7 @@ export async function pollForGenerationResult({
 
     if (!response.ok) {
       const detail = await response.text();
-      const error = new Error(`Poll Failed: ${response.status} - ${detail.slice(0, 100)}`);
+      const error = new Error(`Poll Failed: ${response.status} - ${describeApiError(detail)}`);
       error.requestId = requestId;
 
       if (response.status >= 500 && attempt < maxAttempts) continue;

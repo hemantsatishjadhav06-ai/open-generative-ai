@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import AgentChatClient from "./AgentChatClient";
 
 /**
@@ -17,11 +18,11 @@ export async function generateMetadata() {
 const BASE_URL = 'https://api.muapi.ai';
 
 async function fetchAgentDetails(agentId, apiKey) {
-  if (!apiKey) return null;
-  
-  // Try fetching by slug first
+  if (!apiKey) return { status: 'error' };
+
+  // Try fetching by slug first, then by direct ID (if it looks like a UUID).
+  // 'missing' = every lookup we tried said 404; anything else is 'error'.
   try {
-    console.log(`[AgentPage] Fetching agent by slug: ${agentId}`);
     const res = await fetch(
       `${BASE_URL}/agents/by-slug/${agentId}`,
       {
@@ -29,11 +30,13 @@ async function fetchAgentDetails(agentId, apiKey) {
         headers: { "x-api-key": apiKey },
       }
     );
-    if (res.ok) return await res.json();
-    
-    // If by-slug fails, try fetching by direct ID (if it looks like a UUID)
+    if (res.ok) return { status: 'ok', data: await res.json() };
+    if (res.status !== 404) {
+      console.warn(`[AgentPage] Agent lookup failed with ${res.status}`);
+      return { status: 'error' };
+    }
+
     if (agentId.length > 20) {
-      console.log(`[AgentPage] Fetch by slug failed, trying by ID: ${agentId}`);
       const resId = await fetch(
         `${BASE_URL}/agents/${agentId}`,
         {
@@ -41,14 +44,17 @@ async function fetchAgentDetails(agentId, apiKey) {
           headers: { "x-api-key": apiKey },
         }
       );
-      if (resId.ok) return await resId.json();
+      if (resId.ok) return { status: 'ok', data: await resId.json() };
+      if (resId.status !== 404) {
+        console.warn(`[AgentPage] Agent lookup by ID failed with ${resId.status}`);
+        return { status: 'error' };
+      }
     }
-    
-    console.warn(`[AgentPage] Failed to fetch agent details for: ${agentId}`);
-    return null;
+
+    return { status: 'missing' };
   } catch (error) {
-    console.error("[AgentPage] Fetch error:", error);
-    return null;
+    console.error("[AgentPage] Fetch error:", error?.message || error);
+    return { status: 'error' };
   }
 }
 
@@ -71,17 +77,21 @@ export default async function AgentPage({ params }) {
   const cookieStore = await cookies();
   const apiKey = cookieStore.get("muapi_key")?.value;
 
-  console.log(`[AgentPage] Loading page for agent: ${agent_id}, hasKey: ${!!apiKey}`);
+  // No key yet: the studio shows the key screen and sets the cookie.
+  if (!apiKey) redirect('/studio/agents');
 
-  const [agentDetails, userData] = await Promise.all([
+  const [agentResult, userData] = await Promise.all([
     fetchAgentDetails(agent_id, apiKey),
     fetchUserData(apiKey)
   ]);
 
+  if (agentResult.status === 'missing') notFound();
+
   return (
-    <AgentChatClient 
-      agentDetails={agentDetails} 
-      initialHistory={null} 
+    <AgentChatClient
+      agentDetails={agentResult.status === 'ok' ? agentResult.data : null}
+      loadError={agentResult.status === 'error'}
+      initialHistory={null}
       userData={userData}
     />
   );

@@ -2,6 +2,7 @@ import './globals.css';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { headers } from 'next/headers';
 import { getLocaleConfig } from '@/lib/locales';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 // Body face. Exposed as --font-inter and consumed by tailwind `font-sans`
 // and the body rule in globals.css.
@@ -22,15 +23,30 @@ const spaceGrotesk = Space_Grotesk({
 const SITE_TITLE = 'Creator Agency — AI studio for creators';
 const SITE_DESCRIPTION = 'Make images, video, audio, avatars and edits with 400+ AI models in one studio. No gatekeeping, no fluff.';
 
+// Plain-string title (no `%s` template): app/agents/layout.js and the studio
+// pages export fully suffixed titles of their own. og:image/twitter:image
+// come from app/opengraph-image.js; metadataBase makes them absolute.
 export const metadata = {
+  metadataBase: getSiteUrl(),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   applicationName: 'Creator Agency',
+  alternates: {
+    canonical: '/',
+    languages: { en: '/', 'zh-CN': '/zh', 'x-default': '/' },
+  },
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     siteName: 'Creator Agency',
     type: 'website',
+    url: '/',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 

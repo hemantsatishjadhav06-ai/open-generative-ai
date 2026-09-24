@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { track } from "../track.js";
+import { fetchResultFile, shareResult } from "../utils/resultFile.js";
 
 async function getClipboardPngBlob(url) {
   const response = await fetch(url);
@@ -149,6 +151,7 @@ export function GenerationCopyButtons({
       }
 
       setCopiedKind(kind);
+      track(kind === "image" ? "image_copied" : "prompt_copied");
       window.setTimeout(() => {
         setCopiedKind((current) => (current === kind ? null : current));
       }, 1600);
@@ -171,8 +174,8 @@ export function GenerationCopyButtons({
           title={copiedKind === "text" ? "Prompt copied" : "Copy prompt"}
           aria-label={copiedKind === "text" ? "Prompt copied" : "Copy prompt"}
           onClick={(event) => runCopy(event, "text")}
-          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-[#c6f135] hover:text-black ${
-            copiedKind === "text" ? "text-[#c6f135]" : "text-white"
+          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-brand hover:text-black ${
+            copiedKind === "text" ? "text-brand" : "text-white"
           }`}
         >
           {copiedKind === "text" ? (
@@ -188,8 +191,8 @@ export function GenerationCopyButtons({
           title={copiedKind === "image" ? "Image copied" : "Copy image"}
           aria-label={copiedKind === "image" ? "Image copied" : "Copy image"}
           onClick={(event) => runCopy(event, "image")}
-          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-[#c6f135] hover:text-black ${
-            copiedKind === "image" ? "text-[#c6f135]" : "text-white"
+          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-brand hover:text-black ${
+            copiedKind === "image" ? "text-brand" : "text-white"
           }`}
         >
           {copiedKind === "image" ? (
@@ -248,6 +251,15 @@ function ActionIcon({ kind }) {
     );
   }
 
+  if (kind === "share") {
+    return (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7" />
+        <path d="M16 6l-4-4-4 4M12 2v13" />
+      </svg>
+    );
+  }
+
   if (kind === "copy") {
     return (
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -265,13 +277,83 @@ function ActionIcon({ kind }) {
   );
 }
 
+// Web Share support is only known after mount; starting false keeps the
+// server render and the first client render identical.
+function useCanShare() {
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
+  return canShare;
+}
+
+// Prefetches the result as a File so navigator.share can run synchronously
+// inside the tap/click gesture (browsers reject share() after an await).
+function useSharePayload(share) {
+  const fileRef = useRef(null);
+  const pendingRef = useRef(null);
+
+  const prefetch = () => {
+    if (!share?.url || fileRef.current || pendingRef.current) return;
+    pendingRef.current = fetchResultFile(share.url, share.filename || "creator-agency-result")
+      .then((file) => {
+        fileRef.current = file;
+        return file;
+      })
+      .catch(() => null);
+  };
+
+  const runShare = async (onNotice, onError) => {
+    if (!share?.url) return;
+    try {
+      const result = await shareResult({ url: share.url, file: fileRef.current, title: share.title });
+      if (result === "shared") track("result_shared", { kind: fileRef.current ? "file" : "link" });
+      if (result === "copied") onNotice?.(share.copiedLabel || "Link copied");
+    } catch (error) {
+      console.error("Share failed:", error);
+      onError?.(share.failedLabel || "Could not share this result.");
+    }
+  };
+
+  return { prefetch, runShare };
+}
+
+// Desktop hover-card share button. Hidden until mount confirms Web Share,
+// so browsers without it never see a dead button.
+export function GenerationShareButton({ share, onNotice, onError }) {
+  const canShare = useCanShare();
+  const { prefetch, runShare } = useSharePayload(share);
+  if (!canShare || !share?.url) return null;
+  const label = share.label || "Share";
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      onPointerEnter={prefetch}
+      onFocus={prefetch}
+      onClick={(event) => {
+        event.stopPropagation();
+        runShare(onNotice, onError);
+      }}
+      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
+    >
+      <ActionIcon kind="share" />
+    </button>
+  );
+}
+
 export default function MobileGenerationActions({
   actions = [],
   prompt,
   imageUrl,
   onCopyError,
+  share = null,
+  onNotice,
 }) {
   const [open, setOpen] = useState(false);
+  const canShare = useCanShare();
+  const { prefetch, runShare } = useSharePayload(share);
   const copyActions = [
     prompt
       ? {
@@ -304,7 +386,14 @@ export default function MobileGenerationActions({
         }
       : null,
   ];
-  const availableActions = [...copyActions, ...actions].filter(Boolean);
+  const shareAction = canShare && share?.url
+    ? {
+        kind: "share",
+        label: share.label || "Share",
+        onSelect: () => runShare(onNotice, onCopyError),
+      }
+    : null;
+  const availableActions = [...copyActions, shareAction, ...actions].filter(Boolean);
 
   if (availableActions.length === 0) return null;
 
@@ -315,6 +404,7 @@ export default function MobileGenerationActions({
   const runAction = (event, action) => {
     event.stopPropagation();
     setOpen(false);
+    if (action.kind === "download") track("result_downloaded", { kind: action.kind });
     action.onSelect?.();
   };
 
@@ -338,6 +428,7 @@ export default function MobileGenerationActions({
         aria-expanded={open}
         onClick={(event) => {
           event.stopPropagation();
+          if (!open) prefetch();
           setOpen((current) => !current);
         }}
         className="relative z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/70 text-white shadow-lg backdrop-blur-md active:scale-95"

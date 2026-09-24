@@ -41,7 +41,7 @@
     "loadingHeading": "Generating Soundtrack",
     "loadingSubtext": "Rendering audio waveforms and vocals...",
     "emptyHeading": "Audio Studio",
-    "emptyBody": "Choose an AI music model, voice cloner, or sound generator. Modify variables on the left and craft your next high-fidelity track.",
+    "emptyBody": "Pick a music, voice or sound model, set it up on the left, and make your next track.",
     "newGeneration": "New Generation",
     "success": "Success"
   },

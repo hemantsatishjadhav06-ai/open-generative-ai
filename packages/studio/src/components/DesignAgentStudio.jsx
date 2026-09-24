@@ -15,6 +15,8 @@ export default function DesignAgentStudio({
   onGenerationEnd,
   onGenerationComplete,
   onGenerationError,
+  backHref,
+  brandSlot,
 }) {
   const [userData, setUserData] = useState(null);
 
@@ -59,7 +61,7 @@ export default function DesignAgentStudio({
   }, [apiKey, userEmail, balance]);
 
   return (
-    <div className="h-full w-full bg-black overflow-hidden design-agent-studio">
+    <div className="h-full w-full bg-app-bg overflow-hidden design-agent-studio">
       <CreativeCanvas 
         user={userData}
         isAuthorized={!!userData}
@@ -71,6 +73,8 @@ export default function DesignAgentStudio({
         onGenerationEnd={onGenerationEnd}
         onGenerationComplete={onGenerationComplete}
         onGenerationError={onGenerationError}
+        backHref={backHref}
+        brandSlot={brandSlot}
       />
     </div>
   );

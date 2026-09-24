@@ -39,6 +39,7 @@ const surface = {
     panel: '#0e0b18',
     card: '#151021',
     raised: '#1c1730',
+    hover: '#272040',
     border: 'rgba(255, 255, 255, 0.07)',
 };
 
@@ -73,6 +74,11 @@ module.exports = {
             fontFamily: {
                 sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
                 display: ['var(--font-display)', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+            },
+            // w-18/h-18/h-22 are used by the studio hero collages.
+            spacing: {
+                18: '4.5rem',
+                22: '5.5rem',
             },
             borderRadius: {
                 'xl': '1rem',

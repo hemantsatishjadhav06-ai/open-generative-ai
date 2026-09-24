@@ -24,7 +24,15 @@
     "allProviders": "All Providers",
     "searchPlaceholder": "Search models...",
     "modelsSuffix": "models",
-    "noModelsFound": "No models found"
+    "noModelsFound": "Nothing matches. Try 'photo', 'text' or 'fast'.",
+    "categoryTools": "Tools",
+    "picksHeading": "Picks",
+    "allModelsHeading": "All models",
+    "pickHintAllRounder": "Best all-rounder",
+    "pickHintText": "Clean text in images",
+    "pickHintTypography": "Posters, logos, thumbnails",
+    "pickHintPhotoreal": "Photoreal shots",
+    "pickHintFast": "Fast and cheap"
   },
   "gallery": {
     "generatedImageAlt": "Generated image",
@@ -33,11 +41,14 @@
     "deleteConfirm": "Are you sure you want to delete this generated item?",
     "deleteFailed": "Failed to delete item",
     "noPrompt": "No prompt provided",
-    "modelFallback": "Image Studio"
+    "modelFallback": "Image Studio",
+    "share": "Share",
+    "linkCopied": "Link copied"
   },
   "emptyState": {
-    "heading": "START CREATING WITH",
-    "subtitle": "Describe a scene, character, mood, or style — and watch it come to life"
+    "heading": "Make something.",
+    "subtitle": "Type a scene, a mood, a character. We handle the rest.",
+    "modelLabel": "Model"
   },
   "promptBar": {
     "placeholderMultiImage": "{count} images selected — describe the transformation (optional)",
@@ -64,5 +75,22 @@
   },
   "fullscreen": {
     "previewAlt": "Fullscreen Preview"
+  },
+  "controls": {
+    "batchLabel": "Images per run",
+    "batchDecrease": "Fewer images",
+    "batchIncrease": "More images"
+  },
+  "aspectRatioHints": {
+    "9:16": "TikTok · Reels · Shorts",
+    "16:9": "YouTube · thumbnail",
+    "1:1": "Feed post",
+    "4:5": "IG / FB feed",
+    "3:4": "Portrait post",
+    "4:3": "Classic",
+    "21:9": "Cinematic",
+    "9:21": "Tall story",
+    "2:3": "Pin / poster",
+    "3:2": "Photo"
   }
 }

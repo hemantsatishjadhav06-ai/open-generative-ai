@@ -36,10 +36,10 @@
     "uploadSourceVideo": "上传源视频",
     "generate": "生成",
     "generating": "生成中...",
-    "coordinatesOnly": "仅返回坐标"
+    "coordinatesOnly": "只要时间点"
   },
   "placeholders": {
-    "promptOrUrl": "描述要提取的提示词/高光片段"
+    "promptOrUrl": "想剪哪些片段？例如：最搞笑的反应"
   },
   "popovers": {
     "aspectRatio": "宽高比",

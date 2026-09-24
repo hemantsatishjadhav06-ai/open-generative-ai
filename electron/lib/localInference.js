@@ -224,7 +224,8 @@ async function getBinaryStatus() {
     };
 }
 
-// Metal-enabled binaries hosted on our own release (macOS arm64 only).
+// Metal-enabled binaries hosted on the upstream Open Generative AI release
+// (Anil-matcha/Open-Generative-AI), macOS arm64 only.
 // Other platforms fall back to the stock leejet release.
 const CUSTOM_BINARIES = {
     'darwin-arm64': 'https://github.com/Anil-matcha/Open-Generative-AI/releases/download/v1.0.3-binaries/sd-cli-metal-macos-arm64.zip',

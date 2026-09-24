@@ -11,7 +11,7 @@ import {
 } from "./prompt/PromptComposer.jsx";
 
 const FIELD_CLASS =
-  "w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white outline-none transition-colors focus:border-[#c6f135]/50";
+  "w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white outline-none transition-colors focus:border-brand/50";
 
 function createEmptyValue(schema = {}) {
   if (schema.default !== undefined) return schema.default;
@@ -80,7 +80,7 @@ function ScalarInput({ schema, value, onChange, label }) {
         onClick={() => onChange(!value)}
         className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
           value
-            ? "border-[#c6f135]/50 bg-[#c6f135]/30"
+            ? "border-brand/50 bg-brand/30"
             : "border-white/10 bg-white/[0.06]"
         }`}
       >
@@ -172,7 +172,7 @@ function ArrayInput({ schema, value, onChange, label }) {
           type="button"
           onClick={() => onChange([...items, createEmptyValue(itemSchema)])}
           aria-label={`Add ${label}`}
-          className="rounded-lg border border-dashed border-white/10 px-3 py-2 text-xs font-semibold text-white/45 hover:border-[#c6f135]/30 hover:text-[#c6f135]"
+          className="rounded-lg border border-dashed border-white/10 px-3 py-2 text-xs font-semibold text-white/45 hover:border-brand/30 hover:text-brand"
         >
           + Add
         </button>

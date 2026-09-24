@@ -24,7 +24,10 @@
     "./McpCliStudio": "./src/components/McpCliStudio.jsx",
     "./AiInfluencerStudio": "./src/components/AiInfluencerStudio.jsx",
     "./LayersStudio": "./src/components/LayersStudio.jsx",
-    "./MotionControlStudio": "./src/components/MotionControlStudio.jsx"
+    "./MotionControlStudio": "./src/components/MotionControlStudio.jsx",
+    "./balance": "./src/balance.js",
+    "./formatError": "./src/utils/formatError.js",
+    "./useEscapeKey": "./src/components/prompt/useEscapeKey.js"
   },
   "files": [
     "src",

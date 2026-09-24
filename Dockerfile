@@ -1,28 +1,30 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies exactly as locked
 FROM base AS deps
+ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1
 COPY package*.json ./
 COPY packages/Vibe-Workflow/packages/workflow-builder/package*.json ./packages/Vibe-Workflow/packages/workflow-builder/
 COPY packages/Open-Poe-AI/packages/agents/package*.json ./packages/Open-Poe-AI/packages/agents/
 COPY packages/Open-AI-Design-Agent/packages/design-agent/package*.json ./packages/Open-AI-Design-Agent/packages/design-agent/
 COPY packages/studio/package*.json ./packages/studio/
-RUN npm install
+RUN npm ci
 
-# Build sub-packages
+# Build (the root "prebuild" script builds the workspace packages first)
 FROM deps AS builder
 COPY . .
-RUN npm run build:packages
+# Build-time only: NEXT_PUBLIC_* values are inlined into the bundle and the
+# middleware CSP. An unset ARG is '' and the hosted Reelty URL is used.
+ARG NEXT_PUBLIC_REELTY_URL
+ENV NEXT_PUBLIC_REELTY_URL=$NEXT_PUBLIC_REELTY_URL
 RUN npm run build
 
-# Production runner
+# Production runner: standalone server only, no devDependencies
 FROM base AS runner
-ENV NODE_ENV=production
-COPY --from=builder /app/.next ./.next
+ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

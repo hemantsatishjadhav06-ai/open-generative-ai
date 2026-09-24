@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation';
+import Landing from '@/components/Landing';
+import { buildLandingMetadata } from '@/lib/seo';
+
+export const metadata = buildLandingMetadata('zh');
 
 export default function ZhHome() {
-  redirect('/zh/studio');
+  return <Landing locale="zh" />;
 }

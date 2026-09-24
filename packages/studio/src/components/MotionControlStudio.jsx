@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import HeroCollage from "./HeroCollage";
+import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import toast, { Toaster } from "react-hot-toast";
 import { processMotionControl, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
@@ -64,14 +66,14 @@ const UPLOAD_STATE = {
 };
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-const VideoIcon = ({ className = "text-white/40 group-hover:text-[#c6f135] transition-colors" }) => (
+const VideoIcon = ({ className = "text-white/40 group-hover:text-brand transition-colors" }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polygon points="23 7 16 12 23 17 23 7" />
     <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
   </svg>
 );
 
-const ImageIcon = ({ className = "text-white/40 group-hover:text-[#c6f135] transition-colors" }) => (
+const ImageIcon = ({ className = "text-white/40 group-hover:text-brand transition-colors" }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
     <circle cx="8.5" cy="8.5" r="1.5" />
@@ -79,7 +81,7 @@ const ImageIcon = ({ className = "text-white/40 group-hover:text-[#c6f135] trans
   </svg>
 );
 
-const SlidersIcon = ({ className = "text-white/50 group-hover:text-[#c6f135] transition-colors" }) => (
+const SlidersIcon = ({ className = "text-white/50 group-hover:text-brand transition-colors" }) => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <line x1="4" y1="21" x2="4" y2="14" />
     <line x1="4" y1="10" x2="4" y2="3" />
@@ -153,9 +155,9 @@ function VideoMediaButton({
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
         className: isDragging
-          ? "border-[#c6f135] bg-[#c6f135]/20 ring-2 ring-[#c6f135]/50 scale-105"
+          ? "border-brand bg-brand/20 ring-2 ring-brand/50 scale-105"
           : uploadState === UPLOAD_STATE.READY
-          ? "border-[#c6f135] ring-1 ring-[#c6f135]/40"
+          ? "border-brand ring-1 ring-brand/40"
           : "",
       })}
     >
@@ -184,21 +186,21 @@ function VideoMediaButton({
             <circle
               cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2" fill="transparent"
               strokeDasharray={88} strokeDashoffset={88 - (88 * progress) / 100}
-              className="text-[#c6f135] transition-all duration-300"
+              className="text-brand transition-all duration-300"
             />
           </svg>
-          <span className="absolute text-[9px] font-black text-[#c6f135] leading-none">
+          <span className="absolute text-[9px] font-black text-brand leading-none">
             {progress}%
           </span>
         </div>
       )}
 
       {uploadState === UPLOAD_STATE.READY && (
-        <div className="flex items-center justify-center w-full h-full absolute inset-0 bg-[#c6f135]/10 rounded-full group-hover:bg-red-500/20 transition-all">
+        <div className="flex items-center justify-center w-full h-full absolute inset-0 bg-brand/10 rounded-full group-hover:bg-red-500/20 transition-all">
           {previewUrl ? (
             <video src={previewUrl} className="w-full h-full object-cover rounded-full" muted playsInline />
           ) : (
-            <VideoIcon className="text-[#c6f135]" />
+            <VideoIcon className="text-brand" />
           )}
           {/* Clear hover icon */}
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-400 font-bold text-base transition-opacity">
@@ -229,8 +231,18 @@ function CharacterImagesMediaButton({
     const handler = (e) => {
       if (!containerRef.current?.contains(e.target)) setShowList(false);
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        setShowList(false);
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [showList]);
 
   const handleFiles = async (files) => {
@@ -260,7 +272,7 @@ function CharacterImagesMediaButton({
         }
         className={promptMediaButtonClassName({
           active: images.length > 0,
-          className: images.length > 0 ? "border-[#c6f135] ring-1 ring-[#c6f135]/40" : "",
+          className: images.length > 0 ? "border-brand ring-1 ring-brand/40" : "",
         })}
       >
         <input
@@ -283,14 +295,14 @@ function CharacterImagesMediaButton({
 
         {isUploading && (
           <div className="flex flex-col items-center justify-center w-full h-full absolute inset-0 bg-black/80 z-20 backdrop-blur-[2px]">
-            <span className="animate-spin text-xs text-[#c6f135]">◌</span>
+            <span className="animate-spin text-xs text-brand">◌</span>
           </div>
         )}
 
         {images.length > 0 && (
           <div className="w-full h-full relative rounded-full overflow-hidden">
             <img src={images[images.length - 1].url} alt="" className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-black text-[#c6f135] text-center leading-3">
+            <div className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-black text-brand text-center leading-3">
               {images.length}
             </div>
           </div>
@@ -303,7 +315,7 @@ function CharacterImagesMediaButton({
           type="button"
           onClick={() => inputRef.current?.click()}
           title={copy.titles.uploadImage}
-          className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/10 hover:border-[#c6f135]/50 hover:bg-[#c6f135]/10 text-white/50 hover:text-[#c6f135] flex items-center justify-center text-xs transition-colors"
+          className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/10 hover:border-brand/50 hover:bg-brand/10 text-white/50 hover:text-brand flex items-center justify-center text-xs transition-colors"
         >
           +
         </button>
@@ -319,7 +331,7 @@ function CharacterImagesMediaButton({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="text-[11px] font-bold text-[#c6f135] hover:underline"
+              className="text-[11px] font-bold text-brand hover:underline"
             >
               + {copy.labels.addImage}
             </button>
@@ -371,8 +383,17 @@ function AssetsDropdown({
         onClose();
       }
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [onClose, anchorRef]);
 
   const items = activeTab === "videos" ? videos : activeTab === "images" ? images : results;
@@ -396,7 +417,7 @@ function AssetsDropdown({
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
               activeTab === tab
-                ? "bg-[#c6f135] text-black shadow-sm"
+                ? "bg-brand text-black shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
@@ -430,7 +451,7 @@ function AssetsDropdown({
                     e.stopPropagation();
                     setFullscreenUrl(item.url);
                   }}
-                  className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 flex items-center justify-center transition-opacity text-white hover:text-[#c6f135]"
+                  className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 flex items-center justify-center transition-opacity text-white hover:text-brand"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="11" cy="11" r="8" />
@@ -456,7 +477,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectImage(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-[#c6f135] rounded-md hover:bg-[#c6f135]/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-black font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsImage}
                   </button>
@@ -467,7 +488,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectVideo(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-[#c6f135] rounded-md hover:bg-[#c6f135]/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-black font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsVideo}
                   </button>
@@ -516,8 +537,18 @@ function MenuDropdown({
         onClose();
       }
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        onClose();
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [isOpen, onClose, anchorRef]);
 
   if (!isOpen) return null;
@@ -621,6 +652,9 @@ export default function MotionControlStudio({
   // ── History & Gallery ───────────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
+  const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
+  useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
+  useFocusReturn(Boolean(fullscreenUrl));
 
   // ── Asset Library Storage ───────────────────────────────────────────────────
   const [assetVideos, setAssetVideos] = useState(() => {
@@ -883,7 +917,7 @@ export default function MotionControlStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-[#c6f135]/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0e0b18] shadow-xl hover:border-brand/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -913,7 +947,7 @@ export default function MotionControlStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `motion-control-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#c6f135] hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-brand hover:text-black transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -929,7 +963,7 @@ export default function MotionControlStudio({
                       setVideoState(UPLOAD_STATE.READY);
                       toast.success("Loaded video as reference motion!");
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-[#c6f135] hover:bg-[#c6f135] hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-brand hover:bg-brand hover:text-black transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="17 1 21 5 17 9" />
@@ -986,7 +1020,7 @@ export default function MotionControlStudio({
                     </p>
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-1 mt-1">
-                    <span className="text-[10px] font-bold text-[#c6f135] px-2 py-0.5 bg-[#c6f135]/10 rounded border border-[#c6f135]/20 whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand/10 rounded border border-brand/20 whitespace-nowrap">
                       {entry.mode === "objects_swap" ? copy.badges.objectsSwap : copy.badges.motionTransfer}
                     </span>
                     <span className="text-[10px] text-white/40">
@@ -1001,29 +1035,18 @@ export default function MotionControlStudio({
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh] relative">
             {/* Ambient background glow */}
-            <div className="absolute w-96 h-96 bg-[#c6f135]/5 rounded-full blur-3xl pointer-events-none -z-10" />
+            <div className="absolute w-96 h-96 bg-brand/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
             {/* Visual Overlapping Cards */}
-            <div className="flex items-center justify-center gap-2 md:gap-4 mb-8 select-none scale-90 sm:scale-100">
-              <div className="w-20 h-24 sm:w-26 sm:h-32 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
-                <img src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif" alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="w-20 h-24 sm:w-26 sm:h-32 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-4 flex-shrink-0">
-                <img src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif" alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="w-20 h-20 sm:w-26 sm:h-26 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-4 flex-shrink-0">
-                <img src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif" alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="w-20 h-24 sm:w-26 sm:h-32 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-4 flex-shrink-0">
-                <img src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif" alt="" className="w-full h-full object-cover" />
-              </div>
+            <div className="flex items-center justify-center gap-2 md:gap-4 mb-8 select-none scale-90 sm:scale-100" aria-hidden="true">
+              <HeroCollage bare size="lg" />
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 text-center px-4 flex flex-col items-center">
               <span className="text-white/60 uppercase text-xs sm:text-sm font-bold tracking-widest mb-1.5">
                 {copy.empty.titleLine1}
               </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#c6f135] to-white font-black uppercase tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-brand to-white font-black uppercase tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -1114,7 +1137,7 @@ export default function MotionControlStudio({
                   active: openDropdown === "model",
                 })}
               >
-                <div className="w-3.5 h-3.5 bg-[#c6f135] rounded-sm flex items-center justify-center flex-shrink-0">
+                <div className="w-3.5 h-3.5 bg-brand rounded-sm flex items-center justify-center flex-shrink-0">
                   <span className="text-[9px] font-black text-black">M</span>
                 </div>
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1199,7 +1222,7 @@ export default function MotionControlStudio({
                     max={maxDurationAllowed}
                     value={duration}
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full accent-[#c6f135] cursor-pointer"
+                    className="w-full accent-brand cursor-pointer"
                   />
 
                   {/* Preset Pills */}
@@ -1214,7 +1237,7 @@ export default function MotionControlStudio({
                         }}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
                           duration === d
-                            ? "bg-[#c6f135] text-black font-bold shadow-sm"
+                            ? "bg-brand text-black font-bold shadow-sm"
                             : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/10"
                         }`}
                       >
@@ -1236,7 +1259,7 @@ export default function MotionControlStudio({
                 className: "gap-1.5",
               })}
             >
-              <AudioIcon enabled={generateAudio} className={generateAudio ? "text-[#c6f135]" : "text-white/40"} />
+              <AudioIcon enabled={generateAudio} className={generateAudio ? "text-brand" : "text-white/40"} />
               <span className={PROMPT_CONTROL_LABEL_CLASS}>
                 {copy.labels.generateAudio}
               </span>
@@ -1279,7 +1302,7 @@ export default function MotionControlStudio({
                         type="button"
                         onClick={() => setHighBitrate(!highBitrate)}
                         className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${
-                          highBitrate ? "bg-[#c6f135]" : "bg-white/15"
+                          highBitrate ? "bg-brand" : "bg-white/15"
                         }`}
                       >
                         <div
@@ -1303,7 +1326,7 @@ export default function MotionControlStudio({
                             onClick={() => setQuality(q)}
                             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
                               quality === q
-                                ? "bg-[#c6f135] text-black shadow-sm"
+                                ? "bg-brand text-black shadow-sm"
                                 : "text-white/50 hover:text-white bg-white/[0.04]"
                             }`}
                           >
@@ -1325,7 +1348,7 @@ export default function MotionControlStudio({
                       value={seed}
                       onChange={(e) => setSeed(Number(e.target.value))}
                       placeholder="-1"
-                      className="w-20 px-2 py-1 text-xs bg-black/60 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-[#c6f135]/50"
+                      className="w-20 px-2 py-1 text-xs bg-black/60 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-brand/50"
                     />
                   </div>
                 </PromptPopover>
@@ -1352,7 +1375,7 @@ export default function MotionControlStudio({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  className="text-white/50 group-hover:text-[#c6f135] transition-colors"
+                  className="text-white/50 group-hover:text-brand transition-colors"
                 >
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -1409,7 +1432,7 @@ export default function MotionControlStudio({
 
       {/* ── FULLSCREEN MEDIA MODAL ── */}
       {fullscreenUrl && (
-        <div
+        <div role="dialog" aria-modal="true"
           className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
@@ -1417,7 +1440,7 @@ export default function MotionControlStudio({
             className="relative max-w-5xl max-h-[90vh] w-full flex flex-col items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
+            <button aria-label={copy?.fullscreen?.close || "Close"}
               type="button"
               onClick={() => setFullscreenUrl(null)}
               className="absolute -top-12 right-0 text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"

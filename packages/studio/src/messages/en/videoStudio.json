@@ -45,6 +45,26 @@
     "duration": "Duration",
     "resolution": "Resolution"
   },
+  "aspectRatioHints": {
+    "9:16": "TikTok · Reels · Shorts",
+    "16:9": "YouTube · thumbnail",
+    "1:1": "Feed post",
+    "4:5": "IG / FB feed",
+    "3:4": "Portrait post",
+    "4:3": "Classic",
+    "21:9": "Cinematic",
+    "9:21": "Tall story"
+  },
+  "modelDropdown": {
+    "categoryTools": "Tools",
+    "picksHeading": "Picks",
+    "allModelsHeading": "All models",
+    "noModelsFound": "Nothing matches. Try 'photo', 'text' or 'fast'.",
+    "pickHintCinematic": "Cinematic, with sound",
+    "pickHintMotion": "Smooth, realistic motion",
+    "pickHintSocial": "Great for reels",
+    "pickHintStory": "Story-driven clips"
+  },
   "controls": {
     "draw": "Draw",
     "generate": "Generate",
@@ -60,17 +80,14 @@
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this generated item?",
     "noPromptProvided": "No prompt provided",
-    "fallbackTitle": "Video Studio"
+    "fallbackTitle": "Video Studio",
+    "share": "Share",
+    "linkCopied": "Link copied"
   },
   "empty": {
-    "heading": "START CREATING WITH",
-    "subtitle": "Bring your images to life as AI video — motion and all"
-  },
-  "creativeAssets": {
-    "asset1": "Creative asset 1",
-    "asset2": "Creative asset 2",
-    "asset3": "Creative asset 3",
-    "asset4": "Creative asset 4"
+    "heading": "Make it move.",
+    "subtitle": "Bring your images to life as AI video — motion and all",
+    "modelLabel": "Model"
   },
   "errors": {
     "modelChangedDuringUpload": "The model changed during upload. Please add the file again.",
@@ -136,7 +153,7 @@
     "fields": {
       "seed": {
         "title": "Seed",
-        "description": "Use −1 for random results."
+        "description": "Leave at −1 for a fresh result each time."
       },
       "high_bitrate": {
         "title": "High bitrate",

@@ -2,7 +2,7 @@
   "hero": {
     "badge": "For developers & AI agents",
     "title": "MCP & CLI",
-    "description": "Use Creator Agency from your terminal, your IDE or any MCP-compatible assistant. Make images, video and audio across 100+ models — without leaving your workflow."
+    "description": "Use the same models from your terminal, your IDE or any MCP-compatible assistant with the MuAPI CLI and MCP server. Make images, video and audio across 100+ models without leaving your workflow."
   },
   "quickStart": {
     "sectionLabel": "Quick start",

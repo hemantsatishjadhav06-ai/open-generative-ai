@@ -1,150 +1,43 @@
 import { NextResponse } from 'next/server';
+import { proxyToMuapi, routeLabel, MUAPI_BASE, getApiKey } from '@/lib/muapiProxy';
+import { rewriteUploadUrl } from '@/lib/muapiUpstream';
 
-const MUAPI_BASE = 'https://api.muapi.ai';
-
-function getApiKey(request) {
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7).trim();
-        if (token) return token;
-    }
-    const headerKey = request.headers.get('x-api-key');
-    return (headerKey && headerKey.trim()) || null;
-}
-
-function cleanHeaders(request) {
-    const headers = new Headers(request.headers);
-    headers.delete('host');
-    headers.delete('connection');
-    headers.delete('cookie'); // CRITICAL: Stop forwarding browser cookies to MuAPI to avoid auth conflicts
-    headers.delete('authorization');
-    return headers;
+async function resolve(request, params) {
+    const slug = await params;
+    const pathSegments = slug.path || [];
+    const path = pathSegments.join('/');
+    const { search } = new URL(request.url);
+    return { pathSegments, path, search };
 }
 
 export async function GET(request, { params }) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    
+    const { pathSegments, path, search } = await resolve(request, params);
+
     // Handle alias: get_upload_file -> get_file_upload_url
     const effectivePath = path === 'get_upload_file' ? 'get_file_upload_url' : path;
-    
-    const apiKey = getApiKey(request);
-    if (effectivePath === 'get_file_upload_url' && !apiKey) {
+
+    if (effectivePath === 'get_file_upload_url' && !getApiKey(request.headers)) {
         return NextResponse.json({ error: 'Unauthorized: Missing API key' }, { status: 401 });
     }
 
-    const { search } = new URL(request.url);
-    const targetUrl = `${MUAPI_BASE}/app/${effectivePath}${search}`;
-
-    const headers = cleanHeaders(request);
-
-    if (apiKey) headers.set('x-api-key', apiKey);
-
-    try {
-        const response = await fetch(targetUrl, {
-            headers,
-            method: 'GET',
-        });
-
-        const data = await response.json();
-
-        // SPECIAL CASE: Intercept upload URL and redirect to local binary proxy
-        if (effectivePath === 'get_file_upload_url' && data.url) {
-            const originalS3Url = data.url;
-            // We pass the real S3 URL as a header to our proxy
-            data.url = `/api/upload-binary`;
-            
-            // Store target in a temporary way? 
-            // Better: Return the target URL as an extra field that our proxy will look for
-            data.fields = {
-                ...data.fields,
-                'x-proxy-target-url': originalS3Url
-            };
-        }
-
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    return proxyToMuapi(request, `${MUAPI_BASE}/app/${effectivePath}${search}`, {
+        method: 'GET',
+        route: routeLabel('app', pathSegments),
+        transform: effectivePath === 'get_file_upload_url' ? rewriteUploadUrl : undefined,
+    });
 }
 
 export async function POST(request, { params }) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    
-    const { search } = new URL(request.url);
-    const targetUrl = `${MUAPI_BASE}/app/${path}${search}`;
-
-    const headers = cleanHeaders(request);
-
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
-
-    try {
-        const body = await request.arrayBuffer();
-        const response = await fetch(targetUrl, {
-            method: 'POST',
-            headers,
-            body
-        });
-
-        const data = await response.json();
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const { pathSegments, path, search } = await resolve(request, params);
+    return proxyToMuapi(request, `${MUAPI_BASE}/app/${path}${search}`, { method: 'POST', route: routeLabel('app', pathSegments) });
 }
 
 export async function DELETE(request, { params }) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    
-    const { search } = new URL(request.url);
-    const targetUrl = `${MUAPI_BASE}/app/${path}${search}`;
-
-    const headers = cleanHeaders(request);
-
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
-
-    try {
-        const response = await fetch(targetUrl, {
-            method: 'DELETE',
-            headers
-        });
-        const data = await response.json();
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const { pathSegments, path, search } = await resolve(request, params);
+    return proxyToMuapi(request, `${MUAPI_BASE}/app/${path}${search}`, { method: 'DELETE', route: routeLabel('app', pathSegments) });
 }
 
 export async function PUT(request, { params }) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    
-    const { search } = new URL(request.url);
-    const targetUrl = `${MUAPI_BASE}/app/${path}${search}`;
-
-    const headers = cleanHeaders(request);
-
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
-
-    try {
-        const body = await request.arrayBuffer();
-        const response = await fetch(targetUrl, {
-            method: 'PUT',
-            headers,
-            body
-        });
-        const data = await response.json();
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const { pathSegments, path, search } = await resolve(request, params);
+    return proxyToMuapi(request, `${MUAPI_BASE}/app/${path}${search}`, { method: 'PUT', route: routeLabel('app', pathSegments) });
 }

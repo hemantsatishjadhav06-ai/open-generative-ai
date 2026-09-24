@@ -18,3 +18,5 @@ export { default as AiInfluencerStudio } from './components/AiInfluencerStudio';
 export { default as LayersStudio } from './components/LayersStudio';
 export { default as MotionControlStudio } from './components/MotionControlStudio';
 export * from './muapi';
+export { formatErrorMessage } from './utils/formatError.js';
+export { default as useEscapeKey, useFocusReturn } from './components/prompt/useEscapeKey';

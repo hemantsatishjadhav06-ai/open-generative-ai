@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import HeroCollage from "./HeroCollage";
+import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import toast, { Toaster } from "react-hot-toast";
 import { processLipSync, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
@@ -136,7 +138,7 @@ function MediaPickerButton({
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
         className: isDragging
-          ? "ring-2 ring-[#c6f135] ring-offset-1 ring-offset-black scale-105"
+          ? "ring-2 ring-brand ring-offset-1 ring-offset-black scale-105"
           : "",
       })}
     >
@@ -246,8 +248,18 @@ function Dropdown({
         onClose();
       }
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        onClose();
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [isOpen, onClose, anchorRef]);
 
   if (!isOpen) return null;
@@ -425,6 +437,9 @@ export default function LipSyncStudio({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
+  const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
+  useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
+  useFocusReturn(Boolean(fullscreenUrl));
   const [view, setView] = useState("input"); // 'input' | 'result'
   const [activeResultUrl, setActiveResultUrl] = useState(null);
 
@@ -923,40 +938,11 @@ export default function LipSyncStudio({
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
             {/* Overlapping floating cards */}
-            <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
-                  alt="Creative asset 1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
-                  alt="Creative asset 2"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
-                  alt="Creative asset 3"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
-                  alt="Creative asset 4"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+            <HeroCollage />
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.hero.titleLine1}</span>
-              <span className="text-[#c6f135] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.hero.titleLine2}
               </span>
             </h1>
@@ -1015,7 +1001,7 @@ export default function LipSyncStudio({
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="text-white/40 group-hover:text-[#c6f135] transition-colors"
+                      className="text-white/40 group-hover:text-brand transition-colors"
                     >
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
@@ -1044,7 +1030,7 @@ export default function LipSyncStudio({
                   label={copy.media.videoLabel}
                   mediaCopy={copy.media}
                   icon={
-                    <VideoIcon className="text-white/40 group-hover:text-[#c6f135] transition-colors" />
+                    <VideoIcon className="text-white/40 group-hover:text-brand transition-colors" />
                   }
                   onUpload={handleVideoPick}
                   onClear={() => {
@@ -1067,7 +1053,7 @@ export default function LipSyncStudio({
                 label={copy.media.audioLabel}
                 mediaCopy={copy.media}
                 icon={
-                  <MicIcon className="text-white/40 group-hover:text-[#c6f135] transition-colors" />
+                  <MicIcon className="text-white/40 group-hover:text-brand transition-colors" />
                 }
                 onUpload={handleAudioPick}
                 onClear={() => {
@@ -1113,7 +1099,7 @@ export default function LipSyncStudio({
                     active: openDropdown === "model",
                   })}
                 >
-                  <div className="w-3.5 h-3.5 bg-[#c6f135] rounded-sm flex items-center justify-center">
+                  <div className="w-3.5 h-3.5 bg-brand rounded-sm flex items-center justify-center">
                     <span className="text-[9px] font-black text-black">
                       S
                     </span>
@@ -1192,11 +1178,11 @@ export default function LipSyncStudio({
 
       {/* ── FULLSCREEN MEDIA MODAL ── */}
       {fullscreenUrl && (
-        <div 
+        <div role="dialog" aria-modal="true" 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
-          <button
+          <button aria-label={copy?.fullscreen?.close || "Close"}
             type="button"
             className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
             onClick={(e) => {

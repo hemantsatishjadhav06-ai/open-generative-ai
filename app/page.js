@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation';
+import Landing from '@/components/Landing';
+import { buildLandingMetadata } from '@/lib/seo';
+
+export const metadata = buildLandingMetadata('en');
 
 export default function Home() {
-  redirect('/studio');
+  return <Landing locale="en" />;
 }

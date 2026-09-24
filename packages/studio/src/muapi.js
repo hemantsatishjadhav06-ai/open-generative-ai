@@ -5,7 +5,9 @@ import {
 } from './videoToolCapabilities.js';
 import { buildImageSizePayload } from './imageSizing.js';
 import { buildImageInputPayload, getImageInputValidationError, normalizePrimaryImageUrls } from './imageInputContracts.js';
-import { pollForGenerationResult } from './utils/generationLifecycle.js';
+import { pollForGenerationResult, describeApiError } from './utils/generationLifecycle.js';
+
+export { describeApiError };
 import { getModelMediaCapabilities, mapReferenceParams } from './modelCapabilities.js';
 import { buildSupplementalInputPayload } from './modelParameters.js';
 import { getGroupedVideoConfiguration } from './groupedVideoModels.js';
@@ -71,7 +73,7 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
     if (!response.ok) {
         const errText = await response.text();
         notifyAuthRequired(response.status, errText);
-        throw new Error(`API Request Failed: ${response.status} ${response.statusText} - ${errText.slice(0, 100)}`);
+        throw new Error(`API Request Failed: ${response.status} ${response.statusText} - ${describeApiError(errText)}`);
     }
     const submitData = await response.json();
     const requestId = submitData.request_id || submitData.id;
@@ -249,7 +251,7 @@ export async function estimateV2VCost(params, signal) {
 
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Cost estimate failed: ${response.status} ${response.statusText} - ${errText.slice(0, 100)}`);
+        throw new Error(`Cost estimate failed: ${response.status} ${response.statusText} - ${describeApiError(errText)}`);
     }
 
     let data;
@@ -422,20 +424,7 @@ export function uploadFile(apiKey, file, onProgress) {
     });
 }
 
-export async function getUserBalance(apiKey) {
-    const response = await fetch(`${BASE_URL}/api/v1/account/balance`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
-    });
-    if (!response.ok) {
-        const errText = await response.text();
-        notifyAuthRequired(response.status, errText);
-        throw new Error(`Failed to fetch balance: ${response.status} - ${errText.slice(0, 100)}`);
-    }
-    return await response.json();
-}
+export { getUserBalance } from './balance.js';
 
 export async function getTemplateWorkflows(apiKey) {
     const response = await fetch(`${BASE_URL}/workflow/get-template-workflows`, {
@@ -446,7 +435,7 @@ export async function getTemplateWorkflows(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch template workflows: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch template workflows: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -460,7 +449,7 @@ export async function getUserWorkflows(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch user workflows: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch user workflows: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -474,7 +463,7 @@ export async function getPublishedWorkflows(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch published workflows: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch published workflows: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -489,7 +478,7 @@ export async function getTemplateAgents(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch template agents: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch template agents: ${response.status} - ${describeApiError(errText)}`);
     }
     const data = await response.json();
     return Array.isArray(data) ? data : (data.agents || data.items || []);
@@ -504,7 +493,7 @@ export async function getUserAgents(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch user agents: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch user agents: ${response.status} - ${describeApiError(errText)}`);
     }
     const data = await response.json();
     return Array.isArray(data) ? data : (data.agents || data.items || []);
@@ -520,7 +509,7 @@ export async function getPublishedAgents(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch featured agents: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch featured agents: ${response.status} - ${describeApiError(errText)}`);
     }
     const data = await response.json();
     return Array.isArray(data) ? data : (data.agents || data.items || []);
@@ -536,7 +525,7 @@ export async function getUserConversations(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch conversations: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch conversations: ${response.status} - ${describeApiError(errText)}`);
     }
     const data = await response.json();
     return Array.isArray(data) ? data : [];
@@ -553,7 +542,7 @@ export async function getAgentBySlug(apiKey, slug) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch agent: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch agent: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -568,7 +557,7 @@ export async function getAgentConversation(apiKey, agentSlug, conversationId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch conversation: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch conversation: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -591,7 +580,7 @@ export async function sendAgentChatMessage(apiKey, agentSlug, { message, convers
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to send message: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to send message: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -640,7 +629,7 @@ export async function createAgent(apiKey, payload) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to create agent: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to create agent: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -656,7 +645,7 @@ export async function createWorkflow(apiKey, payload) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to create workflow: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to create workflow: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -672,7 +661,7 @@ export async function updateWorkflowName(apiKey, workflowId, name) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to rename workflow: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to rename workflow: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -687,7 +676,7 @@ export async function deleteWorkflow(apiKey, workflowId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to delete workflow: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to delete workflow: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -701,7 +690,7 @@ export async function getWorkflowInputs(apiKey, workflowId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch workflow inputs: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch workflow inputs: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -717,7 +706,7 @@ export async function executeWorkflow(apiKey, workflowId, inputs) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to execute workflow: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to execute workflow: ${response.status} - ${describeApiError(errText)}`);
     }
     const submitData = await response.json();
     const runId = submitData.run_id || submitData.id;
@@ -759,7 +748,7 @@ export async function getAllNodeSchemas(apiKey, workflowId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch node schemas: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch node schemas: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -773,7 +762,7 @@ export async function getWorkflowData(apiKey, workflowId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch workflow data: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch workflow data: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 };
@@ -787,7 +776,7 @@ export async function getNodeSchemas(apiKey, workflowId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch node schemas: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch node schemas: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -803,7 +792,7 @@ export async function runSingleNode(apiKey, workflowId, nodeId, payload) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to run single node: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to run single node: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -818,7 +807,7 @@ export async function deleteNodeRun(apiKey, nodeRunId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to delete node run: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to delete node run: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -832,7 +821,7 @@ export async function getNodeStatus(apiKey, runId) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to get node status: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to get node status: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -918,7 +907,7 @@ export async function calculateDynamicCost(apiKey, taskName, payload) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to calculate dynamic cost: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to calculate dynamic cost: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -934,7 +923,7 @@ export async function registerAppInterest(apiKey, appName) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to register interest: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to register interest: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -948,7 +937,7 @@ export async function getAppInterests(apiKey) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch interests: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch interests: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -967,7 +956,7 @@ export async function getHistory(apiKey, { cursor, limit = 50 } = {}) {
     });
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`Failed to fetch history: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to fetch history: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }
@@ -985,7 +974,7 @@ export async function deleteMedia(apiKey, requestId) {
     if (!response.ok) {
         const errText = await response.text();
         notifyAuthRequired(response.status, errText);
-        throw new Error(`Failed to delete: ${response.status} - ${errText.slice(0, 100)}`);
+        throw new Error(`Failed to delete: ${response.status} - ${describeApiError(errText)}`);
     }
     return await response.json();
 }

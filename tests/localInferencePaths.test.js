@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const {
     LOCAL_AI_DIR_ENV,
+    LEGACY_LOCAL_AI_DIR_ENV,
     resolveLocalAiPaths,
 } = require('../electron/lib/localInferencePaths');
 
@@ -45,5 +46,20 @@ test('resolveLocalAiPaths requires userDataPath when no override is set', () => 
     assert.throws(
         () => resolveLocalAiPaths({ env: {} }),
         /userDataPath is required/
+    );
+});
+
+test('resolveLocalAiPaths still honors the legacy env var, and the new name wins', () => {
+    const legacyDir = path.join(process.cwd(), 'fixtures', 'legacy-ai-store');
+    const newDir = path.join(process.cwd(), 'fixtures', 'new-ai-store');
+
+    assert.equal(LOCAL_AI_DIR_ENV, 'CREATOR_AGENCY_LOCAL_AI_DIR');
+    assert.equal(
+        resolveLocalAiPaths({ env: { [LEGACY_LOCAL_AI_DIR_ENV]: legacyDir } }).dataDir,
+        path.resolve(legacyDir),
+    );
+    assert.equal(
+        resolveLocalAiPaths({ env: { [LEGACY_LOCAL_AI_DIR_ENV]: legacyDir, [LOCAL_AI_DIR_ENV]: newDir } }).dataDir,
+        path.resolve(newDir),
     );
 });

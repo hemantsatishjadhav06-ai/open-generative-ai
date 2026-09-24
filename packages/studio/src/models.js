@@ -28253,7 +28253,7 @@ export const audioModels = [
     "name": "Suno Create Music",
     "endpoint": "suno-create-music",
     "family": "suno",
-    "description": "Suno generate music that turns text prompts into full songs ΓÇö complete with vocals, lyrics, and instrumentation. You can describe a mood, genre, or even a specific lyric idea, and Suno creates a realistic, studio-quality track in seconds.",
+    "description": "Suno generate music that turns text prompts into full songs — complete with vocals, lyrics, and instrumentation. You can describe a mood, genre, or even a specific lyric idea, and Suno creates a realistic, studio-quality track in seconds.",
     "required": [
       "style"
     ],
@@ -28310,9 +28310,9 @@ export const audioModels = [
       },
       "persona_id": {
         "type": "string",
-        "title": "Persona ID",
+        "title": "Voice",
         "name": "persona_id",
-        "description": "Persona ID or custom voice ID to apply to the generated music (optional). Pair with persona_model to disambiguate."
+        "description": "Optional. Paste a persona or cloned-voice ID to sing with that voice."
       },
       "persona_model": {
         "enum": [
@@ -28320,15 +28320,15 @@ export const audioModels = [
           "voice_persona"
         ],
         "type": "string",
-        "title": "Persona Model",
+        "title": "Voice type",
         "name": "persona_model",
-        "description": "What kind of persona_id this is. Set to voice_persona when persona_id is a cloned voice ID from suno-voice-clone. Requires model V5 or V5_5."
+        "description": "Pick \"voice_persona\" if you pasted a cloned voice. Needs model V5 or V5_5."
       },
       "instrumental": {
         "type": "boolean",
         "title": "Instrumental",
         "name": "instrumental",
-        "description": "Enable this option to generate music without prompt. If false prompt will used as the exact lyrics.",
+        "description": "On = no vocals. Off = your prompt is sung as lyrics.",
         "default": true
       },
       "negative_tags": {
@@ -28339,7 +28339,7 @@ export const audioModels = [
         "name": "negative_tags",
         "type": "string",
         "format": "text",
-        "description": "Music styles or traits to exclude from the generated audio (optional). Use to avoid specific styles.",
+        "description": "Optional. Styles or vibes to avoid.",
         "placeholder": "Heavy Metal, Upbeat Drums"
       },
       "vocal_gender": {
@@ -28354,30 +28354,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28458,9 +28458,9 @@ export const audioModels = [
       },
       "persona_id": {
         "type": "string",
-        "title": "Persona ID",
+        "title": "Voice",
         "name": "persona_id",
-        "description": "Persona ID or custom voice ID to apply to the generated music (optional). Pair with persona_model to disambiguate."
+        "description": "Optional. Paste a persona or cloned-voice ID to sing with that voice."
       },
       "persona_model": {
         "enum": [
@@ -28468,15 +28468,15 @@ export const audioModels = [
           "voice_persona"
         ],
         "type": "string",
-        "title": "Persona Model",
+        "title": "Voice type",
         "name": "persona_model",
-        "description": "What kind of persona_id this is. Set to voice_persona when persona_id is a cloned voice ID from suno-voice-clone. Requires model V5 or V5_5."
+        "description": "Pick \"voice_persona\" if you pasted a cloned voice. Needs model V5 or V5_5."
       },
       "instrumental": {
         "type": "boolean",
         "title": "Instrumental",
         "name": "instrumental",
-        "description": "Enable this option to generate music without prompt. If false prompt will used as the exact lyrics.",
+        "description": "On = no vocals. Off = your prompt is sung as lyrics.",
         "default": true
       },
       "negative_tags": {
@@ -28487,7 +28487,7 @@ export const audioModels = [
         "name": "negative_tags",
         "type": "string",
         "format": "text",
-        "description": "Music styles or traits to exclude from the generated audio (optional). Use to avoid specific styles.",
+        "description": "Optional. Styles or vibes to avoid.",
         "placeholder": "Heavy Metal, Upbeat Drums"
       },
       "vocal_gender": {
@@ -28502,30 +28502,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28607,9 +28607,9 @@ export const audioModels = [
       },
       "persona_id": {
         "type": "string",
-        "title": "Persona ID",
+        "title": "Voice",
         "name": "persona_id",
-        "description": "Persona ID or custom voice ID to apply to the generated music (optional). Pair with persona_model to disambiguate."
+        "description": "Optional. Paste a persona or cloned-voice ID to sing with that voice."
       },
       "persona_model": {
         "enum": [
@@ -28617,9 +28617,9 @@ export const audioModels = [
           "voice_persona"
         ],
         "type": "string",
-        "title": "Persona Model",
+        "title": "Voice type",
         "name": "persona_model",
-        "description": "What kind of persona_id this is. Set to voice_persona when persona_id is a cloned voice ID from suno-voice-clone. Requires model V5 or V5_5."
+        "description": "Pick \"voice_persona\" if you pasted a cloned voice. Needs model V5 or V5_5."
       },
       "continue_at": {
         "title": "Continue At",
@@ -28635,7 +28635,7 @@ export const audioModels = [
         "type": "boolean",
         "title": "Instrumental",
         "name": "instrumental",
-        "description": "Enable this option to generate music without prompt. If false prompt will used as the exact lyrics.",
+        "description": "On = no vocals. Off = your prompt is sung as lyrics.",
         "default": true
       },
       "negative_tags": {
@@ -28646,7 +28646,7 @@ export const audioModels = [
         "name": "negative_tags",
         "type": "string",
         "format": "text",
-        "description": "Music styles or traits to exclude from the generated audio (optional). Use to avoid specific styles.",
+        "description": "Optional. Styles or vibes to avoid.",
         "placeholder": "Heavy Metal, Upbeat Drums"
       },
       "vocal_gender": {
@@ -28661,30 +28661,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28823,7 +28823,7 @@ export const audioModels = [
         "type": "string",
         "title": "Negative Tags",
         "name": "negative_tags",
-        "description": "Excluded styles"
+        "description": "Optional. Styles or vibes to avoid."
       },
       "model": {
         "enum": [
@@ -28850,30 +28850,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of style adherence (0-1).",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Experimental deviation (0-1).",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.01,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight (0-1).",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.01,
@@ -28925,7 +28925,7 @@ export const audioModels = [
         "type": "boolean",
         "title": "Instrumental",
         "name": "instrumental",
-        "description": "If true: Only style is required else style, and prompt are required (with prompt used as the exact lyrics)",
+        "description": "On = no vocals. Off = your prompt is sung as lyrics.",
         "default": true
       },
       "model": {
@@ -28953,30 +28953,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of style adherence (0-1).",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Experimental deviation (0-1).",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight (0-1).",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -29023,7 +29023,7 @@ export const audioModels = [
         "type": "string",
         "title": "Negative Tags",
         "name": "negative_tags",
-        "description": "Excluded styles"
+        "description": "Optional. Styles or vibes to avoid."
       },
       "model": {
         "enum": [
@@ -29050,30 +29050,30 @@ export const audioModels = [
         "default": "male"
       },
       "style_weight": {
-        "title": "Style Weight",
+        "title": "Stick to the style",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of style adherence (0-1).",
+        "description": "Optional. Higher = follows your style more closely (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "weirdness_constraint": {
-        "title": "Weirdness Constraint",
+        "title": "How experimental",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Experimental deviation (0-1).",
+        "description": "Optional. Higher = weirder, more unexpected results (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
         "default": 0.65
       },
       "audio_weight": {
-        "title": "Audio Weight",
+        "title": "Audio balance",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight (0-1).",
+        "description": "Optional. How much the sound itself shapes the result (0–1).",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -29175,7 +29175,7 @@ export const audioModels = [
     "name": "Minimax Voice Clone",
     "endpoint": "minimax-voice-clone",
     "family": "minimax-2.3",
-    "description": "Minimax Voice Clone creates a high-fidelity digital clone of a speakerΓÇÖs voice from a short reference audio sample. It reproduces the speakerΓÇÖs tone, emotion, accent, rhythm, and speaking style, then generates new speech from any text input.",
+    "description": "Minimax Voice Clone creates a high-fidelity digital clone of a speaker’s voice from a short reference audio sample. It reproduces the speaker’s tone, emotion, accent, rhythm, and speaking style, then generates new speech from any text input.",
     "required": [
       "audio_url",
       "custom_voice_id"
@@ -29257,7 +29257,7 @@ export const audioModels = [
     "name": "Minimax Speech HD",
     "endpoint": "minimax-speech-2.6-hd",
     "family": "minimax-2.6",
-    "description": "Speech-2.6-hd is MinimaxΓÇÖs high-definition text-to-speech model that turns written text into natural, human-like audio. It produces studio-quality speech with clear pronunciation, smooth pacing, realistic emotion, and no background noise.",
+    "description": "Speech-2.6-hd is Minimax’s high-definition text-to-speech model that turns written text into natural, human-like audio. It produces studio-quality speech with clear pronunciation, smooth pacing, realistic emotion, and no background noise.",
     "required": [
       "prompt",
       "voice_id"
@@ -29916,7 +29916,7 @@ export const audioModels = [
     "name": "Minimax Speech Turbo",
     "endpoint": "minimax-speech-2.6-turbo",
     "family": "minimax-2.6",
-    "description": "Speech-2.6-turbo is MinimaxΓÇÖs fast, lightweight text-to-speech model designed for quick audio generation while maintaining good natural voice quality. It produces clear speech with smooth pacing and minimal delay.",
+    "description": "Speech-2.6-turbo is Minimax’s fast, lightweight text-to-speech model designed for quick audio generation while maintaining good natural voice quality. It produces clear speech with smooth pacing and minimal delay.",
     "required": [
       "prompt",
       "voice_id"

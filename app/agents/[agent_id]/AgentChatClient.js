@@ -4,6 +4,8 @@ import { AiAgent } from "ai-agent";
 import "ai-agent/dist/tailwind.css";
 import { useCallback, useEffect, useRef } from "react";
 import axios from "axios";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const STORAGE_KEY = "muapi_key";
 
@@ -16,14 +18,9 @@ const STORAGE_KEY = "muapi_key";
  * must set up our own axios interceptor here to inject the API key into
  * all requests made by the AiAgent library.
  */
-export default function AgentChatClient({ agentDetails, initialHistory, userData }) {
+export default function AgentChatClient({ agentDetails, initialHistory, userData, loadError = false }) {
   const interceptorRef = useRef(null);
-
-  console.log("[AgentChatClient] Rendering", { 
-    hasAgentDetails: !!agentDetails, 
-    hasHistory: !!initialHistory, 
-    hasUserData: !!userData 
-  });
+  const router = useRouter();
 
   useEffect(() => {
     const getKey = () => {
@@ -38,12 +35,13 @@ export default function AgentChatClient({ agentDetails, initialHistory, userData
     if (!apiKey) return;
 
     interceptorRef.current = axios.interceptors.request.use((config) => {
-      const isRelative =
-        config.url.startsWith("/") || !config.url.startsWith("http");
-      // Include specific proxy paths to be sure
-      const isInternalProxy = config.url.includes('/api/app') || config.url.includes('/api/workflow') || config.url.includes('/api/agents') || config.url.includes('/api/api') || config.url.includes('/api/v1');
-      
-      if (isRelative || isInternalProxy) {
+      // Only same-origin requests (relative URLs or our own origin) get the
+      // key; third-party hosts such as S3 never do.
+      const url = typeof config.url === "string" ? config.url : "";
+      const isAbsolute = /^https?:\/\//i.test(url);
+      const isSameOrigin = isAbsolute && url.startsWith(`${window.location.origin}/`);
+      if (!isAbsolute || isSameOrigin) {
+        config.headers = config.headers || {};
         config.headers["x-api-key"] = apiKey;
       }
       return config;
@@ -69,6 +67,34 @@ export default function AgentChatClient({ agentDetails, initialHistory, userData
     }),
     [userData]
   );
+
+  if (loadError || !agentDetails) {
+    return (
+      <div className="h-screen w-full bg-surface-app flex items-center justify-center px-4 text-white">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="font-display text-2xl font-bold tracking-tight">Couldn&apos;t load this agent</h1>
+          <p className="mt-2 text-sm text-secondary">
+            It may not exist, or your API key can&apos;t access it.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              className="h-10 px-5 rounded-xl bg-brand text-surface-app text-sm font-semibold hover:bg-brand-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            >
+              Try again
+            </button>
+            <Link
+              href="/studio/agents"
+              className="h-10 px-5 inline-flex items-center justify-center rounded-xl border border-white/10 bg-surface-card text-sm font-semibold text-white/80 hover:text-white hover:border-white/20 transition-colors"
+            >
+              Back to agents
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full bg-surface-app">

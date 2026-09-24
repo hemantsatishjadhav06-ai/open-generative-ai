@@ -41,7 +41,7 @@
     "loadingHeading": "正在生成配乐",
     "loadingSubtext": "正在渲染音频波形和人声...",
     "emptyHeading": "音频工作室",
-    "emptyBody": "选择一个 AI 音乐模型、声音克隆或音效生成器。在左侧修改参数，创作您的下一段高保真音轨。",
+    "emptyBody": "选择音乐、声音或音效模型，在左侧设置好，开始制作你的下一段音轨。",
     "newGeneration": "新建生成",
     "success": "成功"
   },

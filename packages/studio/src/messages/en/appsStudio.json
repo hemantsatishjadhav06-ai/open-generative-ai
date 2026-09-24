@@ -3,13 +3,13 @@
     "badge": "Revenue-Ready Templates",
     "titleLine1": "LAUNCH AN AI APP.",
     "titleLine2": "START EARNING TODAY.",
-    "subtitle": "Every template is a working, Stripe-ready AI app you can ship in minutes. You charge your users and keep the revenue — MuAPI runs the AI underneath."
+    "subtitle": "Every template is a working, Stripe-ready AI app you can ship in minutes. You set the price and keep the revenue."
   },
   "steps": {
     "stepLabel": "Step",
     "deploy": {
       "title": "Deploy in Minutes",
-      "body": "Fork the open-source template, add your muapi key, and push to Vercel. No backend setup needed."
+      "body": "Fork the open-source template, add your MuAPI key, and deploy to Vercel. No backend setup needed."
     },
     "collect": {
       "title": "Collect Payments",
@@ -26,7 +26,7 @@
     "demo": "Demo"
   },
   "footer": {
-    "moreComingSoon": "Muapi Ecosystem — More templates coming soon"
+    "moreComingSoon": "More templates coming soon"
   },
   "modal": {
     "deployTitle": "Deploy {appName}",

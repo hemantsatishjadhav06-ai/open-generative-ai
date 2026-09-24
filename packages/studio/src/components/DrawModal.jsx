@@ -98,14 +98,42 @@ export default function DrawModal({
 
   // Keep refs to latest handlers to avoid stale closures in keyboard shortcut listener
   const keyboardCallbacksRef = useRef({});
+  const backdropPressRef = useRef(false);
 
   // Keyboard shortcuts event listener
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
-      // Ignore shortcuts if writing in an input, textarea or contenteditable element
       const activeEl = document.activeElement;
+
+      // Escape peels back one layer: blur a field, deselect, close a popover,
+      // then close the modal. Never while a generation is running.
+      if (e.key === "Escape") {
+        if (e.defaultPrevented) return;
+        e.preventDefault();
+        if (
+          activeEl &&
+          (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA")
+        ) {
+          activeEl.blur();
+          return;
+        }
+        const cb = keyboardCallbacksRef.current;
+        if (cb.selectedObjectId) {
+          cb.handleDeselect?.();
+          return;
+        }
+        if (cb.anyPopoverOpen) {
+          cb.closePopovers?.();
+          return;
+        }
+        if (cb.generating) return;
+        cb.onClose?.();
+        return;
+      }
+
+      // Ignore shortcuts if writing in an input, textarea or contenteditable element
       if (
         activeEl &&
         (activeEl.tagName === "INPUT" ||
@@ -1056,6 +1084,15 @@ export default function DrawModal({
   // Keep keyboardCallbacksRef up-to-date every render (placed after all handlers are defined)
   keyboardCallbacksRef.current = {
     selectedObjectId,
+    generating,
+    onClose,
+    handleDeselect: () => setSelectedObjectId(null),
+    anyPopoverOpen: isModelDropdownOpen || isArDropdownOpen || showSettingsPopover,
+    closePopovers: () => {
+      setIsModelDropdownOpen(false);
+      setIsArDropdownOpen(false);
+      setShowSettingsPopover(false);
+    },
     handleRemoveSelected,
     handleUndo,
     handleRedo,
@@ -1069,13 +1106,31 @@ export default function DrawModal({
   const selectedObj = canvasObjects.find((o) => o.id === selectedObjectId);
   const bbox = getObjectBoundingBox(selectedObj);
 
+  // Backdrop click closes, but only when the press both started and ended on
+  // the backdrop itself (a brush stroke released outside the box must not).
+  const handleBackdropMouseDown = (e) => {
+    backdropPressRef.current = e.target === e.currentTarget;
+  };
+  const handleBackdropClick = (e) => {
+    const startedOnBackdrop = backdropPressRef.current;
+    backdropPressRef.current = false;
+    if (!startedOnBackdrop || e.target !== e.currentTarget || generating) return;
+    onClose?.();
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={handleBackdropMouseDown}
+      onClick={handleBackdropClick}
+    >
       {/* Modal Box */}
       <div className="relative w-full max-w-5xl bg-[#0b0b0d] border border-white/10 rounded-2xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden h-[90vh]">
         {/* Header Tab Selector */}
-        <div className="flex items-center justify-between border-b border-white/5 p-4 shrink-0 bg-[#0f0f12]">
-          <div className="flex items-center gap-1.5 bg-[#131316]/60 border border-white/5 p-1 rounded-full select-none">
+        <div className="flex items-center justify-between border-b border-white/5 p-4 shrink-0 bg-surface-app">
+          <div className="flex items-center gap-1.5 bg-surface-panel/60 border border-white/5 p-1 rounded-full select-none">
             {/* <button
               onClick={() => setActiveTab("sketch-to-video")}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
@@ -1085,7 +1140,7 @@ export default function DrawModal({
               }`}
             >
               Sketch to Video
-              <span className="bg-[#b5f500] text-black text-[8px] font-black px-1 rounded">
+              <span className="bg-brand text-black text-[8px] font-black px-1 rounded">
                 NEW
               </span>
             </button>
@@ -1114,6 +1169,7 @@ export default function DrawModal({
           {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="Close"
             className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-all"
           >
             ×
@@ -1131,7 +1187,7 @@ export default function DrawModal({
               onDrop={handleBgDrop}
               className={`border-2 border-dashed rounded-2xl p-8 max-w-md w-full text-center flex flex-col items-center gap-6 bg-[#070708]/50 transition-colors ${
                 isBgDragging
-                  ? "border-[#b5f500] bg-[#b5f500]/5"
+                  ? "border-brand bg-brand/5"
                   : "border-white/10"
               }`}
             >
@@ -1142,7 +1198,7 @@ export default function DrawModal({
                   className="w-full h-full object-cover opacity-60"
                 />
                 <div className="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-md rounded-md p-1 px-2 border border-white/5 flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#b5f500] animate-pulse"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse"></div>
                   <span className="text-[9px] text-white/50 tracking-wider uppercase font-bold">
                     Sketchpad active
                   </span>
@@ -1189,7 +1245,7 @@ export default function DrawModal({
                     setBgImageUrl(null);
                     setViewState("canvas");
                   }}
-                  className="bg-[#131316]/80 hover:bg-[#1c1c22] text-white border border-white/10 font-bold text-sm px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-inner"
+                  className="bg-surface-panel/80 hover:bg-surface-card text-white border border-white/10 font-bold text-sm px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-inner"
                 >
                   <svg
                     width="14"
@@ -1263,7 +1319,7 @@ export default function DrawModal({
                       return (
                         <div
                           key={imgObj.id}
-                          className={`absolute group cursor-move ${isSelected ? "ring-2 ring-[#b5f500] ring-offset-1 ring-offset-black z-10" : ""}`}
+                          className={`absolute group cursor-move ${isSelected ? "ring-2 ring-brand ring-offset-1 ring-offset-black z-10" : ""}`}
                           style={{
                             left: `${leftPct}%`,
                             top: `${topPct}%`,
@@ -1320,7 +1376,7 @@ export default function DrawModal({
                           }}
                           className={`absolute bg-transparent border-none outline-none resize-none font-bold text-left overflow-hidden select-text z-10 ${
                             isSelected
-                              ? "ring-1 ring-[#b5f500] ring-dashed bg-black/25"
+                              ? "ring-1 ring-brand ring-dashed bg-black/25"
                               : ""
                           }`}
                           style={{
@@ -1341,7 +1397,7 @@ export default function DrawModal({
                   {/* Unified Outline Handles Overlay for Selected Object */}
                   {activeTool === "pointer" && selectedObjectId && bbox && (
                     <div
-                      className="absolute border border-dashed border-[#b5f500] pointer-events-auto z-20 cursor-move"
+                      className="absolute border border-dashed border-brand pointer-events-auto z-20 cursor-move"
                       style={{
                         left: `${(bbox.x / canvasDimensions.width) * 100}%`,
                         top: `${(bbox.y / canvasDimensions.height) * 100}%`,
@@ -1352,37 +1408,37 @@ export default function DrawModal({
                     >
                       {/* Corner handles */}
                       <div
-                        className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nwse-resize rounded-full"
+                        className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-brand cursor-nwse-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "tl")}
                       />
                       <div
-                        className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nesw-resize rounded-full"
+                        className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-brand cursor-nesw-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "tr")}
                       />
                       <div
-                        className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nesw-resize rounded-full"
+                        className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-brand cursor-nesw-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "bl")}
                       />
                       <div
-                        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nwse-resize rounded-full"
+                        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-brand cursor-nwse-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "br")}
                       />
 
                       {/* Edge handles */}
                       <div
-                        className="absolute -top-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#b5f500] cursor-ns-resize rounded-full"
+                        className="absolute -top-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-brand cursor-ns-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "t")}
                       />
                       <div
-                        className="absolute -bottom-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#b5f500] cursor-ns-resize rounded-full"
+                        className="absolute -bottom-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-brand cursor-ns-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "b")}
                       />
                       <div
-                        className="absolute top-[calc(50%-6px)] -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-ew-resize rounded-full"
+                        className="absolute top-[calc(50%-6px)] -left-1.5 w-3 h-3 bg-white border border-brand cursor-ew-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "l")}
                       />
                       <div
-                        className="absolute top-[calc(50%-6px)] -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-ew-resize rounded-full"
+                        className="absolute top-[calc(50%-6px)] -right-1.5 w-3 h-3 bg-white border border-brand cursor-ew-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "r")}
                       />
                     </div>
@@ -1568,7 +1624,7 @@ export default function DrawModal({
                   title="Insert overlay image (or drop an image here)"
                   className={`p-1.5 rounded-lg transition-all ${
                     isOverlayDragging
-                      ? "bg-[#b5f500] text-black ring-2 ring-[#b5f500]"
+                      ? "bg-brand text-black ring-2 ring-brand"
                       : activeTool === "image"
                       ? "bg-white text-black"
                       : "text-white/60 hover:text-white"
@@ -1598,7 +1654,7 @@ export default function DrawModal({
                 <div className="h-6 w-px bg-white/10 mx-0.5" />
 
                 {/* Inline Preset Color Selection */}
-                <div className="flex items-center gap-1.5 bg-[#16161a]/60 px-2 py-1 rounded-xl border border-white/5">
+                <div className="flex items-center gap-1.5 bg-surface-panel/60 px-2 py-1 rounded-xl border border-white/5">
                   {PRESET_COLORS.map((col) => (
                     <button
                       key={col}
@@ -1657,7 +1713,7 @@ export default function DrawModal({
                 <button
                   onClick={handleGenerateClick}
                   disabled={generating}
-                  className="ml-1 bg-[#b5f500] hover:opacity-90 active:scale-[0.97] transition-all text-black font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-[#b5f500]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="ml-1 bg-brand hover:opacity-90 active:scale-[0.97] transition-all text-black font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-brand/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {generating ? (
                     <>
@@ -1677,15 +1733,15 @@ export default function DrawModal({
 
         {/* Static Footer Control Row (Overlap Prevention) */}
         {viewState === "canvas" && (
-          <div className="border-t border-white/5 p-4 shrink-0 bg-[#0f0f12] flex items-center justify-between z-20">
+          <div className="border-t border-white/5 p-4 shrink-0 bg-surface-app flex items-center justify-between z-20">
             {/* Left Options */}
             <div className="flex items-center gap-2">
               <div className="relative" ref={modelDropdownRef}>
                 <button
                   onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                  className="h-[38px] flex items-center gap-2 px-3 bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-xs text-white/70 whitespace-nowrap shadow-xl"
+                  className="h-[38px] flex items-center gap-2 px-3 bg-surface-panel/80 hover:bg-surface-card rounded-xl border border-white/5 text-xs text-white/70 whitespace-nowrap shadow-xl"
                 >
-                  <span className="text-[10px] text-[#b5f500] font-black bg-[#b5f500]/10 px-1.5 rounded border border-[#b5f500]/25">
+                  <span className="text-[10px] text-brand font-black bg-brand/10 px-1.5 rounded border border-brand/25">
                     G
                   </span>
                   {selectedModel === "nano-banana-pro-edit"
@@ -1695,7 +1751,7 @@ export default function DrawModal({
                 </button>
 
                 {isModelDropdownOpen && (
-                  <div className="absolute bottom-[calc(100%+8px)] left-0 bg-[#0f0f12] border border-white/10 rounded-2xl p-2 w-64 shadow-2xl flex flex-col gap-1 z-30">
+                  <div className="absolute bottom-[calc(100%+8px)] left-0 bg-surface-app border border-white/10 rounded-2xl p-2 w-64 shadow-2xl flex flex-col gap-1 z-30">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest p-1.5 pb-1 select-none">
                       Select model
                     </div>
@@ -1707,18 +1763,18 @@ export default function DrawModal({
                       }}
                       className={`flex flex-col text-left p-2.5 rounded-xl transition-all ${
                         selectedModel === "nano-banana-2-edit"
-                          ? "bg-[#b5f500]/10 text-white"
+                          ? "bg-brand/10 text-white"
                           : "hover:bg-white/5 text-white/70"
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center gap-1.5">
                         Nano Banana 2
                         {selectedModel === "nano-banana-2-edit" && (
-                          <span className="text-[#b5f500]">✓</span>
+                          <span className="text-brand">✓</span>
                         )}
                       </div>
                       <div className="text-[9px] text-white/30 leading-snug mt-0.5">
-                        Google's Advanced Image Editing Model
+                        Google&apos;s Advanced Image Editing Model
                       </div>
                     </button>
 
@@ -1729,14 +1785,14 @@ export default function DrawModal({
                       }}
                       className={`flex flex-col text-left p-2.5 rounded-xl transition-all ${
                         selectedModel === "nano-banana-pro-edit"
-                          ? "bg-[#b5f500]/10 text-white"
+                          ? "bg-brand/10 text-white"
                           : "hover:bg-white/5 text-white/70"
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center gap-1.5">
                         Nano Banana Pro
                         {selectedModel === "nano-banana-pro-edit" && (
-                          <span className="text-[#b5f500]">✓</span>
+                          <span className="text-brand">✓</span>
                         )}
                       </div>
                       <div className="text-[9px] text-white/30 leading-snug mt-0.5">
@@ -1751,7 +1807,7 @@ export default function DrawModal({
               <div className="relative">
                 <button
                   onClick={() => setShowSettingsPopover(!showSettingsPopover)}
-                  className="h-[38px] w-[38px] flex items-center justify-center bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
+                  className="h-[38px] w-[38px] flex items-center justify-center bg-surface-panel/80 hover:bg-surface-card rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
                   title="Adjust Brush / Font Size"
                 >
                   <svg
@@ -1775,7 +1831,7 @@ export default function DrawModal({
                 </button>
 
                 {showSettingsPopover && (
-                  <div className="absolute bottom-[calc(100%+8px)] left-0 bg-[#0f0f12] border border-white/10 rounded-2xl p-3.5 w-44 shadow-2xl flex flex-col gap-2 z-30">
+                  <div className="absolute bottom-[calc(100%+8px)] left-0 bg-surface-app border border-white/10 rounded-2xl p-3.5 w-44 shadow-2xl flex flex-col gap-2 z-30">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">
                       {selectedObj && selectedObj.type === "text"
                         ? "Text Size"
@@ -1787,7 +1843,7 @@ export default function DrawModal({
                       max="100"
                       value={brushSize}
                       onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#b5f500]"
+                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-brand"
                     />
                     <span className="text-[11px] font-bold text-white/60 text-right">
                       {brushSize}px
@@ -1806,7 +1862,7 @@ export default function DrawModal({
                 if (e.key === "Enter" && !generating) handleGenerateClick();
               }}
               placeholder="Describe what you want to generate…"
-              className="flex-1 mx-3 h-[38px] bg-[#131316]/80 border border-white/5 rounded-xl px-3 text-xs text-white/80 placeholder-white/25 outline-none focus:border-[#b5f500]/40 focus:ring-1 focus:ring-[#b5f500]/20 transition-all"
+              className="flex-1 mx-3 h-[38px] bg-surface-panel/80 border border-white/5 rounded-xl px-3 text-xs text-white/80 placeholder-white/25 outline-none focus:border-brand/40 focus:ring-1 focus:ring-brand/20 transition-all"
             />
 
             {/* Right Options */}
@@ -1814,7 +1870,7 @@ export default function DrawModal({
               <div className="relative" ref={arDropdownRef}>
                 <button
                   onClick={() => setIsArDropdownOpen(!isArDropdownOpen)}
-                  className="h-[38px] flex items-center gap-2 px-3 bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-xs text-white/70 whitespace-nowrap shadow-xl"
+                  className="h-[38px] flex items-center gap-2 px-3 bg-surface-panel/80 hover:bg-surface-card rounded-xl border border-white/5 text-xs text-white/70 whitespace-nowrap shadow-xl"
                 >
                   <svg
                     width="12"
@@ -1832,7 +1888,7 @@ export default function DrawModal({
                 </button>
 
                 {isArDropdownOpen && (
-                  <div className="absolute bottom-[calc(100%+8px)] right-0 bg-[#0f0f12] border border-white/10 rounded-xl p-2 w-36 max-h-72 overflow-y-auto shadow-2xl flex flex-col gap-1 z-30">
+                  <div className="absolute bottom-[calc(100%+8px)] right-0 bg-surface-app border border-white/10 rounded-xl p-2 w-36 max-h-72 overflow-y-auto shadow-2xl flex flex-col gap-1 z-30">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest p-1.5 pb-1 select-none">
                       Aspect Ratio
                     </div>
@@ -1845,7 +1901,7 @@ export default function DrawModal({
                         }}
                         className={`text-left p-1.5 px-2.5 rounded-xl text-xs font-bold transition-all ${
                           aspectRatio === r
-                            ? "bg-[#b5f500]/10 text-white"
+                            ? "bg-brand/10 text-white"
                             : "hover:bg-white/5 text-white/70"
                         }`}
                       >
@@ -1859,7 +1915,7 @@ export default function DrawModal({
               <button
                 onClick={handleClearCanvas}
                 title="Clear drawings"
-                className="h-[38px] w-[38px] flex items-center justify-center bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
+                className="h-[38px] w-[38px] flex items-center justify-center bg-surface-panel/80 hover:bg-surface-card rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
               >
                 <svg
                   width="15"
@@ -1881,7 +1937,7 @@ export default function DrawModal({
                   )
                 }
                 title="Info"
-                className="h-[38px] w-[38px] flex items-center justify-center bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
+                className="h-[38px] w-[38px] flex items-center justify-center bg-surface-panel/80 hover:bg-surface-card rounded-xl border border-white/5 text-white/60 shadow-xl transition-all"
               >
                 <span className="text-xs font-bold leading-none">i</span>
               </button>

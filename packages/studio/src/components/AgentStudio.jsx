@@ -37,7 +37,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
     <div className="group relative aspect-[4/5] rounded-xl cursor-pointer">
       <div
         onClick={() => onClick(agent)}
-        className="absolute inset-0 rounded-xl overflow-hidden border border-white/5 bg-[#0e0b18] transition-all group-hover:border-[#c6f135]/30 group-hover:scale-[1.02] shadow-2xl"
+        className="absolute inset-0 rounded-xl overflow-hidden border border-white/5 bg-[#0e0b18] transition-all group-hover:border-brand/30 group-hover:scale-[1.02] shadow-2xl"
       >
         {agent.icon_url ? (
           <img
@@ -54,10 +54,10 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <div className="text-[10px] font-bold text-[#c6f135] uppercase tracking-wider mb-1 opacity-80">
+          <div className="text-[10px] font-bold text-brand uppercase tracking-wider mb-1 opacity-80">
             {agent.category || copy.card.defaultCategory}
           </div>
-          <h3 className="text-sm font-bold text-white truncate group-hover:text-[#c6f135] transition-colors">
+          <h3 className="text-sm font-bold text-white truncate group-hover:text-brand transition-colors">
             {agent.name || copy.card.unnamedAgent}
           </h3>
           {agent.owner_username && (
@@ -74,7 +74,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
             e.stopPropagation();
             onEdit(agent);
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-[#c6f135] hover:text-black hover:scale-110 z-10"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-brand hover:text-black hover:scale-110 z-10"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -93,7 +93,7 @@ function ConversationCard({ conv, onClick, copy }) {
   return (
     <div
       onClick={() => onClick(agentSlug, conv.id)}
-      className="group flex flex-col gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4 hover:border-[#c6f135]/20 hover:bg-white/5 transition-all cursor-pointer"
+      className="group flex flex-col gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4 hover:border-brand/20 hover:bg-white/5 transition-all cursor-pointer"
     >
       <div className="flex items-center gap-3">
         <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-white/5 shrink-0">
@@ -108,7 +108,7 @@ function ConversationCard({ conv, onClick, copy }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black text-[#c6f135] uppercase tracking-wider truncate">
+          <p className="text-[10px] font-black text-brand uppercase tracking-wider truncate">
             {conv.agent_name || copy.card.unknownAgent}
           </p>
           <p className="text-sm font-bold text-white truncate" title={displayTitle}>
@@ -143,7 +143,7 @@ function ChatBubble({ message }) {
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? "bg-[#c6f135] text-black font-medium"
+            ? "bg-brand text-black font-medium"
             : "bg-white/[0.04] border border-white/5 text-white/90"
         }`}
       >
@@ -171,6 +171,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   const [agents, setAgents] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
   const [error, setError] = useState(null);
 
   // Deep-link routing. `router.push('/agents/...')` below is a real full navigation
@@ -349,7 +350,8 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
         }
       } catch (err) {
         console.error("AgentStudio load error:", err);
-        if (!cancelled) setError(err.message || copy.errors.loadFailed);
+        // Raw error stays in the console; creators get a plain sentence.
+        if (!cancelled) setError(copy.errors.loadFailed);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -357,7 +359,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
 
     load();
     return () => { cancelled = true; };
-  }, [apiKey, activeMainTab, view]);
+  }, [apiKey, activeMainTab, view, reloadTick]);
 
   // ── Render: Create ───────────────────────────────────────────────────────────
   if (view === "create") {
@@ -374,7 +376,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
             </svg>
             {copy.buttons.back}
           </button>
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#c6f135]">{copy.headings.createAgent}</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-brand">{copy.headings.createAgent}</h2>
         </div>
 
         <form onSubmit={handleCreateSubmit} className="max-w-2xl w-full mx-auto p-8 space-y-6">
@@ -386,7 +388,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.name}
               onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
               placeholder={copy.placeholders.name}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#c6f135]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand/50 transition-colors"
             />
           </div>
 
@@ -397,7 +399,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.description}
               onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))}
               placeholder={copy.placeholders.description}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#c6f135]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand/50 transition-colors"
             />
           </div>
 
@@ -408,7 +410,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.system_prompt}
               onChange={(e) => setCreateForm((f) => ({ ...f, system_prompt: e.target.value }))}
               placeholder={copy.placeholders.systemPrompt}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#c6f135]/50 transition-colors min-h-[140px] resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand/50 transition-colors min-h-[140px] resize-none"
             />
           </div>
 
@@ -419,7 +421,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.welcome_message}
               onChange={(e) => setCreateForm((f) => ({ ...f, welcome_message: e.target.value }))}
               placeholder={copy.placeholders.welcomeMessage}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#c6f135]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand/50 transition-colors"
             />
           </div>
 
@@ -430,7 +432,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
           <button
             type="submit"
             disabled={creating || !createForm.name.trim() || !createForm.system_prompt.trim()}
-            className="w-full py-4 bg-[#c6f135] text-black text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-3"
+            className="w-full py-4 bg-brand text-black text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-3"
           >
             {creating ? (
               <>
@@ -477,7 +479,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 max-w-3xl w-full mx-auto">
           {chatLoading ? (
             <div className="h-full flex items-center justify-center">
-              <div className="w-10 h-10 border-2 border-white/5 border-t-[#c6f135] rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-white/5 border-t-brand rounded-full animate-spin" />
             </div>
           ) : (
             <>
@@ -490,7 +492,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               {sending && (
                 <div className="flex justify-start">
                   <div className="bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-3">
-                    <div className="w-4 h-4 border-2 border-white/10 border-t-[#c6f135] rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/10 border-t-brand rounded-full animate-spin" />
                   </div>
                 </div>
               )}
@@ -517,12 +519,12 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               }}
               placeholder={copy.placeholders.chatInput}
               rows={1}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#c6f135]/50 transition-colors resize-none max-h-40"
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brand/50 transition-colors resize-none max-h-40"
             />
             <button
               type="submit"
               disabled={!chatInput.trim() || sending}
-              className="px-5 py-3 bg-[#c6f135] text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-40"
+              className="px-5 py-3 bg-brand text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-40"
             >
               {copy.buttons.send}
             </button>
@@ -538,7 +540,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
       {/* Header */}
       <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/40">
         <div className="flex items-center gap-8 h-full">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#c6f135]">
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-brand">
             {copy.headings.agents}
           </h2>
           <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
@@ -560,7 +562,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
 
         <button
           onClick={handleCreateAgent}
-          className="px-6 py-2 bg-[#c6f135] text-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#d6fb5a] transition-all active:scale-95 flex items-center gap-2"
+          className="px-6 py-2 bg-brand text-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#d6fb5a] transition-all active:scale-95 flex items-center gap-2"
         >
           <span className="text-sm">+</span>
           {copy.buttons.create}
@@ -571,19 +573,20 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         {loading ? (
           <div className="h-full flex items-center justify-center">
-            <div className="w-10 h-10 border-2 border-white/5 border-t-[#c6f135] rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-white/5 border-t-brand rounded-full animate-spin" />
           </div>
         ) : error ? (
-          <div className="h-full flex flex-col items-center justify-center text-white/20 gap-4">
+          <div className="h-full flex flex-col items-center justify-center text-white/30 gap-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
+            <p className="text-sm text-white/60 text-center max-w-sm" role="alert">{error}</p>
             <button
-              onClick={() => setActiveMainTab(activeMainTab)} // retrigger effect
-              className="text-[10px] text-white/40 hover:text-white border border-white/10 px-4 py-2 rounded-lg transition-colors"
+              type="button"
+              onClick={() => setReloadTick((t) => t + 1)}
+              className="text-[11px] font-semibold text-black bg-brand hover:bg-brand-hover px-4 py-2 rounded-lg transition-colors"
             >
               {copy.buttons.retry}
             </button>
@@ -598,7 +601,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">{copy.empty.noChats}</p>
               <button
                 onClick={() => setActiveMainTab("templates")}
-                className="text-[10px] text-[#c6f135] hover:text-white border border-[#c6f135]/20 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
+                className="text-[10px] text-brand hover:text-white border border-brand/20 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
               >
                 {copy.buttons.browseTemplates}
               </button>

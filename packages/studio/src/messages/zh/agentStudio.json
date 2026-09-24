@@ -35,7 +35,7 @@
     "noAgents": "未找到智能体"
   },
   "errors": {
-    "loadFailed": "加载失败。",
+    "loadFailed": "智能体没加载出来，再试一次。",
     "loadAgentFailed": "加载智能体失败",
     "sendFailed": "发送消息失败",
     "createFailed": "创建智能体失败"

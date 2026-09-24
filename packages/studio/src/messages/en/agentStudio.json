@@ -35,7 +35,7 @@
     "noAgents": "No agents found"
   },
   "errors": {
-    "loadFailed": "Failed to load.",
+    "loadFailed": "Couldn't load agents. Give it another go.",
     "loadAgentFailed": "Failed to load agent",
     "sendFailed": "Failed to send message",
     "createFailed": "Failed to create agent"

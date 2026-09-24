@@ -2,7 +2,7 @@
   "hero": {
     "badge": "面向开发者与 AI 智能体",
     "title": "MCP 与 CLI",
-    "description": "在终端、IDE 或任何兼容 MCP 的助手里使用 Creator Agency。跨 100 多个模型生成图像、视频和音频——不用离开你的工作流。"
+    "description": "通过 MuAPI CLI 和 MCP 服务器，在终端、IDE 或任何兼容 MCP 的助手里使用同样的模型。跨 100 多个模型生成图像、视频和音频——不用离开你的工作流。"
   },
   "quickStart": {
     "sectionLabel": "快速开始",

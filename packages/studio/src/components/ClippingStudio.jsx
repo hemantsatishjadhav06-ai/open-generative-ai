@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import HeroCollage from "./HeroCollage";
 import toast, { Toaster } from "react-hot-toast";
 import { runClipping, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
@@ -49,7 +50,7 @@ const dismissErrorToast = (toastId) => {
 // ---------------------------------------------------------------------------
 // Inline SVG Icons
 // ---------------------------------------------------------------------------
-const ScissorsIcon = ({ className = "text-[#c6f135]" }) => (
+const ScissorsIcon = ({ className = "text-brand" }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <circle cx="6" cy="6" r="3" />
     <circle cx="6" cy="18" r="3" />
@@ -279,8 +280,18 @@ export default function ClippingStudio({
         setHighlightsDropdownOpen(false);
       }
     }
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape") {
+        setAspectDropdownOpen(false);
+        setHighlightsDropdownOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, []);
 
   // Timer effect for generation progress
@@ -590,40 +601,11 @@ export default function ClippingStudio({
         {!result && history.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
             {/* Overlapping floating cards */}
-            <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
-                  alt="Creative asset 1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
-                  alt="Creative asset 2"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
-                  alt="Creative asset 3"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
-                  alt="Creative asset 4"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+            <HeroCollage />
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.headings.startCreatingWith}</span>
-              <span className="text-[#c6f135] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.headings.aiClippingStudio}
               </span>
             </h1>
@@ -1001,16 +983,16 @@ export default function ClippingStudio({
                         fill="transparent"
                         strokeDasharray={88}
                         strokeDashoffset={88 - (88 * videoProgress) / 100}
-                        className="text-[#c6f135] transition-all duration-300"
+                        className="text-brand transition-all duration-300"
                       />
                     </svg>
-                    <span className={`absolute text-[8px] font-black text-[#c6f135] leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
+                    <span className={`absolute text-[8px] font-black text-brand leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
                       {videoProgress >= 100 ? "..." : `${videoProgress}%`}
                     </span>
                   </div>
                 ) : null}
 
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-[#c6f135] transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-brand transition-colors">
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
@@ -1033,7 +1015,7 @@ export default function ClippingStudio({
               
               {/* Model Identifier (C) */}
               <div className={promptControlClassName()}>
-                <div className="w-4 h-4 bg-[#c6f135] rounded flex items-center justify-center shadow-lg shadow-[#c6f135]/10">
+                <div className="w-4 h-4 bg-brand rounded flex items-center justify-center shadow-lg shadow-brand/10">
                   <span className="text-[9px] font-bold text-black uppercase">C</span>
                 </div>
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1125,7 +1107,7 @@ export default function ClippingStudio({
                 className={promptControlClassName({
                   active: returnCoordinatesOnly,
                   className: returnCoordinatesOnly
-                    ? "text-[#c6f135]"
+                    ? "text-brand"
                     : "text-white/70 hover:text-white",
                 })}
               >

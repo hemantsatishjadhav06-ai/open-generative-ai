@@ -45,6 +45,26 @@
     "duration": "时长",
     "resolution": "分辨率"
   },
+  "aspectRatioHints": {
+    "9:16": "抖音 · 快手 · Reels",
+    "16:9": "YouTube · 封面",
+    "1:1": "动态帖子",
+    "4:5": "小红书 / IG 帖子",
+    "3:4": "竖版帖子",
+    "4:3": "经典",
+    "21:9": "电影感",
+    "9:21": "长竖屏"
+  },
+  "modelDropdown": {
+    "categoryTools": "工具",
+    "picksHeading": "精选",
+    "allModelsHeading": "全部模型",
+    "noModelsFound": "没有匹配的模型。试试“photo”“text”或“fast”。",
+    "pickHintCinematic": "电影质感，自带声音",
+    "pickHintMotion": "动作流畅真实",
+    "pickHintSocial": "非常适合短视频",
+    "pickHintStory": "剧情感强的片段"
+  },
   "controls": {
     "draw": "绘制",
     "generate": "生成",
@@ -60,17 +80,14 @@
     "delete": "删除",
     "confirmDelete": "确定要删除此生成项吗？",
     "noPromptProvided": "未提供提示词",
-    "fallbackTitle": "视频工作室"
+    "fallbackTitle": "视频工作室",
+    "share": "分享",
+    "linkCopied": "链接已复制"
   },
   "empty": {
-    "heading": "开始使用",
-    "subtitle": "让图片动起来，变成带动态效果的 AI 视频"
-  },
-  "creativeAssets": {
-    "asset1": "创意素材 1",
-    "asset2": "创意素材 2",
-    "asset3": "创意素材 3",
-    "asset4": "创意素材 4"
+    "heading": "让它动起来。",
+    "subtitle": "让图片动起来，变成带动态效果的 AI 视频",
+    "modelLabel": "模型"
   },
   "errors": {
     "modelChangedDuringUpload": "上传过程中模型已更改，请重新添加文件。",

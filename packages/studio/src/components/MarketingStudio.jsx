@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import HeroCollage from "./HeroCollage";
+import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import { uploadFile, generateMarketingStudioAd } from "../muapi.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import MobileGenerationActions, {
@@ -219,8 +221,18 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) onClose();
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        onClose();
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -248,7 +260,7 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
                   e.stopPropagation();
                   onPreview(item);
                 }}
-                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-[#c6f135] hover:text-black transition-all border border-white/10 z-20 text-white"
+                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-brand hover:text-black transition-all border border-white/10 z-20 text-white"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -287,8 +299,18 @@ function SimpleDropdown({ isOpen, title, options, selected, onSelect, onClose })
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) onClose();
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        onClose();
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -352,6 +374,9 @@ export default function MarketingStudio({
   const [dropdown, setDropdown] = useState(null); // 'format' | 'avatar' | 'ratio' | 'res' | 'duration'
   const [uploadProgress, setUploadProgress] = useState({ product: 0, avatar: 0, additional: 0 });
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
+  const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
+  useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
+  useFocusReturn(Boolean(fullscreenUrl));
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [slideDirection, setSlideDirection] = useState("next"); // 'next' | 'prev'
 
@@ -564,40 +589,11 @@ export default function MarketingStudio({
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
             {/* Overlapping floating cards */}
-            <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
-                  alt={copy.alt.creativeAsset.replace("{index}", "1")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
-                  alt={copy.alt.creativeAsset.replace("{index}", "2")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
-                  alt={copy.alt.creativeAsset.replace("{index}", "3")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
-                  alt={copy.alt.creativeAsset.replace("{index}", "4")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+            <HeroCollage />
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#c6f135] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -736,7 +732,7 @@ export default function MarketingStudio({
                     }}
                     className={promptControlClassName({
                       iconOnly: true,
-                      className: "text-white/40 hover:text-[#c6f135]",
+                      className: "text-white/40 hover:text-brand",
                     })}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -769,7 +765,7 @@ export default function MarketingStudio({
                       active: dropdown === key,
                       className:
                         dropdown === key
-                          ? "text-xs font-semibold text-[#c6f135]"
+                          ? "text-xs font-semibold text-brand"
                           : "text-xs font-semibold text-white/70",
                     })}
                   >
@@ -820,8 +816,8 @@ export default function MarketingStudio({
 
       {/* Fullscreen Preview */}
       {fullscreenUrl && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in" onClick={() => setFullscreenUrl(null)}>
-          <button className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white border border-white/10 transition-colors shadow-2xl"><CloseSvg /></button>
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in" onClick={() => setFullscreenUrl(null)}>
+          <button aria-label={copy?.fullscreen?.close || "Close"} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white border border-white/10 transition-colors shadow-2xl"><CloseSvg /></button>
           <video src={fullscreenUrl} controls autoPlay className="max-w-[95vw] max-h-[95vh] rounded-lg shadow-4xl animate-scale-up" onClick={e => e.stopPropagation()} />
         </div>
       )}
@@ -934,7 +930,7 @@ export default function MarketingStudio({
                     setPreviewAvatar(prevAvatar);
                   }
                 }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0f]/50"
+                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface-app/50"
               >
                 <img
                   src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) - 1 + ASSETS.avatar.length) % ASSETS.avatar.length].url}
@@ -952,7 +948,7 @@ export default function MarketingStudio({
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0d0d0f] shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-surface-app shadow-2xl">
                 <img
                   src={previewAvatar.url}
                   alt={previewAvatar.name}
@@ -973,7 +969,7 @@ export default function MarketingStudio({
                       setPreviewAvatar(null);
                       setDropdown(null);
                     }}
-                    className="bg-[#c6f135] text-black px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#c6f135]/20"
+                    className="bg-brand text-black px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-brand/20"
                   >
                     <CheckSvg />
                     {copy.buttons.selectAvatar}
@@ -994,7 +990,7 @@ export default function MarketingStudio({
                     setPreviewAvatar(nextAvatar);
                   }
                 }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0f]/50"
+                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface-app/50"
               >
                 <img
                   src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) + 1) % ASSETS.avatar.length].url}

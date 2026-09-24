@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import HeroCollage from "./HeroCollage";
+import { downloadImage } from "../utils/downloadImage.js";
+import { buildResultFilename } from "../utils/resultFile.js";
+import { IMAGE_PICK_IDS, isHiddenEntry, isToolEntry, matchesSearch, resolvePicks } from "../modelPicks.js";
+import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import toast, { Toaster } from "react-hot-toast";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
@@ -9,6 +14,7 @@ import DrawModal from "./DrawModal.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import MobileGenerationActions, {
   GenerationCopyButtons,
+  GenerationShareButton,
 } from "./MobileGenerationActions.jsx";
 import {
   t2iModels,
@@ -63,23 +69,6 @@ import { resolveCopy } from "../i18nUtils";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-async function downloadImage(url, filename) {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-  } catch {
-    window.open(url, "_blank");
-  }
-}
-
 // ─── UploadButton (inline picker) ───────────────────────────────────────────
 
 function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], label = null, persistedHistory = null, onHistoryChange = null, copy }) {
@@ -130,8 +119,18 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
         setPanelOpen(false);
       }
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        setPanelOpen(false);
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [panelOpen]);
 
   // Sync initialUrls from parent (e.g. restored from localStorage)
@@ -374,10 +373,10 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
           fill="transparent"
           strokeDasharray={88}
           strokeDashoffset={88 - (88 * lastUploadProgress) / 100}
-          className="text-[#c6f135] transition-all duration-300"
+          className="text-brand transition-all duration-300"
         />
       </svg>
-      <span className="absolute text-[9px] font-black text-[#c6f135] leading-none">
+      <span className="absolute text-[9px] font-black text-brand leading-none">
         {lastUploadProgress}%
       </span>
     </div>
@@ -395,7 +394,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
       fill="none"
       stroke="currentColor"
       strokeWidth="2.5"
-      className="text-white/40 group-hover:text-[#c6f135] transition-colors"
+      className="text-white/40 group-hover:text-brand transition-colors"
     >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
@@ -660,27 +659,40 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
   const t = copy.modelDropdown;
   const [search, setSearch] = useState("");
   const selectedEntry = imageModelPickerEntryByVariantId.get(selectedModel);
+  const visibleEntries = imageModelPickerEntries.filter((entry) => !isHiddenEntry(entry));
+  const modelEntriesNoTools = visibleEntries.filter((entry) => !isToolEntry(entry));
   const modelCategories = [
     {
       id: "all",
       label: t.categoryAll,
-      entries: imageModelPickerEntries,
+      entries: modelEntriesNoTools,
     },
     {
       id: "t2i",
       label: t.categoryT2I,
-      entries: imageModelPickerEntries.filter((entry) => entry.variantsByMode.t2i),
+      entries: modelEntriesNoTools.filter((entry) => entry.variantsByMode.t2i),
     },
     {
       id: "i2i",
       label: t.categoryI2I,
-      entries: imageModelPickerEntries.filter((entry) => entry.variantsByMode.i2i),
+      entries: modelEntriesNoTools.filter((entry) => entry.variantsByMode.i2i),
+    },
+    {
+      id: "tools",
+      label: t.categoryTools,
+      entries: visibleEntries.filter(isToolEntry),
     },
   ];
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProvider, setSelectedProvider] = useState("all");
   const activeCategory = modelCategories.find((category) => category.id === selectedCategory) || modelCategories[0];
-  const modelEntries = activeCategory.entries;
+  const isSearching = search.trim() !== "";
+  // A search looks across every visible model (tools included), whatever tab is active.
+  const modelEntries = isSearching ? visibleEntries : activeCategory.entries;
+  // "tools" isn't a generation mode, and search results span all modes.
+  const selectCategory = isSearching || activeCategory.id === "tools" ? "all" : activeCategory.id;
+  const showPicks = selectedCategory === "all" && selectedProvider === "all" && !isSearching;
+  const picks = showPicks ? resolvePicks(visibleEntries, IMAGE_PICK_IDS) : [];
 
   const activeItemRef = useRef(null);
 
@@ -747,9 +759,8 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
       const pId = family.provider || 'muapi';
       if (pId !== selectedProvider) return false;
     }
-    // 2. Filter by search query
-    const query = search.toLowerCase();
-    return entry.searchText.includes(query);
+    // 2. Filter by search query (with task-word synonyms: "thumbnail", "logo"…)
+    return matchesSearch(entry, search);
   });
 
   return (
@@ -861,6 +872,43 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
         </div>
         
         <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2 flex-1">
+          {picks.length > 0 && (
+            <>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-brand/80 px-1 pt-0.5">
+                {t.picksHeading}
+              </div>
+              {picks.map(({ entry, hintKey }) => (
+                <div
+                  key={`pick-${entry.id}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(entry, "all");
+                    onClose();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect(entry, "all");
+                      onClose();
+                    }
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 hover:bg-white/5 rounded-lg cursor-pointer transition-all border border-transparent hover:border-white/5 ${
+                    selectedEntry === entry ? "bg-white/5 border-white/5" : ""
+                  }`}
+                >
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-xs font-bold text-white tracking-tight truncate">{entry.name}</span>
+                    <span className="text-[10px] text-white/50">{t[hintKey]}</span>
+                  </div>
+                </div>
+              ))}
+              <div className="text-[10px] font-bold uppercase tracking-wider text-white/40 px-1 pt-2 border-t border-white/5 mt-1">
+                {t.allModelsHeading}
+              </div>
+            </>
+          )}
           {filtered.length === 0 ? (
             <div className="text-xs text-white/30 text-center py-6">
               {t.noModelsFound}
@@ -875,7 +923,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
                 ref={isSelected ? activeItemRef : null}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelect(entry, activeCategory.id);
+                  onSelect(entry, selectCategory);
                   onClose();
                 }}
                 className={`flex items-center justify-between p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-all border border-transparent hover:border-white/5 ${
@@ -941,7 +989,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
 
 // ─── SimpleDropdown ───────────────────────────────────────────────────────────
 
-function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
+function SimpleDropdown({ title, options, selected, onSelect, onClose, descriptions }) {
   return (
     <>
       <PromptPopoverHeader>{title}</PromptPopoverHeader>
@@ -950,6 +998,7 @@ function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
           <PromptMenuItem
             key={opt}
             selected={selected === opt}
+            description={descriptions?.[opt]}
             onClick={(e) => {
               e.stopPropagation();
               onSelect(opt);
@@ -1013,6 +1062,9 @@ export default function ImageStudio({
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
+  const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
+  useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
+  useFocusReturn(Boolean(fullscreenUrl));
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
 
   // ── Canvas / history state ──────────────────────────────────────────────
@@ -1052,8 +1104,18 @@ export default function ImageStudio({
         setDropdownOpen(null);
       }
     };
+    const onEscapeKey = (e) => {
+      if (e.key === "Escape" && !e.defaultPrevented) {
+        e.preventDefault();
+        setDropdownOpen(null);
+      }
+    };
     window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
+    document.addEventListener("keydown", onEscapeKey);
+    return () => {
+      window.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onEscapeKey);
+    };
   }, [dropdownOpen]);
 
   // ── Persistence: Load ────────────────────────────────────────────────────
@@ -1490,12 +1552,22 @@ export default function ImageStudio({
                     imageUrl={entry.url}
                     onCopyError={onGenerationError}
                   />
+                  <GenerationShareButton
+                    share={{
+                      url: entry.url,
+                      filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }),
+                      title: "Made with Creator Agency",
+                      label: copy.gallery.share,
+                      copiedLabel: copy.gallery.linkCopied,
+                    }}
+                    onError={onGenerationError}
+                  />
                   <button
                     type="button"
                     title={copy.gallery.download}
                     onClick={(e) => {
                       e.stopPropagation();
-                      downloadImage(entry.url, `muapi-${entry.id || idx}.jpg`);
+                      downloadImage(entry.url, buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }));
                     }}
                     className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
                   >
@@ -1528,12 +1600,19 @@ export default function ImageStudio({
                   prompt={entry.prompt}
                   imageUrl={entry.url}
                   onCopyError={onGenerationError}
+                  share={{
+                    url: entry.url,
+                    filename: buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" }),
+                    title: "Made with Creator Agency",
+                    label: copy.gallery.share,
+                    copiedLabel: copy.gallery.linkCopied,
+                  }}
                   actions={[
                     {
                       kind: "download",
                       label: copy.gallery.download,
                       onSelect: () =>
-                        downloadImage(entry.url, `muapi-${entry.id || idx}.jpg`),
+                        downloadImage(entry.url, buildResultFilename({ prompt: entry.prompt, id: entry.id, idx, ext: "jpg" })),
                     },
                     {
                       kind: "delete",
@@ -1557,9 +1636,14 @@ export default function ImageStudio({
                   </p>
                   <div className="flex items-center justify-between mt-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 capitalize">
-                        {entry.model?.replace("-", " ") || copy.gallery.modelFallback}
-                      </span>
+                      {(() => {
+                        const modelName = imageModelCatalog.variantById.get(entry.model)?.model?.name;
+                        return (
+                          <span className={`text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 ${modelName ? "" : "capitalize"}`}>
+                            {modelName || entry.model?.replace(/-/g, " ") || copy.gallery.modelFallback}
+                          </span>
+                        );
+                      })()}
                       <span className="text-[10px] text-white/40">{entry.aspect_ratio}</span>
                     </div>
                   </div>
@@ -1570,46 +1654,19 @@ export default function ImageStudio({
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
             {/* Overlapping floating cards */}
-            <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
-                  alt="Creative asset 1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
-                  alt="Creative asset 2"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
-                  alt="Creative asset 3"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
-                  alt="Creative asset 4"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+            <HeroCollage />
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
-              <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.emptyState.heading}</span>
-              <span className="text-[#c6f135] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
-                {selectedModelDisplayName}
-              </span>
+            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white text-center px-4 mb-3">
+              {copy.emptyState.heading}
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/60 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4 mb-4">
               {copy.emptyState.subtitle}
             </p>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/60">
+              <span className="text-white/60">{copy.emptyState.modelLabel}</span>
+              <span aria-hidden="true">·</span>
+              <span className="text-white/85">{selectedModelDisplayName}</span>
+            </span>
           </div>
         )}
       </div>
@@ -1766,6 +1823,7 @@ export default function ImageStudio({
                     <SimpleDropdown
                       title={copy.popovers.aspectRatio}
                       options={currentAspectRatios}
+                      descriptions={copy.aspectRatioHints}
                       selected={selectedAr}
                       onSelect={(val) => setSelectedAr(val)}
                       onClose={() => setDropdownOpen(null)}
@@ -1848,21 +1906,30 @@ export default function ImageStudio({
               )}
 
               {/* Batch size stepper */}
-              <div className={promptControlClassName({ compact: true, className: "select-none" })}>
+              <div
+                role="group"
+                aria-label={copy.controls.batchLabel}
+                title={copy.controls.batchLabel}
+                className={promptControlClassName({ compact: true, className: "select-none px-1 gap-0" })}
+              >
                 <button
                   type="button"
+                  aria-label={copy.controls.batchDecrease}
+                  disabled={batchSize <= 1}
                   onClick={() => setBatchSize(prev => Math.max(1, prev - 1))}
-                  className="text-white/40 hover:text-white/80 font-extrabold text-xs transition-colors px-1"
+                  className="w-9 h-9 -my-px flex items-center justify-center rounded-md text-sm font-extrabold text-white/60 hover:text-white hover:bg-white/5 disabled:opacity-30 transition-colors"
                 >
                   -
                 </button>
-                <span className="text-xs font-semibold text-white/70 min-w-[24px] text-center">
-                  {batchSize}/4
+                <span aria-live="polite" className="text-xs font-semibold text-white/70 min-w-[28px] text-center">
+                  ×{batchSize}
                 </span>
                 <button
                   type="button"
+                  aria-label={copy.controls.batchIncrease}
+                  disabled={batchSize >= 4}
                   onClick={() => setBatchSize(prev => Math.min(4, prev + 1))}
-                  className="text-white/40 hover:text-white/80 font-extrabold text-xs transition-colors px-1"
+                  className="w-9 h-9 -my-px flex items-center justify-center rounded-md text-sm font-extrabold text-white/60 hover:text-white hover:bg-white/5 disabled:opacity-30 transition-colors"
                 >
                   +
                 </button>
@@ -1874,7 +1941,7 @@ export default function ImageStudio({
                 className={promptControlClassName()}
                 onClick={() => setIsDrawModalOpen(true)}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-40 text-white group-hover:text-[#c6f135] transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-40 text-white group-hover:text-brand transition-colors">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
@@ -1905,11 +1972,11 @@ export default function ImageStudio({
 
       {/* ── FULLSCREEN IMAGE MODAL ── */}
       {fullscreenUrl && (
-        <div 
+        <div role="dialog" aria-modal="true" 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
-          <button
+          <button aria-label={copy?.fullscreen?.close || "Close"}
             type="button"
             className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
             onClick={(e) => {

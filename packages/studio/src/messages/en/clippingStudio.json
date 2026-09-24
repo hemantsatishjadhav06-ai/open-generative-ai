@@ -36,10 +36,10 @@
     "uploadSourceVideo": "Upload source video",
     "generate": "Generate",
     "generating": "Generating...",
-    "coordinatesOnly": "Coordinates Only"
+    "coordinatesOnly": "Just timestamps"
   },
   "placeholders": {
-    "promptOrUrl": "Describe prompt / highlights to extract"
+    "promptOrUrl": "What moments should we clip? e.g. funniest reactions"
   },
   "popovers": {
     "aspectRatio": "Aspect Ratio",

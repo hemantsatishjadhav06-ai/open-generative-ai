@@ -144,7 +144,7 @@ const URLImage = ({
             text="Image"
             fontSize={11}
             fontFamily="sans-serif"
-            fill="#3898ec"
+            fill="#c6f135"
             x={0}
             y={5}
           />
@@ -153,7 +153,7 @@ const URLImage = ({
             text={`${dims.w} × ${dims.h}`}
             fontSize={11}
             fontFamily="sans-serif"
-            fill="#3898ec"
+            fill="#c6f135"
             align="right"
             width={dims.w * (shapeRef.current?.getStage()?.scaleX() || 1)}
             x={0}
@@ -175,9 +175,9 @@ const URLImage = ({
           ]}
           anchorSize={8}
           anchorCornerRadius={4}
-          anchorStroke="#3898ec"
+          anchorStroke="#c6f135"
           anchorFill="white"
-          borderStroke="#3898ec"
+          borderStroke="#c6f135"
           boundBoxFunc={(oldBox, newBox) => {
             if (newBox.width < 5 || newBox.height < 5) {
               return oldBox;
@@ -325,7 +325,7 @@ const URLVideo = ({
             text="Video"
             fontSize={11}
             fontFamily="sans-serif"
-            fill="#3898ec"
+            fill="#c6f135"
             x={0}
             y={5}
           />
@@ -333,7 +333,7 @@ const URLVideo = ({
             text={`${dims.w} × ${dims.h}`}
             fontSize={11}
             fontFamily="sans-serif"
-            fill="#3898ec"
+            fill="#c6f135"
             align="right"
             width={dims.w * (shapeRef.current?.getStage()?.scaleX() || 1)}
             x={0}
@@ -355,9 +355,9 @@ const URLVideo = ({
           ]}
           anchorSize={8}
           anchorCornerRadius={4}
-          anchorStroke="#3898ec"
+          anchorStroke="#c6f135"
           anchorFill="white"
-          borderStroke="#3898ec"
+          borderStroke="#c6f135"
           boundBoxFunc={(oldBox, newBox) => {
             if (newBox.width < 5 || newBox.height < 5) {
               return oldBox;
@@ -492,9 +492,9 @@ const URLAudio = ({
         <Rect
           width={180}
           height={60}
-          fill={playing ? "#3898ec" : "#1E1E1E"}
+          fill={playing ? "#c6f135" : "#151021"}
           cornerRadius={2}
-          stroke="#3898ec"
+          stroke="#c6f135"
           strokeWidth={isSelected ? 2 : 1}
           shadowBlur={isSelected ? 10 : 5}
           shadowOpacity={0.3}
@@ -696,9 +696,9 @@ const LoaderNode = ({ task, isSelected, onSelect, onChange, theme }) => {
         <Rect
           width={240}
           height={240}
-          fill={theme === "dark" ? "#1E1E1E" : "#FFFFFF"}
+          fill={theme === "dark" ? "#151021" : "#FFFFFF"}
           cornerRadius={8}
-          stroke="#3898ec"
+          stroke="#c6f135"
           strokeWidth={1}
           shadowColor={theme === "dark" ? "#ffffff" : "#000000"}
           shadowBlur={10}
@@ -725,7 +725,7 @@ const LoaderNode = ({ task, isSelected, onSelect, onChange, theme }) => {
           y={110}
           text="(Move to change spawn location)"
           fontSize={10}
-          fill="#3898ec"
+          fill="#c6f135"
           width={220}
           align="center"
         />
@@ -737,7 +737,7 @@ const LoaderNode = ({ task, isSelected, onSelect, onChange, theme }) => {
           innerRadius={20}
           outerRadius={24}
           angle={300}
-          fill="#3898ec"
+          fill="#c6f135"
           rotation={0}
         />
       </Group>
@@ -1738,7 +1738,7 @@ const CanvasArea = forwardRef(
         node.x(node.x() + g.diff);
         newGuides.push({
           points: [g.lineGuide, -5000, g.lineGuide, 10000],
-          stroke: "#3898ec",
+          stroke: "#c6f135",
           strokeWidth: 1 / zoom,
           dash: [4, 4],
         });
@@ -1748,7 +1748,7 @@ const CanvasArea = forwardRef(
         node.y(node.y() + g.diff);
         newGuides.push({
           points: [-5000, g.lineGuide, 10000, g.lineGuide],
-          stroke: "#3898ec",
+          stroke: "#c6f135",
           strokeWidth: 1 / zoom,
           dash: [4, 4],
         });

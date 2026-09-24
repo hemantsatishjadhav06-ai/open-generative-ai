@@ -80,6 +80,13 @@ export default function CreativeCanvas({
   // userBalanceLabel: string like "$ 5.00" or "1200 credits" to show in the dropdown.
   // If not provided, falls back to "$ {user.balance}".
   userBalanceLabel = null,
+  // Host-app integration: where the back arrow goes, and an optional brand
+  // mark rendered next to it (hidden in embed mode).
+  backHref = "/",
+  brandSlot = null,
+  // Optional support link for the profile menu (e.g. "mailto:help@example.com").
+  // Omitted by default so a host app never ships another vendor's address.
+  supportHref = null,
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -262,7 +269,7 @@ export default function CreativeCanvas({
         fetchSessions(); // Re-fetch to find the name if not in list
       }
     } else {
-      setMessages([{ role: "assistant", content: `Hello ${user?.username || "User"} — what shall we create today?`, timestamp: new Date().toISOString() }]);
+      setMessages([{ role: "assistant", content: "What are we making today?", timestamp: new Date().toISOString() }]);
       setAssets([]);
       setCurrentSessionName("New Session");
     }
@@ -517,10 +524,10 @@ export default function CreativeCanvas({
         setMessages(cleaned);
         checkActiveJobs(cleaned);
       } else {
-        setMessages([{ role: "assistant", content: `Session ready — what shall we create?`, timestamp: new Date().toISOString() }]);
+        setMessages([{ role: "assistant", content: "Ready. What's the idea?", timestamp: new Date().toISOString() }]);
       }
     } catch {
-      setMessages([{ role: "assistant", content: `Session ready — what shall we create?`, timestamp: new Date().toISOString() }]);
+      setMessages([{ role: "assistant", content: "Ready. What's the idea?", timestamp: new Date().toISOString() }]);
     }
   };
 
@@ -1079,13 +1086,16 @@ export default function CreativeCanvas({
 
               {!inEmbedMode && (
                 <Link
-                  href="/"
+                  href={backHref}
                   className={`p-1.5 hover:bg-bg-card rounded text-secondary-text hover:text-primary transition-colors ${!showLeftSidebar && "hidden"}`}
-                  title="Go Back"
+                  title="Back to studio"
+                  aria-label="Back to studio"
                 >
                   <FiArrowLeft size={16} />
                 </Link>
               )}
+
+              {!inEmbedMode && brandSlot}
 
               {inEmbedMode && (
                 <button
@@ -1175,15 +1185,19 @@ export default function CreativeCanvas({
                     </div>
                   </div>
                   
-                  <div className="py-1">
-                    <a 
-                      href="mailto:support@vadoo.tv"
-                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-bg-page transition-colors text-[13px] font-semibold text-primary-text"
-                    >
-                      Support
-                    </a>
-                  </div>
-                  <div className="h-px bg-divider w-full my-1" />
+                  {supportHref && (
+                    <>
+                      <div className="py-1">
+                        <a 
+                          href={supportHref}
+                          className="w-full flex items-center gap-3 px-4 py-2 hover:bg-bg-page transition-colors text-[13px] font-semibold text-primary-text"
+                        >
+                          Support
+                        </a>
+                      </div>
+                      <div className="h-px bg-divider w-full my-1" />
+                    </>
+                  )}
                   <div className="py-1">
                     <button 
                       onClick={(e) => {
@@ -1253,7 +1267,7 @@ export default function CreativeCanvas({
           <div className="p-4 flex items-center justify-between border-b border-divider bg-bg-card">
             <div className="flex flex-col">
               <h2 className="font-bold text-[13px] text-primary-text uppercase tracking-widest leading-none flex items-center gap-2">
-                <RiSparklingLine className="text-primary" /> Creative Agent
+                <RiSparklingLine className="text-primary" /> Design Agent
               </h2>
               <span className="text-[10px] text-secondary-text mt-1.5">Auto Model • Multi-tool Access</span>
             </div>
