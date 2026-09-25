@@ -29,7 +29,7 @@ import VideoGeneration from "./VideoNode";
 import { setWorkflowIds } from "./WorkflowStore";
 import { concatModels, videoCombinerModels, getPresets } from "./utility";
 import { api as gatewayApi, errorMessage, notifyBudgetExceeded } from "./gatewayClient";
-import { t } from "./i18n";
+import { localeRootFromPath, t } from "./i18n";
 import Link from "next/link";
 import RenderField from "./RenderField";
 import PromptConcate from "./PromptConcate";
@@ -1180,7 +1180,7 @@ const NodeFlow = ({
 
     try {
       const response = await api.post("/api/workflow/create", workflowPayload);
-      window.location.href = `/workflow/${response.data.workflow_id}/builder`;
+      window.location.href = `${localeRootFromPath()}/workflow/${response.data.workflow_id}/builder`;
     } catch (error) {
       setIsRunning(0);
       toast.error(errorMessage(error, t("duplicateFailed")));
@@ -1890,7 +1890,7 @@ const NodeFlow = ({
         <div className="flex items-center justify-between w-full max-w-[95%] sm:max-w-[90%] lg:max-w-[80%] overflow-x-auto">
           <div className="flex items-center gap-2 w-[35%]">
             <Link
-              href="/studio/workflows"
+              href={`${localeRootFromPath()}/studio/workflows`}
               className="text-white"
               aria-label="All workflows"
             >

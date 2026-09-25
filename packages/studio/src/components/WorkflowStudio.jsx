@@ -17,7 +17,7 @@ import {
 import dynamic from "next/dynamic";
 import { notifyError } from "../utils/notify.js";
 import { formatErrorMessage } from "../utils/formatError.js";
-import { resolveCopy } from "../i18nUtils";
+import { localeRoot, resolveCopy } from "../i18nUtils";
 
 // Copy lives here (en + zh) because this studio has no message bundle of its
 // own yet; the shape mirrors the other studios' messages/<locale>/*.json.
@@ -403,7 +403,9 @@ export default function WorkflowStudio({
   const pathname = usePathname() || "";
   const locale = localeProp || (/^\/zh(\/|$)/.test(pathname) ? "zh" : "en");
   const t = resolveCopy(COPY.en, COPY[locale], locale);
-  const studioRoot = locale === "zh" ? "/zh/studio/workflows" : "/studio/workflows";
+  const studioRoot = `${localeRoot(locale)}/studio/workflows`;
+  // /workflow/[id]/[tab] is mirrored under /zh/workflow/… (Chinese stays Chinese).
+  const workflowRoot = `${localeRoot(locale)}/workflow`;
 
   const idFromParams = params?.id;     // exists on /workflow/[id]/[tab] route
   const tabFromParams = params?.tab;   // string on /workflow/[id]/[tab]; array on the [[...tab]] catch-all
@@ -454,10 +456,10 @@ export default function WorkflowStudio({
 
       if (!fromUrl) {
         // Always route to /workflow/[id] so the builder library's useParams().id resolves correctly
-        router.push(`/workflow/${encodeURIComponent(wf.id)}/${targetTab}`);
+        router.push(`${workflowRoot}/${encodeURIComponent(wf.id)}/${targetTab}`);
       }
     },
-    [router, urlTab],
+    [router, urlTab, workflowRoot],
   );
 
   // Dedicated data fetching effect for the active workflow
@@ -526,7 +528,7 @@ export default function WorkflowStudio({
             data: { nodes: [] },
           };
           const response = await createWorkflow(null, payload);
-          router.push(`/workflow/${encodeURIComponent(response.workflow_id)}/builder`);
+          router.push(`${workflowRoot}/${encodeURIComponent(response.workflow_id)}/builder`);
           return;
         }
 
@@ -576,10 +578,10 @@ export default function WorkflowStudio({
       const path = window.location.pathname;
       if (/^(\/zh)?\/studio\/workflows?\//.test(path)) {
         const tab = urlTab || 'builder';
-        router.replace(`/workflow/${encodeURIComponent(urlWorkflowId)}/${tab}`);
+        router.replace(`${workflowRoot}/${encodeURIComponent(urlWorkflowId)}/${tab}`);
       }
     }
-  }, [urlWorkflowId, urlTab, router]);
+  }, [urlWorkflowId, urlTab, router, workflowRoot]);
 
   // Sync state with the URL.
   useEffect(() => {
@@ -676,7 +678,7 @@ export default function WorkflowStudio({
     const inputEntries = Object.entries(inputSchema?.properties || {});
     const goToTab = (tab) => {
       setActiveSubTab(tab);
-      if (selectedWorkflow?.id) router.push(`/workflow/${encodeURIComponent(selectedWorkflow.id)}/${tab}`);
+      if (selectedWorkflow?.id) router.push(`${workflowRoot}/${encodeURIComponent(selectedWorkflow.id)}/${tab}`);
     };
     const tabClass = (active) => `px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 ${
       active ? "bg-brand text-on-brand shadow-[0_0_15px_rgba(46,230,214,0.2)]" : "text-white/60 hover:text-white"

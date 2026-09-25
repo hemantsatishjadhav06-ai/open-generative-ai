@@ -4,7 +4,7 @@ import axios from "axios";
 import { BiLoaderAlt } from "react-icons/bi";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
-import { getAgentCopy } from "../i18n";
+import { getAgentCopy, localePath } from "../i18n";
 import { AGENTS_API as BASE_URL, errorMessage } from "../utils/api";
 
 const CreateAgent = ({ locale = "en" }) => {
@@ -27,7 +27,7 @@ const CreateAgent = ({ locale = "en" }) => {
       });
       const suggestion = suggestResponse.data;
       const createPayload = {
-        name: suggestion.name || "Unnamed Agent",
+        name: suggestion.name || copy.create.unnamed,
         description: suggestion.description || "",
         system_prompt: suggestion.system_prompt || "",
         skill_ids: suggestion.recommended_skill_ids || [],
@@ -38,7 +38,7 @@ const CreateAgent = ({ locale = "en" }) => {
       const createResponse = await axios.post(`${BASE_URL}`, createPayload);
       if (createResponse.status === 200 || createResponse.status === 201) {
         const createdAgent = createResponse.data;
-        router.push(`/agents/edit/${createdAgent.agent_id}`);
+        router.push(localePath(locale, `/agents/edit/${createdAgent.agent_id}`));
       }
     } catch (err) {
       setError(errorMessage(err, copy, copy.errors.createFailed));
@@ -51,7 +51,7 @@ const CreateAgent = ({ locale = "en" }) => {
     <div className="flex-1 flex flex-col gap-8 items-center w-full max-w-[95%] sm:max-w-[90%] lg:max-w-[80%] relative pb-12">
       <div className="flex items-start gap-2 w-full">
         <Link
-          href="/agents"
+          href={localePath(locale, "/agents")}
           aria-label={copy.backToAgents}
           title={copy.backToAgents}
           className="p-2 hover:bg-gray-100 dark:hover:bg-secondary-bg rounded-full transition-colors group"
@@ -60,17 +60,17 @@ const CreateAgent = ({ locale = "en" }) => {
         </Link>
         <div className="flex flex-col gap-2 w-full">
           <h1 className="text-2xl font-bold text-black dark:text-white">
-            Prompt Any Assistant
+            {copy.create.title}
           </h1>
           <p className="text-gray-500 dark:text-secondary-text text-sm font-medium">
-            Use this to prompt up an assistant to help you with any topic!
+            {copy.create.subtitle}
           </p>
         </div>
       </div>
       <form onSubmit={handleArchitectAgent} className="space-y-8 w-full">
         <div className="space-y-4">
           <label htmlFor="agent-idea" className="text-lg font-semibold text-black dark:text-white block">
-            What should your assistant be able to do and be knowledgeable in?
+            {copy.create.ideaLabel}
           </label>
           <div className="relative">
             <textarea
@@ -78,7 +78,7 @@ const CreateAgent = ({ locale = "en" }) => {
               value={prompt}
               autoFocus
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ex: A helpful travel agent that finds the best destinations in Italy..."
+              placeholder={copy.create.ideaPlaceholder}
               className="w-full bg-white dark:bg-secondary-bg border border-gray-200 dark:border-divider rounded-xl p-4 text-gray-900 dark:text-primary-text text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-primary/10 focus:border-gray-400 dark:focus:border-primary transition-all resize-none min-h-[140px] shadow-sm"
               disabled={loading}
             />
@@ -97,15 +97,15 @@ const CreateAgent = ({ locale = "en" }) => {
             {loading ? (
               <>
                 <BiLoaderAlt className="w-6 h-6 animate-spin" />
-                <span>Creating agent...</span>
+                <span>{copy.create.creating}</span>
               </>
             ) : (
-              "Create agent"
+              copy.create.submit
             )}
           </button>
           {loading && (
             <p className="text-center text-gray-400 dark:text-secondary-text text-sm animate-pulse">
-              Analyzing prompt and building capabilities...
+              {copy.create.analyzing}
             </p>
           )}
           {error && (

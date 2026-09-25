@@ -8,7 +8,7 @@ import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
 import { usePersistKey } from "../persistKey.js";
 import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
 import useModelAvailability from "../useModelAvailability.js";
-import ProviderChip, { getProviderStyle } from "./ProviderChip.jsx";
+import { ModelThumb, getProviderStyle, servedByFor } from "./ProviderChip.jsx";
 import DrawModal from "./DrawModal.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import { VideoOptionControl, VideoSettingsControl } from "./VideoModelControls.jsx";
@@ -546,7 +546,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
       }}
     >
       <div className="flex items-center gap-3.5">
-        <ProviderChip provider={family.provider} />
+        <ModelThumb entry={entry} provider={family.provider} />
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs font-bold text-white tracking-tight truncate">
             {label}
@@ -556,6 +556,11 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
             {!hint && selectedProvider === "all" && family.provider_name && (
               <span className="text-[9px] text-white/40">
                 {family.provider_name}
+              </span>
+            )}
+            {servedByFor(entry) && md.runsOn && (
+              <span className="text-[9px] text-brand/80 truncate" data-served-by>
+                {md.runsOn.replace("{model}", servedByFor(entry))}
               </span>
             )}
           </div>
@@ -2940,7 +2945,7 @@ export default function VideoStudio({
                     active: openDropdown === "model",
                   })}
                 >
-                  <ProviderChip provider={selectedFamily.provider || "aquora"} size="xs" />
+                  <ModelThumb model={selectedModel} provider={selectedFamily.provider || "aquora"} size="xs" />
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedPickerLabel}
                   </span>

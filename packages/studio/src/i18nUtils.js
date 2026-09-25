@@ -39,3 +39,11 @@ export function resolveCopy(en, localeBundle, locale) {
   if (!locale || locale === 'en') return en;
   return mergeCopy(en, localeBundle);
 }
+
+// URL root of a locale's mirrored route tree ('' for English, '/zh' for
+// Chinese), matching the host app's app/<locale>/… routes.
+const LOCALE_ROOTS = { zh: '/zh' };
+
+export function localeRoot(locale) {
+  return LOCALE_ROOTS[locale] || '';
+}

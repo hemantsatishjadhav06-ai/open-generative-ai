@@ -63,7 +63,8 @@
     "pickHintCinematic": "Cinematic, with sound",
     "pickHintMotion": "Smooth, realistic motion",
     "pickHintSocial": "Great for reels",
-    "pickHintStory": "Story-driven clips"
+    "pickHintStory": "Story-driven clips",
+    "runsOn": "Runs on {model}"
   },
   "controls": {
     "draw": "Draw",

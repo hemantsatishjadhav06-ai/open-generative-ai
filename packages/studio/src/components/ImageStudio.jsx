@@ -10,7 +10,7 @@ import { generateImage, generateI2I, uploadFile } from "../gateway.js";
 import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
 import { usePersistKey } from "../persistKey.js";
 import useModelAvailability from "../useModelAvailability.js";
-import ProviderChip, { getProviderStyle } from "./ProviderChip.jsx";
+import { ModelThumb, getProviderStyle, servedByFor } from "./ProviderChip.jsx";
 import DrawModal from "./DrawModal.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import MobileGenerationActions, {
@@ -881,7 +881,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <ProviderChip provider={family.provider} />
+                  <ModelThumb entry={entry} provider={family.provider} />
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="text-xs font-bold text-white tracking-tight truncate">
                       {entry.name}
@@ -890,6 +890,11 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
                     {selectedProvider === "all" && family.provider_name && (
                       <span className="text-[9px] text-white/40">
                         {family.provider_name}
+                      </span>
+                    )}
+                    {servedByFor(entry) && t.runsOn && (
+                      <span className="text-[9px] text-brand/80 truncate" data-served-by>
+                        {t.runsOn.replace("{model}", servedByFor(entry))}
                       </span>
                     )}
                     </div>
@@ -1704,7 +1709,7 @@ export default function ImageStudio({
                     active: dropdownOpen === "model",
                   })}
                 >
-                  <ProviderChip provider={selectedFamily.provider || "aquora"} size="xs" />
+                  <ModelThumb model={selectedModelId} provider={selectedFamily.provider || "aquora"} size="xs" />
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedModelDisplayName}
                   </span>

@@ -99,3 +99,10 @@ export function t(key, values = {}) {
   const template = table[key] ?? MESSAGES.en[key] ?? key;
   return template.replace(/\{(\w+)\}/g, (_, name) => (values[name] !== undefined ? String(values[name]) : `{${name}}`));
 }
+
+// '/zh' on the Chinese route tree (/zh/workflow/…), '' otherwise: links the
+// builder makes keep the visitor in their language.
+export function localeRootFromPath() {
+  if (typeof window === "undefined") return "";
+  return /^\/zh(\/|$)/.test(window.location.pathname) ? "/zh" : "";
+}

@@ -9,218 +9,211 @@
  ],
  "entries": {
   "seedance-v2.0-t2v": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
    "reviewed": ["quality:"]
   },
   "seedance-2.0-new-t2v": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
    "reviewed": ["quality:"]
   },
   "seedance-2.0-t2v-480p": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
    "reviewed": ["quality:"]
   },
   "seedance-v2.0-i2v": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "bytedance/seedance-2.0/reference-to-video", "param_map": { "images_list": "image_urls" } }
-   ],
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
-   "transforms": [{ "op": "capitalize_ref_tokens", "field": "prompt" }],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "bytedance/seedance-2.0/reference-to-video", "param_map": {"images_list": "image_urls"}}],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "transforms": [{"op": "capitalize_ref_tokens", "field": "prompt"}],
    "reviewed": ["endpoint:"]
   },
   "seedance-2.0-i2v-480p": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "bytedance/seedance-2.0/reference-to-video", "param_map": { "images_list": "image_urls" } }
-   ],
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
-   "transforms": [{ "op": "capitalize_ref_tokens", "field": "prompt" }],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "bytedance/seedance-2.0/reference-to-video", "param_map": {"images_list": "image_urls"}}],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "transforms": [{"op": "capitalize_ref_tokens", "field": "prompt"}],
    "reviewed": ["endpoint:"]
   },
   "seedance-2.0-new-first-last": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
    "reviewed": ["endpoint:"]
   },
   "seedance-2.0-omni-reference": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
-   "transforms": [{ "op": "capitalize_ref_tokens", "field": "prompt" }],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "transforms": [{"op": "capitalize_ref_tokens", "field": "prompt"}],
    "reviewed": ["endpoint:"]
   },
   "seedance-2.0-omni-reference-480p": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
-   "transforms": [{ "op": "capitalize_ref_tokens", "field": "prompt" }],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "transforms": [{"op": "capitalize_ref_tokens", "field": "prompt"}],
    "reviewed": ["endpoint:"]
   },
   "seedance-2-motion-control": {
-   "tier_variant": { "when": { "field": "quality", "equals": "basic" }, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
    "reviewed": ["quality:", "param seed", "prompt:"]
   },
   "seedance-v2.0-extend": {
-   "disable": "extending a clip needs the source video's last frame (request_id → stored output → frame grab); the gateway has no frame-extraction step yet",
-   "reviewed": true
+   "reviewed": true,
+   "param_map": { "request_id": null, "images_list": "image_urls", "quality": null },
+   "value_transforms": { "image_urls": null },
+   "drop": ["quality"],
+   "resolve": { "request_id": "@source" },
+   "steps": { "before": [{"op": "last_frame", "into": "images_list"}], "after": [{"op": "merge_source"}] },
+   "transforms": [
+    { "op": "capitalize_ref_tokens", "field": "prompt" },
+    { "op": "slice_array", "field": "image_urls", "max": 9 }
+   ],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "variants": [{"when": [{"field": "images_list", "max_items": 1},{"field": "video_files", "max_items": 0},{"field": "audio_files", "max_items": 0}], "fal": "bytedance/seedance-2.0/image-to-video", "param_map": {"images_list": "image_url", "video_files": null, "audio_files": null}, "transforms": [{"op": "first_of_array", "field": "image_url"}]}]
   },
   "sd-2-vip-extend": {
-   "disable": "extending a clip needs the source video's last frame (request_id → stored output → frame grab); the gateway has no frame-extraction step yet",
-   "reviewed": true
+   "reviewed": true,
+   "param_map": { "request_id": null, "images_list": "image_urls", "quality": null },
+   "value_transforms": { "image_urls": null },
+   "drop": ["quality"],
+   "resolve": { "request_id": "@source" },
+   "steps": { "before": [{"op": "last_frame", "into": "images_list"}], "after": [{"op": "merge_source"}] },
+   "transforms": [
+    { "op": "capitalize_ref_tokens", "field": "prompt" },
+    { "op": "slice_array", "field": "image_urls", "max": 9 }
+   ],
+   "tier_variant": { "when": {"field": "quality", "equals": "basic"}, "replace": ["bytedance/seedance-2.0/", "bytedance/seedance-2.0/fast/"] },
+   "variants": [{"when": [{"field": "images_list", "max_items": 1},{"field": "video_files", "max_items": 0},{"field": "audio_files", "max_items": 0}], "fal": "bytedance/seedance-2.0/image-to-video", "param_map": {"images_list": "image_url", "video_files": null, "audio_files": null}, "transforms": [{"op": "first_of_array", "field": "image_url"}]}]
   },
   "sd-2-vip-extend-1080p": {
-   "disable": "extending a clip needs the source video's last frame (request_id → stored output → frame grab); the gateway has no frame-extraction step yet",
-   "reviewed": true
+   "reviewed": true,
+   "param_map": { "request_id": null, "images_list": "image_urls", "quality": null },
+   "value_transforms": { "image_urls": null },
+   "drop": ["quality"],
+   "resolve": { "request_id": "@source" },
+   "steps": { "before": [{"op": "last_frame", "into": "images_list"}], "after": [{"op": "merge_source"}] },
+   "transforms": [
+    { "op": "capitalize_ref_tokens", "field": "prompt" },
+    { "op": "slice_array", "field": "image_urls", "max": 9 }
+   ],
+   "variants": [{"when": [{"field": "images_list", "max_items": 1},{"field": "video_files", "max_items": 0},{"field": "audio_files", "max_items": 0}], "fal": "bytedance/seedance-2.0/image-to-video", "param_map": {"images_list": "image_url", "video_files": null, "audio_files": null}, "transforms": [{"op": "first_of_array", "field": "image_url"}]}]
   },
   "veo3.1-extend-video": {
-   "disable": "needs the submit router to resolve request_id (a previous job token) to that job's output video URL before building the fal input",
    "resolve": { "request_id": "video_url" },
    "reviewed": true
   },
   "grok-imagine-extend": {
-   "disable": "needs the submit router to resolve request_id (a previous job token) to that job's output video URL before building the fal input",
    "resolve": { "request_id": "video_url" },
    "reviewed": true
   },
   "flux-kontext-max-i2i": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/flux-pro/kontext/max/multi", "param_map": { "images_list": "image_urls" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/flux-pro/kontext/max/multi", "param_map": {"images_list": "image_urls"}}],
    "reviewed": ["image_url:"]
   },
   "flux-kontext-pro-i2i": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/flux-pro/kontext/multi", "param_map": { "images_list": "image_urls" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/flux-pro/kontext/multi", "param_map": {"images_list": "image_urls"}}],
    "reviewed": ["image_url:"]
   },
   "pixverse-v4.5-i2v": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/pixverse/v4.5/transition", "param_map": { "images_list": "first_image_url + end_image_url" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/pixverse/v4.5/transition", "param_map": {"images_list": "first_image_url + end_image_url"}}],
    "reviewed": ["param aspect_ratio", "aspect_ratio:"]
   },
   "pixverse-v5-i2v": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/pixverse/v5/transition", "param_map": { "images_list": "first_image_url + end_image_url" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/pixverse/v5/transition", "param_map": {"images_list": "first_image_url + end_image_url"}}],
    "reviewed": ["param aspect_ratio", "aspect_ratio:"]
   },
   "pixverse-v5.5-i2v": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/pixverse/v5.5/transition", "param_map": { "images_list": "first_image_url + end_image_url" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/pixverse/v5.5/transition", "param_map": {"images_list": "first_image_url + end_image_url"}}],
    "reviewed": ["param aspect_ratio", "aspect_ratio:", "generate_multi_clip_switch:"]
   },
   "vidu-v2.0-i2v": {
-   "variants": [
-    { "when": { "field": "images_list", "min_items": 2 }, "fal": "fal-ai/vidu/start-end-to-video", "param_map": { "images_list": "start_image_url + end_image_url" } }
-   ],
+   "variants": [{"when": {"field": "images_list", "min_items": 2}, "fal": "fal-ai/vidu/start-end-to-video", "param_map": {"images_list": "start_image_url + end_image_url"}}],
    "reviewed": ["image_url:"]
   },
   "veo3.1-image-to-video": {
-   "variants": [
-    { "when": { "field": "last_image", "present": true }, "fal": "fal-ai/veo3.1/first-last-frame-to-video", "param_map": { "image_url": "first_frame_url", "last_image": "last_frame_url" } }
-   ],
+   "variants": [{"when": {"field": "last_image", "present": true}, "fal": "fal-ai/veo3.1/first-last-frame-to-video", "param_map": {"image_url": "first_frame_url", "last_image": "last_frame_url"}}],
    "reviewed": ["param last_image", "routing:"]
   },
   "veo3.1-fast-image-to-video": {
-   "variants": [
-    { "when": { "field": "last_image", "present": true }, "fal": "fal-ai/veo3.1/fast/first-last-frame-to-video", "param_map": { "image_url": "first_frame_url", "last_image": "last_frame_url" } }
-   ],
+   "variants": [{"when": {"field": "last_image", "present": true}, "fal": "fal-ai/veo3.1/fast/first-last-frame-to-video", "param_map": {"image_url": "first_frame_url", "last_image": "last_frame_url"}}],
    "reviewed": ["param last_image", "routing:"]
   },
   "veo3.1-lite-image-to-video": {
-   "variants": [
-    { "when": { "field": "last_image", "present": true }, "fal": "fal-ai/veo3.1/lite/first-last-frame-to-video", "param_map": { "image_url": "first_frame_url", "last_image": "last_frame_url" } }
-   ],
+   "variants": [{"when": {"field": "last_image", "present": true}, "fal": "fal-ai/veo3.1/lite/first-last-frame-to-video", "param_map": {"image_url": "first_frame_url", "last_image": "last_frame_url"}}],
    "reviewed": ["param last_image", "routing:"]
   },
   "kling-o1-reference-to-video": {
-   "variants": [
-    { "when": { "field": "video_url", "present": true }, "fal": "fal-ai/kling-video/o1/video-to-video/reference" }
-   ],
+   "variants": [{"when": {"field": "video_url", "present": true}, "fal": "fal-ai/kling-video/o1/video-to-video/reference"}],
    "reviewed": ["param video_url", "param keep_original_sound", "routing:"]
   },
   "gemini-omni-flash-1-1-text-to-video": {
    "variants": [
-    { "when": { "field": "video_url", "present": true }, "fal": "google/gemini-omni-flash/v1.1/edit", "param_map": { "video_url": "video_url", "image_urls": null } },
-    { "when": { "field": "image_urls", "present": true }, "fal": "google/gemini-omni-flash/v1.1/reference-to-video", "param_map": { "image_urls": "image_urls", "video_url": null } }
+    { "when": {"field": "video_url", "present": true}, "fal": "google/gemini-omni-flash/v1.1/edit", "param_map": {"video_url": "video_url", "image_urls": null} },
+    { "when": {"field": "image_urls", "present": true}, "fal": "google/gemini-omni-flash/v1.1/reference-to-video", "param_map": {"image_urls": "image_urls", "video_url": null} }
    ],
    "reviewed": true
   },
   "wan2.2-animate": {
-   "variants": [
-    { "when": { "field": "mode", "equals": "replace" }, "fal": "fal-ai/wan/v2.2-14b/animate/replace" }
-   ],
+   "variants": [{"when": {"field": "mode", "equals": "replace"}, "fal": "fal-ai/wan/v2.2-14b/animate/replace"}],
    "reviewed": true
   },
   "depth-anything": {
-   "variants": [
-    { "when": [{ "field": "video_url", "present": false }, { "field": "image_url", "present": true }], "fal": "fal-ai/image-preprocessors/depth-anything/v2", "param_map": { "image_url": "image_url" }, "output": "image.url" }
-   ],
+   "variants": [{"when": [{"field": "video_url", "present": false},{"field": "image_url", "present": true}], "fal": "fal-ai/image-preprocessors/depth-anything/v2", "param_map": {"image_url": "image_url"}, "output": "image.url"}],
    "reviewed": true
   },
   "flux-kontext-effects": {
    "fal": "fal-ai/image-editing/age-progression",
    "variants": [
-    { "when": { "field": "name", "equals": "Background Change" }, "fal": "fal-ai/image-editing/background-change" },
-    { "when": { "field": "name", "equals": "Cartoonify" }, "fal": "fal-ai/image-editing/cartoonify" },
-    { "when": { "field": "name", "equals": "Color Correction" }, "fal": "fal-ai/image-editing/color-correction" },
-    { "when": { "field": "name", "equals": "Expression Change" }, "fal": "fal-ai/image-editing/expression-change" },
-    { "when": { "field": "name", "equals": "Face Enhancement" }, "fal": "fal-ai/image-editing/face-enhancement" },
-    { "when": { "field": "name", "equals": "Hair Change" }, "fal": "fal-ai/image-editing/hair-change" },
-    { "when": { "field": "name", "equals": "Object Removal" }, "fal": "fal-ai/image-editing/object-removal" },
-    { "when": { "field": "name", "equals": "Professional Photo" }, "fal": "fal-ai/image-editing/professional-photo" },
-    { "when": { "field": "name", "equals": "Scene Composition" }, "fal": "fal-ai/image-editing/scene-composition" },
-    { "when": { "field": "name", "equals": "Style Transfer" }, "fal": "fal-ai/image-editing/style-transfer" },
-    { "when": { "field": "name", "equals": "Time of Day" }, "fal": "fal-ai/image-editing/time-of-day" },
-    { "when": { "field": "name", "equals": "Weather Effect" }, "fal": "fal-ai/image-editing/weather-effect" }
+    { "when": {"field": "name", "equals": "Background Change"}, "fal": "fal-ai/image-editing/background-change" },
+    { "when": {"field": "name", "equals": "Cartoonify"}, "fal": "fal-ai/image-editing/cartoonify" },
+    { "when": {"field": "name", "equals": "Color Correction"}, "fal": "fal-ai/image-editing/color-correction" },
+    { "when": {"field": "name", "equals": "Expression Change"}, "fal": "fal-ai/image-editing/expression-change" },
+    { "when": {"field": "name", "equals": "Face Enhancement"}, "fal": "fal-ai/image-editing/face-enhancement" },
+    { "when": {"field": "name", "equals": "Hair Change"}, "fal": "fal-ai/image-editing/hair-change" },
+    { "when": {"field": "name", "equals": "Object Removal"}, "fal": "fal-ai/image-editing/object-removal" },
+    { "when": {"field": "name", "equals": "Professional Photo"}, "fal": "fal-ai/image-editing/professional-photo" },
+    { "when": {"field": "name", "equals": "Scene Composition"}, "fal": "fal-ai/image-editing/scene-composition" },
+    { "when": {"field": "name", "equals": "Style Transfer"}, "fal": "fal-ai/image-editing/style-transfer" },
+    { "when": {"field": "name", "equals": "Time of Day"}, "fal": "fal-ai/image-editing/time-of-day" },
+    { "when": {"field": "name", "equals": "Weather Effect"}, "fal": "fal-ai/image-editing/weather-effect" }
    ],
    "reviewed": true
   },
   "wan2.7-reference-to-video": {
    "param_map": { "image_url": null, "images_list": null },
-   "transforms_before": [
-    { "op": "concat_arrays", "field": "reference_image_urls", "from": ["image_url", "images_list"], "max": 4 }
-   ],
+   "transforms_before": [{"op": "concat_arrays", "field": "reference_image_urls", "from": ["image_url", "images_list"], "max": 4}],
    "reviewed": ["reference_image_urls:"]
   },
   "flux-1-dev-style-lora-inference": {
    "param_map": { "lora_url": null, "lora_weight": null },
-   "transforms": [{ "op": "to_object_array", "field": "loras", "props": { "path": "lora_url", "scale": "lora_weight" }, "required": ["path"], "numeric": ["scale"] }],
+   "transforms": [{"op": "to_object_array", "field": "loras", "props": {"path": "lora_url", "scale": "lora_weight"}, "required": ["path"], "numeric": ["scale"]}],
    "reviewed": ["loras:"]
   },
   "wan2.1-text-to-video": {
-   "transforms": [{ "op": "clamp", "field": "num_frames" }],
+   "transforms": [{"op": "clamp", "field": "num_frames"}],
    "reviewed": ["num_frames:"]
   },
-  "grok-imagine-video-1-5-preview": {
-   "reviewed": ["aspect_ratio:"]
-  },
+  "grok-imagine-video-1-5-preview": { "reviewed": ["aspect_ratio:"] },
   "wan2.2-speech-to-video": {
-   "transforms": [{ "op": "default_if_empty", "field": "prompt", "value": "A person is talking" }],
+   "transforms": [{"op": "default_if_empty", "field": "prompt", "value": "A person is talking"}],
    "reviewed": ["prompt:"]
   },
   "ltx-2-19b-lipsync": {
-   "transforms": [{ "op": "default_if_empty", "field": "prompt", "value": "A person is talking" }],
+   "transforms": [{"op": "default_if_empty", "field": "prompt", "value": "A person is talking"}],
    "reviewed": ["prompt:"]
   },
   "minimax-speech-2.6-hd": {
-   "transforms": [{ "op": "map_values", "field": "audio_setting.format", "map": { "wav": "flac" } }],
+   "transforms": [{"op": "map_values", "field": "audio_setting.format", "map": {"wav": "flac"}}],
    "reviewed": true
   },
   "minimax-speech-2.6-turbo": {
-   "transforms": [{ "op": "map_values", "field": "audio_setting.format", "map": { "wav": "flac" } }],
+   "transforms": [{"op": "map_values", "field": "audio_setting.format", "map": {"wav": "flac"}}],
    "reviewed": true
   },
   "elevenlabs-text-to-dialogue-v3": {
    "param_map": { "dialogue": null },
-   "transforms": [{ "op": "remap_items", "field": "inputs", "from": "dialogue", "props": { "text": "text", "voice": "voice_id" } }],
+   "transforms": [{"op": "remap_items", "field": "inputs", "from": "dialogue", "props": {"text": "text", "voice": "voice_id"}}],
    "reviewed": ["inputs:"]
   },
-  "elevenlabs-tts-turbo-2-5": {
-   "reviewed": ["voice:"]
-  },
+  "elevenlabs-tts-turbo-2-5": { "reviewed": ["voice:"] },
   "gemini-3-1-flash-tts": {
    "param_map": { "dialogue_turns": null, "speakers": null, "scene": null, "sample_context": null },
    "transforms": [
     { "op": "join_items", "field": "prompt", "from": "dialogue_turns", "template": "{speaker_id}: {text}", "alias": ["speaker_id"] },
-    { "op": "remap_items", "field": "speakers", "from": "speakers", "props": { "speaker_id": "speaker_id", "voice": "voice_name" }, "alias": ["speaker_id"] },
+    { "op": "remap_items", "field": "speakers", "from": "speakers", "props": {"speaker_id": "speaker_id", "voice": "voice_name"}, "alias": ["speaker_id"] },
     { "op": "unwrap_single", "field": "speakers", "to": "voice", "prop": "voice" },
     { "op": "concat_text", "field": "style_instructions", "from": ["scene", "sample_context"], "separator": " " }
    ],
@@ -230,7 +223,7 @@
    "param_map": { "dialogue_turns": null, "speakers": null, "scene": null, "sample_context": null },
    "transforms": [
     { "op": "join_items", "field": "prompt", "from": "dialogue_turns", "template": "{speaker_id}: {text}", "alias": ["speaker_id"] },
-    { "op": "remap_items", "field": "speakers", "from": "speakers", "props": { "speaker_id": "speaker_id", "voice": "voice_name" }, "alias": ["speaker_id"] },
+    { "op": "remap_items", "field": "speakers", "from": "speakers", "props": {"speaker_id": "speaker_id", "voice": "voice_name"}, "alias": ["speaker_id"] },
     { "op": "unwrap_single", "field": "speakers", "to": "voice", "prop": "voice" },
     { "op": "concat_text", "field": "style_instructions", "from": ["scene", "sample_context"], "separator": " " }
    ],
@@ -238,15 +231,368 @@
   },
   "minimax-music-3.0": {
    "keep": ["is_instrumental"],
-   "transforms": [{ "op": "map_values", "field": "lyrics", "from": "is_instrumental", "map": { "true": "[instrumental]" }, "keep_unmapped": false }],
+   "transforms": [{"op": "map_values", "field": "lyrics", "from": "is_instrumental", "map": {"true": "[instrumental]"}, "keep_unmapped": false}],
    "reviewed": ["lyrics:"]
   },
-  "ai-image-upscale": { "kind": "tool", "category": "tool" },
-  "seedvr2-image-upscale": { "kind": "tool", "category": "tool" },
-  "topaz-image-upscale": { "kind": "tool", "category": "tool" },
-  "ai-background-remover": { "kind": "tool", "category": "tool" },
-  "ai-image-extension": { "kind": "tool", "category": "tool" },
-  "bytedance-seedream-5.0-pro-layer": { "kind": "tool", "category": "tool" }
+  "ai-image-upscale": {
+   "kind": "tool",
+   "category": "tool"
+  },
+  "seedvr2-image-upscale": {
+   "kind": "tool",
+   "category": "tool"
+  },
+  "topaz-image-upscale": {
+   "kind": "tool",
+   "category": "tool"
+  },
+  "ai-background-remover": {
+   "kind": "tool",
+   "category": "tool"
+  },
+  "ai-image-extension": {
+   "kind": "tool",
+   "category": "tool"
+  },
+  "bytedance-seedream-5.0-pro-layer": {
+   "kind": "tool",
+   "category": "tool",
+   "param_map": { "resolution": null, "output_format": null },
+   "drop": ["output_format"],
+   "transforms": [{"op": "map_values", "field": "image_size", "from": "resolution", "map": {"1K": "auto_1K", "1.5K": "auto_1.5K", "2K": "auto_2K", "auto": "auto"}, "keep_unmapped": false}],
+   "output": "images[].url",
+   "reviewed": true
+  },
+  "seedance-2.5-text-to-video-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-text-to-video-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-image-to-video-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-image-to-video-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-first-last-frame-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-first-last-frame-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-omni-reference-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-omni-reference-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-video-edit-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-video-edit-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-video-extend-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "seedance-2.5-intl-video-extend-4k": {
+   "confidence": "medium",
+   "steps": { "after": [{"op": "upscale", "target_resolution": "2160p"}] },
+   "served_by": "Seedance 2.5 (1080p) + SeedVR 4K upscale",
+   "reviewed": true
+  },
+  "veo3.1-4k-video": {
+   "fal": "fal-ai/seedvr/upscale/video",
+   "confidence": "medium",
+   "kind": "video",
+   "category": "v2v",
+   "param_map": { "request_id": null },
+   "resolve": { "request_id": "video_url" },
+   "fixed": { "upscale_mode": "target", "target_resolution": "2160p" },
+   "served_by": "SeedVR 4K upscale of your Veo 3.1 clip",
+   "output": "video.url",
+   "reviewed": true
+  },
+  "flux-dev-image": { "reviewed": true },
+  "nano-banana": { "reviewed": true },
+  "reve-text-to-image": { "reviewed": true },
+  "ai-image-face-swap": {
+   "param_map": { "target_index": null },
+   "drop": ["target_index"],
+   "reviewed": true
+  },
+  "ltx-2.3-image-to-video": { "reviewed": true },
+  "bytedance-seedream-image": {
+   "fal": "fal-ai/bytedance/seedream/v4/text-to-image",
+   "confidence": "medium",
+   "served_by": "Seedream 4.0",
+   "reviewed": true
+  },
+  "qwen-image-2.0": {
+   "fal": "alibaba/qwen-image-3/text-to-image",
+   "confidence": "medium",
+   "served_by": "Qwen Image 3",
+   "reviewed": true
+  },
+  "qwen-image-2.0-pro": {
+   "fal": "alibaba/qwen-image-3/text-to-image",
+   "confidence": "medium",
+   "served_by": "Qwen Image 3",
+   "reviewed": true
+  },
+  "qwen3-pro-text-to-image": {
+   "confidence": "medium",
+   "served_by": "Qwen Image 3",
+   "reviewed": true
+  },
+  "qwen3-pro-image-to-image": {
+   "confidence": "medium",
+   "served_by": "Qwen Image 3 Edit",
+   "reviewed": true
+  },
+  "kling-o1-text-to-image": {
+   "confidence": "medium",
+   "served_by": "Kling Image O3",
+   "reviewed": true
+  },
+  "wan2.1-text-to-image": {
+   "confidence": "medium",
+   "served_by": "Wan 2.2 A14B",
+   "reviewed": true
+  },
+  "z-image-p": {
+   "confidence": "medium",
+   "served_by": "Z-Image Base",
+   "reviewed": true
+  },
+  "vidu-v2.0-t2v": {
+   "confidence": "medium",
+   "served_by": "Vidu Q1",
+   "reviewed": true
+  },
+  "seedance-v1.5-pro-video-extend": {
+   "fal": "bytedance/seedance-2.5/reference-to-video",
+   "confidence": "medium",
+   "served_by": "Seedance 2.5 (extension)",
+   "reviewed": true
+  },
+  "seedance-v1.5-pro-video-extend-fast": {
+   "fal": "bytedance/seedance-2.5/reference-to-video",
+   "confidence": "medium",
+   "served_by": "Seedance 2.5 (extension)",
+   "reviewed": true
+  },
+  "nano-banana-effects": {
+   "confidence": "medium",
+   "param_map": { "name": null, "image_url": "image_urls" },
+   "value_transforms": { "prompt": null, "image_urls": null },
+   "keep": ["name"],
+   "transforms_before": [{"op": "map_values", "field": "prompt", "from": "name", "map": {"3D Figurine": "Turn the person in this photo into a highly detailed 3D collectible figurine standing on a round clear acrylic base on a desk, realistic painted PVC material, soft studio lighting. Keep their face, hairstyle and outfit recognisable.", "16bit Game Character": "Redraw the subject as a 16-bit pixel-art video game character sprite with a limited retro palette and crisp pixels, in a side-scrolling game scene. Keep their outfit and colours recognisable.", "1920s Decade": "Restyle this photo as a 1920s portrait: sepia black-and-white film, 1920s hairstyle, clothing and accessories, vintage studio backdrop, fine film grain. Keep the person's face and identity.", "1950s Decade": "Restyle this photo as a 1950s colour photograph: saturated Kodachrome tones, 1950s hairstyle and fashion, retro diner setting. Keep the person's face and identity.", "1970s Decade": "Restyle this photo as a 1970s snapshot: warm faded film colours, 1970s hairstyle and fashion, period interior. Keep the person's face and identity.", "1980s Decade": "Restyle this photo as a 1980s portrait: bold neon colours, 1980s hairstyle and fashion, on-camera flash look, laser backdrop. Keep the person's face and identity.", "Action Figure": "Turn the person into a boxed action figure toy inside blister packaging with small matching accessories beside the figure and a printed card backing. Realistic plastic toy look. Keep their face and outfit recognisable.", "American Gothic Art": "Recreate this image in the style and composition of Grant Wood's painting \"American Gothic\", with the person as the subject, farmhouse background and oil paint texture. Keep their face recognisable.", "Egypts Landmark": "Place the person in front of the Great Pyramids of Giza in Egypt in bright daylight, as a realistic travel photo. Keep their face, identity and outfit unchanged.", "Eiffel Tower Landmark": "Place the person in front of the Eiffel Tower in Paris, as a realistic travel photo with natural light. Keep their face, identity and outfit unchanged.", "Famous Art": "Reimagine this image as a classical museum oil painting with visible brushstrokes and rich old-master lighting. Keep the subject recognisable.", "Great Wall of China Landmark": "Place the person on the Great Wall of China with mountains behind, as a realistic travel photo. Keep their face, identity and outfit unchanged.", "Mona Lisa Art": "Recreate this image in the style and pose of Leonardo da Vinci's Mona Lisa: sfumato oil painting with a Renaissance landscape background. Keep the person's face recognisable.", "Persistent Memory Art": "Reimagine the scene in the surrealist style of Salvador Dali's \"The Persistence of Memory\", with melting clocks and a dreamlike desert landscape. Keep the subject recognisable.", "Statue of Liberty Landmark": "Place the person in front of the Statue of Liberty in New York harbour, as a realistic travel photo. Keep their face, identity and outfit unchanged.", "Taj Mahal Landmark": "Place the person in front of the Taj Mahal in Agra, India, as a realistic travel photo. Keep their face, identity and outfit unchanged.", "Vincent Van Gogh Art": "Repaint this image in Vincent van Gogh's post-impressionist style with thick swirling brushstrokes and vivid colours like \"The Starry Night\". Keep the subject recognisable."}, "keep_unmapped": false}],
+   "transforms": [{"op": "wrap_array", "field": "image_urls"}],
+   "reviewed": true
+  },
+  "image-effects": {
+   "fal": "fal-ai/nano-banana/edit",
+   "confidence": "medium",
+   "served_by": "Nano Banana",
+   "param_map": { "image_url": "image_urls", "prompt": null },
+   "keep": ["name"],
+   "transforms_before": [{"op": "map_values", "field": "prompt", "from": "name", "map": {"Acryclic Ornaments": "Turn the subject into a glossy printed acrylic ornament with a clean cut-out outline and a small ring hanging from a string, photographed as a product shot. Keep them recognisable.", "Advanced Photography": "Transform this into a professional high-end photograph: studio lighting, shallow depth of field, rich colour grading and sharp detail. Keep the subject and composition.", "American Comic Style": "Redraw this image as a classic American comic book panel with bold ink outlines, halftone dots and vibrant flat colours. Keep the subject recognisable.", "Angel Figurine": "Turn the subject into a delicate porcelain angel figurine with small white wings and a soft glow, on a display shelf. Keep their face recognisable.", "Blurry Selfie": "Make this look like a candid, slightly motion-blurred phone selfie taken at night with on-camera flash. Keep the person recognisable.", "Cyberpunk": "Restyle the scene as cyberpunk: neon-lit rainy city at night, holographic signs, teal and magenta lighting, futuristic outfit details. Keep the subject recognisable.", "Exotic Charm": "Restyle this as an elegant fashion portrait in a lush tropical setting with warm golden light and exotic flowers. Keep the person's face and identity.", "Felt 3D Polaroid": "Recreate the subject as a handmade 3D needle-felt figure stepping out of a Polaroid photo frame, soft wool texture, cosy lighting. Keep them recognisable.", "Felt Keychain": "Turn the subject into a small needle-felted wool keychain charm hanging from a metal key ring, macro product photo. Keep them recognisable.", "Furry Dream Doll": "Turn the subject into a soft fluffy plush doll with fuzzy fabric texture and stitched details, sitting in a dreamy pastel room. Keep them recognisable.", "Futuristic American Comics": "Redraw this as a futuristic sci-fi American comic illustration with dynamic inking, glowing tech details and bold colours. Keep the subject recognisable.", "Glass Ball": "Place the subject as a tiny figure inside a crystal glass snow globe on a wooden table, with reflections and soft bokeh. Keep them recognisable.", "In The Stadium": "Place the person in a packed sports stadium under bright floodlights, cheering crowd behind them, as a realistic photo. Keep their face and identity.", "Lofi Pixel Character": "Redraw the subject as a cosy lo-fi pixel-art character in a warm bedroom scene with soft purple and orange tones. Keep their outfit and colours recognisable.", "Lying On Fluffy Belly": "Show the subject as a tiny figure happily lying on the belly of a giant fluffy cat, soft warm light, whimsical realistic photo. Keep them recognisable.", "Landscape Mini World": "Turn the scene into a miniature tilt-shift diorama world with tiny trees, buildings and figures on a table. Keep the subject recognisable.", "My World": "Place the subject as a tiny character inside a whimsical miniature world built around them, full of small props that match their style. Keep them recognisable.", "Plastic Bubble Figure": "Turn the subject into a small toy figure sealed inside a clear plastic bubble capsule like a gacha toy, product photo. Keep them recognisable."}, "keep_unmapped": false}],
+   "transforms": [{"op": "wrap_array", "field": "image_urls"}],
+   "output": "images[].url",
+   "reviewed": true
+  },
+  "portrait-stylist": {
+   "confidence": "medium",
+   "served_by": "FLUX.1 Kontext [pro]",
+   "param_map": { "name": null },
+   "value_transforms": { "prompt": null },
+   "keep": ["name"],
+   "transforms_before": [{"op": "map_values", "field": "prompt", "from": "name", "map": {"Voluminous Frizzy Hair": "Change the hair to big voluminous frizzy curls. Keep the face, identity, pose and background unchanged.", "Platinum Blonde Hair": "Change the hair colour to platinum blonde. Keep the face, identity, pose and background unchanged.", "Deep Burgundy Hair": "Change the hair colour to a deep burgundy red. Keep the face, identity, pose and background unchanged.", "Jet Black Hair": "Change the hair colour to glossy jet black. Keep the face, identity, pose and background unchanged.", "Bold Hair Highlights": "Add bold, bright highlights to the hair. Keep the face, identity, pose and background unchanged.", "Bold Red Lipstick": "Apply bold red lipstick. Keep the face, identity, pose and background unchanged.", "Smokey Eye Makeup": "Apply dramatic smokey eye makeup. Keep the face, identity, pose and background unchanged.", "Glossy Nude Makeup": "Apply natural glossy nude makeup. Keep the face, identity, pose and background unchanged.", "Winged Eyeliner": "Apply sharp black winged eyeliner. Keep the face, identity, pose and background unchanged.", "Party Glam Makeup": "Apply glamorous party makeup with shimmer and defined lashes. Keep the face, identity, pose and background unchanged.", "Aviator Sunglasses": "Add a pair of classic aviator sunglasses. Keep the face, identity, pose and background unchanged.", "Oversized Sunglasses": "Add a pair of stylish oversized sunglasses. Keep the face, identity, pose and background unchanged.", "Modern Transparent Glasses": "Add modern clear transparent-frame glasses. Keep the face, identity, pose and background unchanged.", "Bold Fashion Hat": "Add a bold statement fashion hat. Keep the face, identity, pose and background unchanged.", "Bright Pink Outfit": "Change the outfit to a bright pink fashion outfit. Keep the face, identity, pose and background unchanged.", "Black Leather Jacket": "Change the top to a black leather jacket. Keep the face, identity, pose and background unchanged.", "White Formal Shirt": "Change the top to a crisp white formal shirt. Keep the face, identity, pose and background unchanged.", "Neon Green Hoodie": "Change the top to a neon green hoodie. Keep the face, identity, pose and background unchanged.", "Cinematic Lighting": "Relight the portrait with dramatic cinematic lighting and soft contrast. Keep the face, identity, pose and background unchanged.", "Cyberpunk Lighting": "Relight the portrait with neon cyberpunk lighting in teal and magenta. Keep the face, identity, pose and background unchanged."}, "keep_unmapped": false}],
+   "reviewed": true
+  },
+  "ai-product-photography": {
+   "fal": "fal-ai/bria/product-shot",
+   "confidence": "medium",
+   "served_by": "Bria Product Shot",
+   "param_map": { "person_image_url": "image_url", "prompt": "scene_description", "aspect_ratio": null },
+   "value_transforms": { "aspect_ratio": null },
+   "fixed": { "placement_type": "automatic", "optimize_description": true },
+   "output": "images[].url",
+   "reviewed": true
+  },
+  "seedance-2-mini-spicy-text-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2-spicy-text-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2-spicy-text-to-video-fast": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-text-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-text-to-video-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-text-to-video-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-text-to-video-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan3.0-spicy-text-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "minimax-h3-image-to-video-spicy": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2-mini-spicy-image-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2-spicy-image-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2-spicy-image-to-video-fast": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-first-last-frame": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-first-last-frame-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-first-last-frame-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-first-last-frame-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-image-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-image-to-video-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-image-to-video-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-image-to-video-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-omni-reference": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-omni-reference-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-omni-reference-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-omni-reference-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan2.2-spicy-image-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan2.6-image-to-video-spicy": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan2.7-image-to-video-spicy": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan3.0-spicy-image-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan3.0-spicy-reference-to-video": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-edit": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-edit-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-edit-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-edit-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-extend": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-extend-1080p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-extend-480p": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "seedance-2.5-spicy-video-extend-4k": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "wan2.2-spicy-video-extend": {
+   "reason": "relaxed-moderation (\"spicy\") tier: fal serves this model only with its standard moderation, so that promise cannot be kept; the standard version of the model is its own enabled entry."
+  },
+  "google-imagen4": {
+   "reason": "fal hosts Imagen 4 only as the preview endpoints, which api.fal.ai/v1/models lists as status=deprecated (re-checked 2026-09-25); no current Imagen 4 endpoint to route to, and another Google model (Nano Banana) is not the same model."
+  },
+  "google-imagen4-fast": {
+   "reason": "fal hosts Imagen 4 only as the preview endpoints, which api.fal.ai/v1/models lists as status=deprecated (re-checked 2026-09-25); no current Imagen 4 endpoint to route to, and another Google model (Nano Banana) is not the same model."
+  },
+  "google-imagen4-ultra": {
+   "reason": "fal hosts Imagen 4 only as the preview endpoints, which api.fal.ai/v1/models lists as status=deprecated (re-checked 2026-09-25); no current Imagen 4 endpoint to route to, and another Google model (Nano Banana) is not the same model."
+  },
+  "veo-4-text-to-video": {
+   "reason": "no Veo 4 on fal (only veo2/veo3/veo3.1); routing Veo 4 requests to the older Veo 3.1 would misstate the model."
+  },
+  "veo-4-image-to-video": {
+   "reason": "no Veo 4 on fal (only veo2/veo3/veo3.1); routing Veo 4 requests to the older Veo 3.1 would misstate the model."
+  },
+  "ai-video-face-swap": {
+   "reason": "fal has no video face swap; PixVerse Swap (mode person) replaces the whole person and has no face index/gender targeting, so it is not the same tool."
+  },
+  "wan2.1-reference-video": {
+   "reason": "Wan VACE 14B reference-to-video without a driving video is undocumented on fal (its task enum is depth|pose|inpainting|outpainting|reframe) and could not be verified without a live call."
+  },
+  "perfect-pony-xl": {
+   "reason": "no hosted Perfect Pony XL on fal; fal-ai/lora would need an operator-pinned checkpoint URL (and a licence check) before it can serve these weights."
+  }
  },
  "extra": [
   {
@@ -258,8 +604,8 @@
    "fallback_endpoint": "fal-ai/qwen-image-layered",
    "confidence": "medium",
    "param_map": { "image_url": "image_url", "prompt": "prompt", "resolution": "resolution", "output_format": "output_format" },
-   "value_transforms": {},
-   "fixed_params": {},
+   "value_transforms": {  },
+   "fixed_params": {  },
    "drop_params": [],
    "output_path": "images[].url",
    "notes": "Layers studio decomposition. fal lists bytedance/seedream/v5/pro/layerize (2-17 transparent PNG layers) and fal-ai/qwen-image-layered, but neither input schema was captured, so the entry stays disabled until one is saved into sources/fal-schemas.json."

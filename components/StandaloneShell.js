@@ -17,7 +17,7 @@ import {
 import { STUDIO_NOTIFY_EVENT } from 'studio/notify';
 import useEscapeKey from 'studio/useEscapeKey';
 import AccessCodeModal, { GateNotice } from './AccessCodeModal';
-import { fillCopy, getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
+import { fillCopy, getCommonCopy, getLocaleConfig, localizePath, localizeStudioPath } from '@/lib/locales';
 // Tab/category ids, icons, and English `label` fallbacks are stable
 // identifiers, not locale copy — the actual rendered label is resolved
 // per-locale from `copy.tabs`/`copy.categories` via tabLabel()/categoryLabel()
@@ -220,11 +220,15 @@ export default function StandaloneShell({ locale = 'en' }) {
   );
   const studioPath = useCallback((tabId) => localizeStudioPath(locale, tabId), [locale]);
 
-  // Language toggle target: same tab, other locale. Only on /studio routes
-  // (the /workflow/[id] routes have no /zh mirror).
+  // Language toggle target: same tab (or the same /workflow/[id]/[tab]
+  // page, mirrored under /zh/workflow/…), other locale.
   const otherLocale = locale === 'zh' ? 'en' : 'zh';
   const otherLocaleConfig = getLocaleConfig(otherLocale);
-  const showLanguageToggle = !idFromParams && !tabFromParams;
+  const showLanguageToggle = true;
+  const workflowTabParam = Array.isArray(tabFromParams) ? tabFromParams[0] : tabFromParams;
+  const languageToggleHref = (tabId) => (idFromParams
+    ? localizePath(otherLocale, `/workflow/${encodeURIComponent(idFromParams)}${workflowTabParam ? `/${encodeURIComponent(workflowTabParam)}` : ''}`)
+    : localizeStudioPath(otherLocale, tabId));
 
   // Helper to extract workflow details precisely from either route structure
   const getWorkflowInfo = useCallback(() => {
@@ -935,7 +939,7 @@ export default function StandaloneShell({ locale = 'en' }) {
           <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
             {showLanguageToggle && (
               <a
-                href={localizeStudioPath(otherLocale, activeTab)}
+                href={languageToggleHref(activeTab)}
                 hrefLang={otherLocaleConfig.htmlLang}
                 lang={otherLocaleConfig.htmlLang}
                 aria-label={copy.shell.switchLanguage}
@@ -1141,7 +1145,7 @@ export default function StandaloneShell({ locale = 'en' }) {
               {showLanguageToggle && (isMobileOpen || !isSidebarCollapsed) && (
                 <div className="sm:hidden mt-3 pt-3 border-t border-white/[0.07]">
                   <a
-                    href={localizeStudioPath(otherLocale, activeTab)}
+                    href={languageToggleHref(activeTab)}
                     hrefLang={otherLocaleConfig.htmlLang}
                     lang={otherLocaleConfig.htmlLang}
                     aria-label={copy.shell.switchLanguage}

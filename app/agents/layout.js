@@ -7,9 +7,14 @@
  * `dark` class keeps these pages on the app's dark theme regardless of the
  * visitor's OS setting.
  */
-export const metadata = {
-  title: "Agent chat — Aquora",
-};
+import { headers } from "next/headers";
+import { pageTitle } from "@/lib/locales";
+
+// Shared by /agents/* and /zh/agents/* (x-locale comes from the URL path).
+export async function generateMetadata() {
+  const locale = (await headers()).get("x-locale") === "zh" ? "zh" : "en";
+  return { title: pageTitle(locale, "agentChat") };
+}
 
 export default function AgentsLayout({ children }) {
   return (

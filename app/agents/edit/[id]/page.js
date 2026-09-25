@@ -1,11 +1,14 @@
+import { headers } from "next/headers";
+import { pageTitle } from "@/lib/locales";
 import AgentEditClient from "./AgentEditClient";
 import { requireAgentsViewer } from "../../pageData";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Edit agent — Aquora",
-};
+export async function generateMetadata() {
+  const locale = (await headers()).get("x-locale") === "zh" ? "zh" : "en";
+  return { title: pageTitle(locale, "editAgent") };
+}
 
 // The editor loads the agent itself (useParams → /api/agents/by-slug/<id>).
 export default async function EditAgentPage() {

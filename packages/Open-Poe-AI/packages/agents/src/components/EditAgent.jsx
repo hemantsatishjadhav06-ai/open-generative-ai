@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdClose } from "react-icons/md";
 import { themes } from "./themes";
-import { getAgentCopy } from "../i18n";
+import { getAgentCopy, localePath } from "../i18n";
 import { AGENTS_API as BASE_URL, errorMessage, uploadImage } from "../utils/api";
 
 // Catalog model used for "Generate with AI" profile icons (fast + cheap).
@@ -105,26 +105,26 @@ const EditAgent = ({ locale = "en" }) => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this agent? This action cannot be undone.")) {
+    if (!window.confirm(copy.edit.confirmDelete)) {
       return;
     }
 
     try {
       setSaving(true);
       await axios.delete(`${BASE_URL}/by-slug/${id}`);
-      toast.success("Agent deleted successfully");
-      router.push("/agents");
+      toast.success(copy.edit.deleted);
+      router.push(localePath(locale, "/agents"));
     } catch (err) {
-      toast.error(errorMessage(err, copy, "Failed to delete agent"));
+      toast.error(errorMessage(err, copy, copy.edit.deleteFailed));
     } finally {
       setSaving(false);
     }
   };
 
   const handleShare = () => {
-    const url = `${window.location.origin}/agents/${id}`;
+    const url = `${window.location.origin}${localePath(locale, `/agents/${id}`)}`;
     navigator.clipboard.writeText(url);
-    toast.success("Chat link copied to clipboard!");
+    toast.success(copy.edit.linkCopied);
   };
 
   const [isDragging, setIsDragging] = useState(false);
@@ -178,7 +178,7 @@ const EditAgent = ({ locale = "en" }) => {
       setUploadProgress(0);
       const uploadedUrl = await uploadImage(file, { copy, onProgress: setUploadProgress });
       setFormData(prev => ({ ...prev, icon_url: uploadedUrl }));
-      toast.success("Profile image updated");
+      toast.success(copy.edit.imageUpdated);
     } catch (err) {
       toast.error(err?.message || copy.errors.uploadFailed);
     } finally {
@@ -189,7 +189,7 @@ const EditAgent = ({ locale = "en" }) => {
 
   const handleGenerateIcon = async (customPrompt) => {
     if (!formData.name && !customPrompt) {
-      toast.error("Please enter an agent name first");
+      toast.error(copy.edit.nameFirst);
       return;
     }
 
@@ -209,7 +209,7 @@ const EditAgent = ({ locale = "en" }) => {
       if (!generatedUrl) throw new Error(copy.errors.iconFailed);
       setFormData(prev => ({ ...prev, icon_url: generatedUrl }));
       setShowIconPromptModal(false);
-      toast.success("AI icon generated!");
+      toast.success(copy.edit.iconGenerated);
     } catch (err) {
       toast.error(err?.response ? errorMessage(err, copy, copy.errors.iconFailed) : copy.errors.iconFailed);
     } finally {
@@ -226,9 +226,9 @@ const EditAgent = ({ locale = "en" }) => {
       });
       setRealignedPrompt(res.data.proposed_prompt);
       setShowRealignModal(true);
-      toast.success("Prompt realigned! Please review.");
+      toast.success(copy.edit.realigned);
     } catch (err) {
-      toast.error(errorMessage(err, copy, "Failed to realign prompt"));
+      toast.error(errorMessage(err, copy, copy.edit.realignFailed));
     } finally {
       setIsRealigning(false);
     }
@@ -237,7 +237,7 @@ const EditAgent = ({ locale = "en" }) => {
   const applyRealignedPrompt = () => {
     setFormData(prev => ({ ...prev, system_prompt: realignedPrompt }));
     setShowRealignModal(false);
-    toast.success("New instructions applied!");
+    toast.success(copy.edit.applied);
   };
 
   const handleSubmit = async (e) => {
@@ -248,12 +248,12 @@ const EditAgent = ({ locale = "en" }) => {
       
       await axios.put(`${BASE_URL}/by-slug/${id}`, formData);
       
-      toast.success("Agent profile updated successfully!");
+      toast.success(copy.edit.saved);
       setTimeout(() => {
-        router.push("/agents");
+        router.push(localePath(locale, "/agents"));
       }, 1500);
     } catch (err) {
-      toast.error(errorMessage(err, copy, "Failed to save changes"));
+      toast.error(errorMessage(err, copy, copy.edit.saveFailed));
     } finally {
       setSaving(false);
     }
@@ -264,7 +264,7 @@ const EditAgent = ({ locale = "en" }) => {
       <main className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <BiLoaderAlt className="w-12 h-12 text-blue-600 animate-spin" />
-          <p className="text-gray-500 font-medium animate-pulse">Loading Identity Data...</p>
+          <p className="text-gray-500 font-medium animate-pulse">{copy.edit.loading}</p>
         </div>
       </main>
     );
@@ -278,10 +278,10 @@ const EditAgent = ({ locale = "en" }) => {
         </div>
         <h2 role="alert" className="text-xl font-bold text-gray-900 dark:text-white max-w-md">{error}</h2>
         <Link 
-          href="/agents"
+          href={localePath(locale, "/agents")}
           className="mt-4 px-8 py-3 bg-brand text-on-brand font-bold rounded-xl hover:bg-brand-hover transition-all shadow-lg active:scale-95"
         >
-          Return to My Agents
+          {copy.edit.returnToAgents}
         </Link>
       </main>
     );
@@ -291,25 +291,25 @@ const EditAgent = ({ locale = "en" }) => {
     <div className="flex-1 flex flex-col gap-8 items-center w-full max-w-[95%] sm:max-w-[90%] lg:max-w-[80%] relative">
       <div className="flex items-center justify-between pb-2 border-b border-gray-50 dark:border-divider w-full">
         <Link 
-          href="/agents"
+          href={localePath(locale, "/agents")}
           className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-secondary-text dark:hover:text-primary-text transition-colors text-sm font-medium"
         >
           <IoChevronBack className="w-4 h-4" />
-          Back
+          {copy.edit.back}
         </Link>
         <div className="flex items-center gap-3">
           <Link 
-            href={`/agents/${id}`}
+            href={localePath(locale, `/agents/${id}`)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-bold text-white transition-all active:scale-95 shadow-sm"
           >
             <IoChatbubblesOutline className="w-4 h-4" />
-            Chat
+            {copy.edit.chat}
           </Link>
           <button 
             type="button"
             onClick={handleShare}
-            aria-label="Copy chat link"
-            title="Copy chat link"
+            aria-label={copy.edit.copyLink}
+            title={copy.edit.copyLink}
             className="flex items-center gap-2 px-4 py-2 border border-gray-100 dark:border-divider rounded-xl text-sm font-bold text-gray-600 dark:text-primary-text hover:bg-gray-50 dark:hover:bg-secondary-bg transition-all active:scale-95"
           >
             <IoShareOutline aria-hidden="true" className="w-4 h-4" />
@@ -318,8 +318,8 @@ const EditAgent = ({ locale = "en" }) => {
             type="button"
             onClick={handleDelete}
             disabled={saving}
-            aria-label="Delete agent"
-            title="Delete agent"
+            aria-label={copy.edit.deleteAgent}
+            title={copy.edit.deleteAgent}
             className="flex items-center gap-2 px-4 py-2 border border-red-50 dark:border-red-900/30 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all active:scale-95 disabled:opacity-50"
           >
             <IoTrashOutline aria-hidden="true" className="w-4 h-4" />
@@ -334,7 +334,7 @@ const EditAgent = ({ locale = "en" }) => {
                 <div 
                   role="button"
                   tabIndex={0}
-                  aria-label="Profile Icon"
+                  aria-label={copy.edit.profileIcon}
                   onClick={() => setShowIconSelectionModal(true)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -397,7 +397,7 @@ const EditAgent = ({ locale = "en" }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     className="text-3xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight truncate bg-transparent border-none p-0 focus:ring-0 w-full"
-                    placeholder="Unnamed Agent"
+                    placeholder={copy.edit.unnamed}
                     required
                   />
                   <IoPencilOutline className="w-5 h-5 text-gray-300 dark:text-divider opacity-0 group-hover/title:opacity-100 transition-opacity" />
@@ -414,30 +414,30 @@ const EditAgent = ({ locale = "en" }) => {
                 disabled={saving}
                 className="px-6 py-3 whitespace-nowrap bg-brand text-on-brand hover:bg-brand-hover disabled:opacity-50 font-bold rounded-xl transition-all shadow-lg text-sm active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
               >
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? copy.edit.saving : copy.edit.saveChanges}
               </button>
             </div>
           </div>
           <div className="flex flex-col gap-12">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Behavior & Identity</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{copy.edit.behavior}</h2>
                 <p className="text-sm text-gray-500 dark:text-secondary-text font-medium">
-                  Shape how your agent thinks, responds, and describes itself
+                  {copy.edit.behaviorHint}
                 </p>
               </div>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between border-l-4 border-black dark:border-primary pl-3 ml-1 mb-1">
-                    <label className="text-base font-bold text-gray-900 dark:text-white">Instructions</label>
+                    <label className="text-base font-bold text-gray-900 dark:text-white">{copy.edit.instructions}</label>
                     <button
                       type="button"
                       onClick={handleRealign}
                       disabled={isRealigning || sameSkills(formData.skill_ids, initialSkills)}
                       className="flex items-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-sm"
-                      title={sameSkills(formData.skill_ids, initialSkills) ? "No changes to skills" : "Sync instructions with current skills"}
+                      title={sameSkills(formData.skill_ids, initialSkills) ? copy.edit.noSkillChanges : copy.edit.syncSkills}
                     >
-                      {isRealigning ? <BiLoaderAlt className="animate-spin" /> : "✨ Realign with Skills"}
+                      {isRealigning ? <BiLoaderAlt className="animate-spin" /> : copy.edit.realign}
                     </button>
                   </div>
                   <div className="relative group">
@@ -446,7 +446,7 @@ const EditAgent = ({ locale = "en" }) => {
                       value={formData.system_prompt}
                       onChange={handleInputChange}
                       className="w-full bg-white dark:bg-secondary-bg border border-gray-100 dark:border-divider rounded-2xl px-6 py-6 text-gray-800 dark:text-primary-text text-sm focus:ring-4 focus:ring-black/5 dark:focus:ring-primary/5 focus:border-black dark:focus:border-primary transition-all outline-none min-h-[200px] leading-relaxed shadow-sm font-medium"
-                      placeholder="Define how your agent thinks and communicates..."
+                      placeholder={copy.edit.instructionsPlaceholder}
                       required
                     />
                     <p className="text-xs text-gray-400 dark:text-secondary-text font-medium ml-1">
@@ -455,32 +455,32 @@ const EditAgent = ({ locale = "en" }) => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">Description</label>
+                  <label className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">{copy.edit.description}</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     className="w-full bg-white dark:bg-secondary-bg border border-gray-100 dark:border-divider rounded-2xl px-6 py-4 text-gray-800 dark:text-primary-text text-sm focus:ring-4 focus:ring-black/5 dark:focus:ring-primary/5 focus:border-black dark:focus:border-primary transition-all outline-none min-h-[100px] leading-relaxed shadow-sm font-medium"
-                    placeholder="Add a description that describes your agent to others..."
+                    placeholder={copy.edit.descriptionPlaceholder}
                   />
                   <p className="text-xs text-gray-400 dark:text-secondary-text font-medium ml-1">
-                    This will be visible to users when they discover your agent.
+                    {copy.edit.descriptionHint}
                   </p>
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-6 border-t border-gray-50 dark:border-divider pt-12">
               <div className="flex flex-col gap-2">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">Theme & Appearance</h2>
+                <h2 className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">{copy.edit.theme}</h2>
                 <p className="text-sm text-gray-500 dark:text-secondary-text font-medium ml-1">
-                  Customize how your agent looks in the chat interface
+                  {copy.edit.themeHint}
                 </p>
               </div>
               
               <div className="bg-white dark:bg-secondary-bg shadow-lg rounded-3xl p-8 border border-gray-100 dark:border-divider flex flex-col lg:flex-row gap-8">
                 {/* Theme Selection */}
                 <div className="flex-1 flex flex-col gap-4">
-                  <h4 className="text-xs text-gray-400 dark:text-secondary-text font-bold uppercase tracking-wider ml-1">Select Theme</h4>
+                  <h4 className="text-xs text-gray-400 dark:text-secondary-text font-bold uppercase tracking-wider ml-1">{copy.edit.selectTheme}</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {Object.values(themes || {}).map((theme) => (
                       <button
@@ -519,7 +519,7 @@ const EditAgent = ({ locale = "en" }) => {
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col gap-4">
-                  <h4 className="text-xs text-gray-400 dark:text-secondary-text font-bold uppercase tracking-wider ml-1">Chat Preview</h4>
+                  <h4 className="text-xs text-gray-400 dark:text-secondary-text font-bold uppercase tracking-wider ml-1">{copy.edit.chatPreview}</h4>
                   <div 
                     className="w-full h-[300px] rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-divider relative"
                     style={{
@@ -543,7 +543,7 @@ const EditAgent = ({ locale = "en" }) => {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold truncate">{formData.name || "Agent Name"}</span>
-                        <span className="text-[10px] opacity-60">Online</span>
+                        <span className="text-[10px] opacity-60">{copy.edit.online}</span>
                       </div>
                     </div>
                     <div className="p-4 flex flex-col gap-4 h-[180px] overflow-y-auto">
@@ -555,7 +555,7 @@ const EditAgent = ({ locale = "en" }) => {
                             color: (themes[formData.theme] || themes.cosmic)?.colors.userText
                           }}
                         >
-                          Hi! How can you help me today?
+                          {copy.edit.previewMessage}
                         </div>
                       </div>
                       <div className="flex flex-col items-start gap-1 max-w-[85%]">
@@ -579,7 +579,7 @@ const EditAgent = ({ locale = "en" }) => {
                           borderColor: (themes[formData.theme] || themes.cosmic)?.colors.border
                         }}
                       >
-                        <span className="text-xs opacity-30 flex-1">Type a message...</span>
+                        <span className="text-xs opacity-30 flex-1">{copy.edit.typeMessage}</span>
                         <div 
                           className="w-6 h-6 rounded-lg flex items-center justify-center"
                           style={{ background: (themes[formData.theme] || themes.cosmic)?.colors.accent }}
@@ -592,17 +592,17 @@ const EditAgent = ({ locale = "en" }) => {
                 </div>
               </div>
               <p className="text-xs text-gray-400 dark:text-secondary-text font-medium ml-1">
-                This theme will be automatically applied to the chat interface for all users.
+                {copy.edit.themeApplied}
               </p>
             </div>
 
             <div className="flex flex-col gap-6 border-t border-gray-50 dark:border-divider pt-12">
-              <h2 className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">Capabilities</h2>
+              <h2 className="text-base font-bold text-gray-900 dark:text-white border-l-4 border-black dark:border-primary pl-3 ml-1">{copy.edit.capabilities}</h2>
               <div className="bg-white dark:bg-secondary-bg shadow-lg rounded-3xl p-8 border border-gray-100 dark:border-divider flex flex-col gap-4">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Type to search and add skills (e.g. image generation, web search)..."
+                    placeholder={copy.edit.skillSearch}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-white dark:bg-primary-bg border border-gray-100 dark:border-divider rounded-xl px-5 py-3.5 text-sm dark:text-white focus:ring-4 focus:ring-black/5 dark:focus:ring-primary/5 focus:border-black dark:focus:border-primary transition-all outline-none shadow-sm"
@@ -638,13 +638,13 @@ const EditAgent = ({ locale = "en" }) => {
                       })
                     ) : (
                       <div className="col-span-full p-12 rounded-2xl border border-dashed border-gray-200 dark:border-divider text-center bg-white/50 dark:bg-primary-bg/50">
-                        <p className="text-sm text-gray-400 dark:text-secondary-text">No skills configured yet</p>
+                        <p className="text-sm text-gray-400 dark:text-secondary-text">{copy.edit.noSkills}</p>
                       </div>
                     )}
                   </div>
                     <div className="border-t border-gray-200/50 dark:border-divider pt-4">
                       <h4 className="text-xs text-gray-400 dark:text-secondary-text ml-1 mb-2">
-                        Available in Registry
+                        {copy.edit.registry}
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                         {availableSkills
@@ -680,7 +680,7 @@ const EditAgent = ({ locale = "en" }) => {
                 </div>
               </div>
               <p className="text-xs text-gray-400 dark:text-secondary-text font-medium ml-1">
-                Manage tools and skills your agent can use to perform tasks
+                {copy.edit.capabilitiesHint}
               </p>
             </div>
           </div>
@@ -703,8 +703,8 @@ const EditAgent = ({ locale = "en" }) => {
                   <RiRobot2Fill className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Review Brain Realignment</h3>
-                  <p className="text-xs text-gray-500 dark:text-secondary-text font-medium">The AI has refactored your instructions to match your new skills.</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{copy.edit.reviewRealign}</h3>
+                  <p className="text-xs text-gray-500 dark:text-secondary-text font-medium">{copy.edit.reviewRealignHint}</p>
                 </div>
               </div>
               <button
@@ -717,7 +717,7 @@ const EditAgent = ({ locale = "en" }) => {
 
             <div className="flex-1 overflow-y-auto p-8 flex flex-col md:flex-row gap-6 custom-scrollbar">
               <div className="flex-1 flex flex-col gap-3">
-                <label className="text-xs font-bold text-gray-400 dark:text-secondary-text uppercase tracking-wider ml-1">Current Instructions</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-secondary-text uppercase tracking-wider ml-1">{copy.edit.currentInstructions}</label>
                 <div className="flex-1 p-5 bg-gray-50 dark:bg-primary-bg border border-gray-100 dark:border-divider rounded-2xl text-sm text-gray-600 dark:text-secondary-text font-medium whitespace-pre-wrap overflow-y-auto max-h-[400px]">
                   {formData.system_prompt}
                 </div>
@@ -728,7 +728,7 @@ const EditAgent = ({ locale = "en" }) => {
                 </svg>
               </div>
               <div className="flex-1 flex flex-col gap-3">
-                <label className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider ml-1">Proposed Instructions</label>
+                <label className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider ml-1">{copy.edit.proposedInstructions}</label>
                 <textarea
                   value={realignedPrompt}
                   onChange={(e) => setRealignedPrompt(e.target.value)}
@@ -742,13 +742,13 @@ const EditAgent = ({ locale = "en" }) => {
                 onClick={() => setShowRealignModal(false)}
                 className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-secondary-text hover:text-gray-900 dark:hover:text-white transition-colors"
               >
-                Discard Changes
+                {copy.edit.discard}
               </button>
               <button
                 onClick={applyRealignedPrompt}
                 className="px-8 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-violet-200 dark:shadow-none active:scale-95"
               >
-                Accept & Apply
+                {copy.edit.accept}
               </button>
             </div>
           </div>
@@ -771,14 +771,14 @@ const EditAgent = ({ locale = "en" }) => {
 
             <div className="p-8">
               <p className="text-sm text-gray-500 dark:text-secondary-text mb-6">
-                Tell the AI what kind of icon you want. You can describe style, colors, and specific elements.
+                {copy.edit.iconPromptHint}
               </p>
 
               <div className="space-y-4">
                 <textarea
                   value={iconPrompt}
                   onChange={(e) => setIconPrompt(e.target.value)}
-                  placeholder="Describe your agent's icon..."
+                  placeholder={copy.edit.iconPromptPlaceholder}
                   className="w-full h-40 p-5 bg-gray-50 dark:bg-primary-bg border border-gray-200 dark:border-divider rounded-2xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none dark:text-white placeholder:text-gray-400"
                 />
 
@@ -787,7 +787,7 @@ const EditAgent = ({ locale = "en" }) => {
                     onClick={() => setShowIconPromptModal(false)}
                     className="flex-1 px-6 py-4 border border-gray-200 dark:border-divider rounded-2xl text-sm font-bold text-gray-600 dark:text-primary-text hover:bg-gray-50 dark:hover:bg-primary-bg transition-all active:scale-[0.98]"
                   >
-                    Cancel
+                    {copy.edit.cancel}
                   </button>
                   <button
                     onClick={() => handleGenerateIcon(iconPrompt)}
@@ -797,12 +797,12 @@ const EditAgent = ({ locale = "en" }) => {
                     {generatingIcon ? (
                       <>
                         <BiLoaderAlt className="w-5 h-5 animate-spin" />
-                        Generating...
+                        {copy.edit.generating}
                       </>
                     ) : (
                       <>
                         <span className="text-lg">✨</span>
-                        Generate Icon
+                        {copy.edit.generateIcon}
                       </>
                     )}
                   </button>
@@ -817,8 +817,8 @@ const EditAgent = ({ locale = "en" }) => {
           <div className="bg-white dark:bg-secondary-bg w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-divider overflow-hidden transform animate-in zoom-in-95 duration-200">
             <div className="p-8 border-b border-gray-50 dark:border-divider flex items-center justify-between">
               <div>
-                <h3 className="text-2xl font-black dark:text-white leading-tight">Profile Icon</h3>
-                <p className="text-sm text-gray-500 dark:text-secondary-text mt-1 font-medium">Choose how to update your agent&apos;s look</p>
+                <h3 className="text-2xl font-black dark:text-white leading-tight">{copy.edit.iconTitle}</h3>
+                <p className="text-sm text-gray-500 dark:text-secondary-text mt-1 font-medium">{copy.edit.iconSubtitle}</p>
               </div>
               <button 
                 onClick={() => setShowIconSelectionModal(false)}
@@ -853,9 +853,9 @@ const EditAgent = ({ locale = "en" }) => {
                   <IoImageOutline className="w-8 h-8" />
                 </div>
                 <div className="text-center">
-                  <h4 className="font-bold text-gray-900 dark:text-white text-lg">Upload Photo</h4>
+                  <h4 className="font-bold text-gray-900 dark:text-white text-lg">{copy.edit.uploadPhoto}</h4>
                   <p className="text-sm text-gray-500 dark:text-secondary-text mt-1">
-                    {isDragging ? "Drop file to upload" : "Pick a file, or drag and drop"}
+                    {isDragging ? copy.edit.dropFile : copy.edit.pickFile}
                   </p>
                 </div>
               </div>
@@ -872,8 +872,8 @@ const EditAgent = ({ locale = "en" }) => {
                   <IoSparklesOutline className="w-8 h-8" />
                 </div>
                 <div className="text-center">
-                  <h4 className="font-bold text-blue-600 dark:text-primary text-lg">Generate with AI</h4>
-                  <p className="text-sm text-blue-500/70 dark:text-primary/70 mt-1">Create unique icon from prompt</p>
+                  <h4 className="font-bold text-blue-600 dark:text-primary text-lg">{copy.edit.generateWithAi}</h4>
+                  <p className="text-sm text-blue-500/70 dark:text-primary/70 mt-1">{copy.edit.generateWithAiHint}</p>
                 </div>
               </button>
             </div>

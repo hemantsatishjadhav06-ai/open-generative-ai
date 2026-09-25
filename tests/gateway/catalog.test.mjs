@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import catalog from '../../lib/gateway/catalog/catalog.json';
 import {
+    applyResolvedSource,
     buildFalInput,
     estimateUsd,
     getEntry,
@@ -382,6 +383,8 @@ const TOOL_REQUESTS = [
     ['ai-image-extension', { image_url: IMG }],
     ['seedance-2-vip-omni-reference', { prompt: PROMPT, aspect_ratio: '16:9', duration: 5, images_list: [IMG], video_files: [] }],
     ['sd-2-vip-omni-reference-1080p', { prompt: PROMPT, aspect_ratio: '16:9', duration: 5, images_list: [IMG], video_files: [] }],
+    // LayersStudio decomposeLayers(): image + bbox prompt + resolution tier.
+    ['bytedance-seedream-5.0-pro-layer', { image_url: IMG, prompt: 'Split the content in the image into 3 layers:', resolution: '1.5K', output_format: 'png' }],
 ];
 
 function variantInput(entry, endpoint) {
@@ -389,8 +392,16 @@ function variantInput(entry, endpoint) {
     return variant ? variant.input : entry.input;
 }
 
+// Extend / 4K entries: the gateway resolves request_id (a job token of the
+// same session) to the source clip, and a last_frame step to its final frame,
+// before the fal input is built (lib/gateway/generation.js + catalog-steps).
+function resolvedPayload(entry, payload) {
+    if (!entry.resolve && !entry.steps) return payload;
+    return applyResolvedSource(entry, payload, { sourceUrl: VID, lastFrameUrl: IMG });
+}
+
 function checkBuilt(entry, payload) {
-    const { input, endpoint } = buildFalInput(entry, payload);
+    const { input, endpoint } = buildFalInput(entry, resolvedPayload(entry, payload));
     const spec = variantInput(entry, endpoint);
     const allowed = new Set(spec.allowed);
     const extra = Object.keys(input).filter((key) => !allowed.has(key));
@@ -532,8 +543,10 @@ test('studio helper tools build valid fal inputs', () => {
     assert.deepEqual(failures, [], failures.join('\n'));
     const layers = getEntry('bytedance-seedream-5.0-pro-layer');
     assert.ok(layers, 'layer decomposition has an entry');
-    assert.equal(layers.enabled, false);
-    assert.match(layers.reason, /schema/);
+    assert.equal(layers.enabled, true);
+    const built = buildFalInput(layers, { image_url: IMG, prompt: 'Split', resolution: '1.5K', output_format: 'png' });
+    assert.equal(built.endpoint, 'bytedance/seedream/v5/pro/layerize');
+    assert.deepEqual(built.input, { image_url: IMG, prompt: 'Split', image_size: 'auto_1.5K' });
 });
 
 test('every selectable aspect ratio / resolution / duration / quality option builds', () => {

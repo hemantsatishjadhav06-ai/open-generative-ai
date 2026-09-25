@@ -110,7 +110,14 @@
   "meta": {
     "siteTitle": "Aquora — 创作者的 AI 工作室",
     "description": "想做就做，做完就发。在一个工作室里用 300+ 个 AI 模型做图像、视频、音频和数字人。",
-    "ogLocale": "zh_CN"
+    "ogLocale": "zh_CN",
+    "pages": {
+      "agentChat": "智能体对话 — Aquora",
+      "createAgent": "创建智能体 — Aquora",
+      "editAgent": "编辑智能体 — Aquora",
+      "agentNamed": "{name} — Aquora",
+      "workflow": "工作流 — Aquora"
+    }
   },
   "reelty": {
     "tagline": "AI 房产营销。上传房源照片，生成看房视频、文案和广告。",

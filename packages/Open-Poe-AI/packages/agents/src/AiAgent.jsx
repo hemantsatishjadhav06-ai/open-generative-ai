@@ -14,7 +14,7 @@ import { HiOutlinePencilAlt } from "react-icons/hi";
 import { BiLoaderAlt } from "react-icons/bi";
 import { themes } from "./components/themes";
 import { FaAngleRight } from "react-icons/fa6";
-import { getAgentCopy } from "./i18n";
+import { getAgentCopy, localePath } from "./i18n";
 import { AGENTS_API as BASE_URL, errorMessage, isSessionError, newConversationId, uploadImage } from "./utils/api";
 
 const POLL_INTERVAL_MS = 1000;
@@ -436,7 +436,7 @@ const ChatPage = ({
 
   const handleNewChat = () => {
     if (lowerAgentSlug) {
-      router.push(`/agents/${lowerAgentSlug}`);
+      router.push(localePath(locale, `/agents/${lowerAgentSlug}`));
     }
   };
 
@@ -542,7 +542,7 @@ const ChatPage = ({
           timestamp: new Date().toISOString()
         }));
         if (lowerAgentSlug) {
-          router.replace(`/agents/${lowerAgentSlug}/${newConvId}`);
+          router.replace(localePath(locale, `/agents/${lowerAgentSlug}/${newConvId}`));
         }
         return;
       }
@@ -700,7 +700,7 @@ const ChatPage = ({
                           role="menuitem"
                           onClick={() => {
                             setShowDropdown(false);
-                            router.push(`/agents/edit/${agent_id}`);
+                            router.push(localePath(locale, `/agents/edit/${agent_id}`));
                           }}
                           type="button"
                           className="w-full flex items-center gap-3 px-3 py-2 transition-all hover:bg-[var(--component-hover)] rounded-t-lg"
@@ -1118,7 +1118,7 @@ const ChatPage = ({
                 {sessionEnded && (
                   <>
                     {" "}
-                    <Link href="/studio/agents" className="underline font-semibold text-red-300 hover:text-red-200">
+                    <Link href={localePath(locale, "/studio/agents")} className="underline font-semibold text-red-300 hover:text-red-200">
                       {copy.openStudio}
                     </Link>
                   </>

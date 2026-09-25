@@ -30,7 +30,7 @@
 //   SSE when stream:true; json_object/json_schema replies synthesised from
 //   the schema; "FAIL_LLM_500" → 500) and GET /openrouter/api/v1/models.
 // - Sample media at /media/<fixture> (tests/fixtures/media).
-// - Test hooks: GET /__mock/state, POST /__mock/reset.
+// - Test hooks: GET /__mock/state (counters, recent requests, recent job inputs), POST /__mock/reset.
 // Keys are only checked for presence/prefix ("bad-key" → 401); nothing is
 // ever logged.
 
@@ -97,6 +97,11 @@ export function familyOf(endpoint) {
     if (/tts|text-to-speech|speech|voice|elevenlabs|chatterbox|kokoro|dia-tts/.test(e)) return 'audio';
     // Image endpoints under video-family names (e.g. fal-ai/wan-25-preview/text-to-image).
     if (/(^|\/)(text-to-image|image-to-image)(\/|$)/.test(e)) return 'images';
+    // Layer decomposition: base image + separated layers (images[] + layers[]).
+    if (/layerize|image-layered/.test(e)) return 'layers';
+    // ffmpeg frame grab returns images[] (checked before the ffmpeg → video rule).
+    if (/extract-frame/.test(e)) return 'images';
+    if (/face-swap/.test(e)) return 'image';
     if (/video|lipsync|lip-sync|i2v|t2v|kling|seedance|hailuo|wan-|veo|mmaudio|pixverse|luma|ray-|latentsync|infinitalk|omnihuman|ffmpeg|merge|animate|motion|reference-to-video|trim/.test(e)) return 'video';
     if (/birefnet|background|rembg|upscale|seedvr|esrgan|clarity|expand|outpaint|extension|inpaint|bria|ben\/|feynobg|pixelcut/.test(e)) return 'image';
     return 'images';
@@ -137,6 +142,15 @@ export async function startMockUpstream({ port = envInt('MOCK_UPSTREAM_PORT', 0)
         if (family === 'audio') return { audio: { url: media('sample.mp3'), content_type: 'audio/mpeg' } };
         if (family === 'video') return { video: { url: media('sample.mp4'), content_type: 'video/mp4', file_name: 'sample.mp4', file_size: 10817 }, seed };
         if (family === 'image') return { image: { url: media('sample.png'), content_type: 'image/png', width: 64, height: 64 } };
+        if (family === 'layers') {
+            const names = ['Background', 'Subject', 'Title text'];
+            // Distinct URLs per layer (real fal returns one file per layer).
+            const images = ['base', ...names].map((_, i) => ({ url: `${media('sample.png')}?layer=${i}`, content_type: 'image/png', width: 64, height: 64 }));
+            return {
+                images,
+                layers: images.map((image, i) => ({ image, z_index: i, ...(i ? { name: names[i - 1], bounding_box: { absolute: [0, 0, 64, 64], normalized: [0, 0, 1000, 1000] } } : {}) })),
+            };
+        }
         const count = Math.max(1, Math.min(4, Number(input?.num_images) || 1));
         return {
             images: Array.from({ length: count }, (_, i) => ({ url: media(i % 2 ? 'sample.jpg' : 'sample.png'), width: 64, height: 64, content_type: i % 2 ? 'image/jpeg' : 'image/png' })),
@@ -437,7 +451,11 @@ export async function startMockUpstream({ port = envInt('MOCK_UPSTREAM_PORT', 0)
         state.requests.push({ method: req.method, path: p, auth: req.headers.authorization ? req.headers.authorization.split(' ')[0] : null });
         if (state.requests.length > 500) state.requests.shift();
         try {
-            if (p === '/__mock/state') return send(res, 200, { counters: state.counters, jobs: state.jobs.size, files: state.files.size, requests: state.requests.slice(-50) });
+            if (p === '/__mock/state') {
+                // recent_jobs: the fal inputs the gateway submitted (E2E checks, e.g. an extend's source video_url).
+                const recentJobs = [...state.jobs.values()].slice(-30).map((job) => ({ endpoint: job.endpoint, input: job.input }));
+                return send(res, 200, { counters: state.counters, jobs: state.jobs.size, files: state.files.size, requests: state.requests.slice(-50), recent_jobs: recentJobs });
+            }
             if (p === '/__mock/reset' && req.method === 'POST') {
                 state.jobs.clear();
                 state.files.clear();

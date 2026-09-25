@@ -9,7 +9,7 @@ import {
 } from "../gateway.js";
 import en from "../messages/en/agentStudio.json";
 import zh from "../messages/zh/agentStudio.json";
-import { resolveCopy } from "../i18nUtils";
+import { localeRoot, resolveCopy } from "../i18nUtils";
 
 // Agents tab: browse built-in templates, the workspace's own agents and past
 // chats. Chatting, creating and editing happen on the full-screen /agents/*
@@ -127,23 +127,25 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   const [reloadTick, setReloadTick] = useState(0);
   const [error, setError] = useState(null);
 
-  // Chat, create and edit live on the full-screen /agents/* pages.
+  // Chat, create and edit live on the full-screen /agents/* pages, mirrored
+  // under /zh/agents/* so Chinese navigation stays Chinese.
+  const agentsRoot = `${localeRoot(locale)}/agents`;
   const handleSelectAgent = useCallback(
     (agent) => {
-      router.push(`/agents/${encodeURIComponent(agent.agent_id || agent.id)}`);
+      router.push(`${agentsRoot}/${encodeURIComponent(agent.agent_id || agent.id)}`);
     },
-    [router]
+    [router, agentsRoot]
   );
 
   const handleCreateAgent = useCallback(() => {
-    router.push("/agents/create");
-  }, [router]);
+    router.push(`${agentsRoot}/create`);
+  }, [router, agentsRoot]);
 
   const handleOpenConversation = useCallback(
     (agentSlug, convId) => {
-      router.push(`/agents/${encodeURIComponent(agentSlug)}/${encodeURIComponent(convId)}`);
+      router.push(`${agentsRoot}/${encodeURIComponent(agentSlug)}/${encodeURIComponent(convId)}`);
     },
-    [router]
+    [router, agentsRoot]
   );
 
   // `apiKey` is the signed-in workspace id (the shell sets it once the

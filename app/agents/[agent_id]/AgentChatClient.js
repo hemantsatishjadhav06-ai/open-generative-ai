@@ -4,6 +4,7 @@ import { AiAgent, getAgentCopy } from "ai-agent";
 import "ai-agent/dist/tailwind.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { localizeStudioPath } from "@/lib/locales";
 
 /**
  * AgentChatClient — renders the agent chat with the server-loaded agent and
@@ -30,7 +31,7 @@ export default function AgentChatClient({ agentDetails, initialHistory, loadErro
               {copy.chatError.retry}
             </button>
             <Link
-              href="/studio/agents"
+              href={localizeStudioPath(locale, "agents")}
               className="h-10 px-5 inline-flex items-center justify-center rounded-xl border border-white/10 bg-surface-card text-sm font-semibold text-white/80 hover:text-white hover:border-white/20 transition-colors"
             >
               {copy.backToAgents}

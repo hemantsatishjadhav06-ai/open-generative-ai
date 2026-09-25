@@ -110,7 +110,14 @@
   "meta": {
     "siteTitle": "Aquora — AI studio for creators",
     "description": "Make anything. Ship everything. Images, video, audio, avatars and edits with 300+ AI models in one studio.",
-    "ogLocale": "en_US"
+    "ogLocale": "en_US",
+    "pages": {
+      "agentChat": "Agent chat — Aquora",
+      "createAgent": "Create an agent — Aquora",
+      "editAgent": "Edit agent — Aquora",
+      "agentNamed": "{name} — Aquora",
+      "workflow": "Workflow — Aquora"
+    }
   },
   "reelty": {
     "tagline": "AI real-estate marketing. Listing photos in — tour video, captions and ads out.",

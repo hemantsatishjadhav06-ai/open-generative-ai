@@ -12,6 +12,8 @@
 //   sources/fal-schemas.json fal input/output schemas, normalised to a compact form
 //   sources/fal-listing.json fal model listing (status/category) for endpoints without a saved schema
 //   sources/overrides.json   hand-reviewed structured transforms, endpoint variants and tool entries
+//   sources/fal-schemas-extra.json  schemas captured after the research import (same normalised form)
+//   sources/fal-thumbnails.json     fal model metadata thumbnail_url per endpoint (picker thumbnails)
 //
 // Rules: an entry is enabled only when it maps to a fal endpoint, the mapping
 // confidence is high|medium, every endpoint it can route to has a saved input
@@ -28,6 +30,15 @@ const MAPS_DIR = path.join(SOURCES_DIR, 'maps');
 const SCHEMAS_FILE = path.join(SOURCES_DIR, 'fal-schemas.json');
 const LISTING_FILE = path.join(SOURCES_DIR, 'fal-listing.json');
 const OVERRIDES_FILE = path.join(SOURCES_DIR, 'overrides.json');
+const EXTRA_SCHEMAS_FILE = path.join(SOURCES_DIR, 'fal-schemas-extra.json');
+const THUMBNAILS_FILE = path.join(SOURCES_DIR, 'fal-thumbnails.json');
+// Server-owned fal endpoints behind catalog `steps` (lib/gateway/pipelines/catalog-steps.js).
+const STEP_ENDPOINTS = {
+    last_frame: 'fal-ai/ffmpeg-api/extract-frame',
+    merge_source: 'fal-ai/ffmpeg-api/merge-videos',
+    upscale: 'fal-ai/seedvr/upscale/video',
+};
+const THUMBNAIL_URL = /^https:\/\/(?:[a-z0-9-]+\.)*(?:fal\.media|fal\.ai|fal\.run|storage\.googleapis\.com)\/[^\s"'<>]+$/i;
 const OUT_FILE = path.join(CATALOG_DIR, 'catalog.json');
 
 const MAP_ORDER = ['t2i', 'i2i', 't2v', 'i2v-a', 'i2v-b', 'v2v-lipsync-recast-motion-audio'];
@@ -845,6 +856,12 @@ function build() {
     }
     const schemas = readJson(SCHEMAS_FILE);
     const listing = fs.existsSync(LISTING_FILE) ? readJson(LISTING_FILE) : {};
+    const extraSchemas = fs.existsSync(EXTRA_SCHEMAS_FILE) ? readJson(EXTRA_SCHEMAS_FILE).schemas || {} : {};
+    for (const [id, schema] of Object.entries(extraSchemas)) {
+        schemas[id] = schema;
+        listing[id] = [schema.status || 'unlisted', schema.category || null];
+    }
+    const thumbnails = fs.existsSync(THUMBNAILS_FILE) ? readJson(THUMBNAILS_FILE).thumbnails || {} : {};
     const overridesDoc = fs.existsSync(OVERRIDES_FILE) ? readJson(OVERRIDES_FILE) : {};
     const overrides = overridesDoc.entries || {};
     for (const extra of overridesDoc.extra || []) rows.push({ ...extra, _order: rows.length, _file: 'overrides.json' });
@@ -942,6 +959,19 @@ function build() {
             if (variants.length) entry.variants = variants;
         }
         if (override.resolve) entry.resolve = override.resolve;
+        if (override.steps) {
+            entry.steps = override.steps;
+            for (const step of [...(override.steps.before || []), ...(override.steps.after || [])]) {
+                const stepFal = STEP_ENDPOINTS[step?.op];
+                if (!stepFal) reasons.push(`unknown step ${step?.op}`);
+                else if (!schemas[stepFal]) reasons.push(`fal input schema for step ${stepFal} was not captured`);
+            }
+        }
+        if (override.served_by) entry.served_by = scrubText(override.served_by);
+        const status = fal ? (schemas[fal]?.status || listing[fal]?.[0] || null) : null;
+        if (status && status !== 'active') entry.fal_status = status;
+        const thumbnail = fal ? thumbnails[fal] : null;
+        if (typeof thumbnail === 'string' && THUMBNAIL_URL.test(thumbnail)) entry.thumbnail = thumbnail;
         const unsupported = group.filter((row) => row !== primary && row.model_id
             && (!(row.confidence === 'high' || row.confidence === 'medium') || !row.fal_endpoint)).map((row) => row.model_id);
         if (unsupported.length) entry.unsupported_models = [...new Set(unsupported)];

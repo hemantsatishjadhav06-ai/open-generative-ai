@@ -32,7 +32,8 @@
     "pickHintText": "图片里的文字清晰准确",
     "pickHintTypography": "海报、Logo、封面",
     "pickHintPhotoreal": "照片级真实感",
-    "pickHintFast": "又快又便宜"
+    "pickHintFast": "又快又便宜",
+    "runsOn": "由 {model} 运行"
   },
   "gallery": {
     "generatedImageAlt": "生成的图像",

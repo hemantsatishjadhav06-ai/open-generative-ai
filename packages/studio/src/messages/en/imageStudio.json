@@ -32,7 +32,8 @@
     "pickHintText": "Clean text in images",
     "pickHintTypography": "Posters, logos, thumbnails",
     "pickHintPhotoreal": "Photoreal shots",
-    "pickHintFast": "Fast and cheap"
+    "pickHintFast": "Fast and cheap",
+    "runsOn": "Runs on {model}"
   },
   "gallery": {
     "generatedImageAlt": "Generated image",

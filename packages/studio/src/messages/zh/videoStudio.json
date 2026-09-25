@@ -63,7 +63,8 @@
     "pickHintCinematic": "电影质感，自带声音",
     "pickHintMotion": "动作流畅真实",
     "pickHintSocial": "非常适合短视频",
-    "pickHintStory": "剧情感强的片段"
+    "pickHintStory": "剧情感强的片段",
+    "runsOn": "由 {model} 运行"
   },
   "controls": {
     "draw": "绘制",

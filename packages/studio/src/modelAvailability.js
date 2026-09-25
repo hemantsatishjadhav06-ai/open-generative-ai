@@ -1,7 +1,8 @@
 // Which studio models Aquora's backend can run right now.
 //
 // GET /api/v1/models/available → {enabled:[keys], disabled:[keys],
-// disabled_models:[studio model ids], configured}. A key is the endpoint id a
+// disabled_models:[studio model ids], thumbnails:{key:url}, served_by:{key:name},
+// configured}. A key is the endpoint id a
 // studio posts to /api/v1/<key> (model.endpoint || model.id). The list is
 // fetched once per page load and shared by every picker.
 //
@@ -24,7 +25,7 @@ import {
 
 const AVAILABLE_URL = "/api/v1/models/available";
 
-let snapshot = null; // {enabled:Set, disabled:Set, disabledModels:Set, configured:boolean|null}
+let snapshot = null; // {enabled:Set, disabled:Set, disabledModels:Set, thumbnails:Map, servedBy:Map, configured:boolean|null}
 let inflight = null;
 const listeners = new Set();
 let modelIndex = null;
@@ -39,6 +40,18 @@ function toSet(value) {
   return new Set(Array.isArray(value) ? value.filter((item) => typeof item === "string") : []);
 }
 
+// Thumbnails are drawn straight from fal's CDN: only https URLs are kept.
+const HTTPS_URL = /^https:\/\/[^\s"'<>]+$/i;
+
+function toMap(value, accept = () => true) {
+  const map = new Map();
+  if (!value || typeof value !== "object" || Array.isArray(value)) return map;
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item === "string" && item && accept(item)) map.set(key, item);
+  }
+  return map;
+}
+
 /** Replace the availability list (the API body). `null` resets to "unknown". */
 export function setModelAvailability(data) {
   snapshot = data && typeof data === "object"
@@ -46,6 +59,8 @@ export function setModelAvailability(data) {
       enabled: toSet(data.enabled),
       disabled: toSet(data.disabled),
       disabledModels: toSet(data.disabled_models),
+      thumbnails: toMap(data.thumbnails, (url) => HTTPS_URL.test(url)),
+      servedBy: toMap(data.served_by, (name) => name.length <= 120),
       configured: typeof data.configured === "boolean" ? data.configured : null,
     })
     : null;
@@ -114,4 +129,21 @@ export function firstAvailableModel(models, preferredIds = []) {
     if (model && isModelAvailable(model)) return model;
   }
   return models.find((model) => isModelAvailable(model)) || models[0] || null;
+}
+
+function keyOf(modelOrId) {
+  const model = typeof modelOrId === "string" ? (lookupModel(modelOrId) || { id: modelOrId }) : modelOrId;
+  return model?.endpoint || model?.id || null;
+}
+
+/** fal thumbnail URL for a studio model (object or id), or null. */
+export function getModelThumbnail(modelOrId) {
+  const key = snapshot ? keyOf(modelOrId) : null;
+  return (key && snapshot.thumbnails?.get(key)) || null;
+}
+
+/** Name of the model that actually runs when it differs from the picker's ("Runs on …"), or null. */
+export function getModelServedBy(modelOrId) {
+  const key = snapshot ? keyOf(modelOrId) : null;
+  return (key && snapshot.servedBy?.get(key)) || null;
 }

@@ -36,11 +36,17 @@ Who it's for:
 | **AI Influencer** | Consistent AI persona content. |
 | **Reelty** | AI real-estate marketing studio, embedded as a tab (a separate app with its own backend). |
 
-300+ fal.ai model endpoints across image, video, audio and lip-sync. The server-side catalog (`lib/gateway/catalog`) decides which models are available; the studio pickers hide the rest.
+300+ fal.ai model endpoints across image, video, audio and lip-sync. The server-side catalog (`lib/gateway/catalog`) decides which models are available; the studio pickers hide the rest and show each model's fal thumbnail (a branded tile when fal has none). When a studio model is served by a newer model of the same family (for example Seedream 3 → Seedream 4.0), the picker says so ("Runs on …").
 
-Not in this build: **Vibe Motion** (motion graphics) is hidden because its server-side render pipeline has not been rebuilt yet; old `/studio/vibe-motion` links open the studio. The **Explore Apps** and **MCP & CLI** tabs were removed.
+- **Extend** (Veo 3.1, Grok Imagine, Seedance 2.0 and its VIP tiers): the studio sends the earlier clip's job token as `request_id`; the gateway only accepts tokens from the same session, looks up that job's output video and passes it on. Seedance 2.0 extend is a server pipeline: fal's ffmpeg frame grab takes the clip's last frame, Seedance continues from it, and the two clips are merged.
+- **4K** Seedance 2.5 entries render at 1080p (fal's maximum) and are upscaled to 2160p with SeedVR; "Veo 3.1 4K" upscales an earlier Veo clip the same way.
+- **Layer decomposition** (Layers studio) runs on Seedream 5.0 Pro Layerize (base image plus up to 16 transparent layers).
 
-The UI ships in English (`/`) and Simplified Chinese (`/zh`).
+Still disabled, with the reason recorded in the catalog: models fal does not host (Midjourney, Leonardo, Runway, Suno, Sora 1, Veo 4, Chroma, Neta Lumina, …), Imagen 4 (fal lists only deprecated preview endpoints), the "spicy" relaxed-moderation tiers (fal applies its standard moderation) and local utilities with no fal equivalent (watermark tools, pass-through nodes).
+
+Not in this build: **Vibe Motion** (motion graphics) is hidden. It needs an LLM to write motion-graphics code and a headless renderer to turn it into MP4, and the Docker image has no renderer; old `/studio/vibe-motion` links open the studio. The **Explore Apps** and **MCP & CLI** tabs were removed.
+
+The UI ships in English (`/`) and Simplified Chinese (`/zh`), including the full-screen agent pages (`/zh/agents/…`) and the workflow builder (`/zh/workflow/…`).
 
 ## How it works
 

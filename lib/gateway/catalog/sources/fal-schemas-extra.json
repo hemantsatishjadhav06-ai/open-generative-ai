@@ -1,0 +1,673 @@
+{
+ "_comment": [
+  "fal input/output schemas captured after the research import, normalised like fal-schemas.json.",
+  "Fetched 2026-09-25 from https://api.fal.ai/v1/models?endpoint_id=<id>&expand=openapi-3.0 (public).",
+  "status null = the endpoint serves an OpenAPI document and a live docs page but is unlisted (no public metadata)."
+ ],
+ "schemas": {
+  "bytedance/seedream/v5/pro/layerize": {
+   "category": "image-to-image",
+   "status": "active",
+   "post_path": "/fal-ai/seedream-5-pro/layerize",
+   "required": [
+    "image_url"
+   ],
+   "input": {
+    "enhance_prompt_mode": {
+     "type": "string",
+     "enum": [
+      "standard",
+      "fast"
+     ],
+     "default": "standard"
+    },
+    "image_size": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "auto_1K",
+      "auto_1.5K",
+      "auto_2K"
+     ],
+     "default": "auto"
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    },
+    "prompt": {
+     "type": "string",
+     "default": ""
+    },
+    "enable_safety_checker": {
+     "type": "boolean",
+     "default": true
+    },
+    "image_url": {
+     "type": "string"
+    }
+   },
+   "output": {
+    "images": "array<object>",
+    "layers": "array<object>"
+   }
+  },
+  "fal-ai/face-swap": {
+   "category": "image-to-image",
+   "status": null,
+   "post_path": "/fal-ai/face-swap",
+   "required": [
+    "base_image_url",
+    "swap_image_url"
+   ],
+   "input": {
+    "swap_image_url": {
+     "type": "string"
+    },
+    "base_image_url": {
+     "type": "string"
+    }
+   },
+   "output": {
+    "image": "object"
+   }
+  },
+  "fal-ai/ffmpeg-api/extract-frame": {
+   "category": "image-to-image",
+   "status": "active",
+   "post_path": "/fal-ai/ffmpeg-api/extract-frame",
+   "required": [
+    "video_url"
+   ],
+   "input": {
+    "frame_type": {
+     "type": "string",
+     "enum": [
+      "first",
+      "middle",
+      "last"
+     ],
+     "default": "first"
+    },
+    "video_url": {
+     "type": "string"
+    }
+   },
+   "output": {
+    "images": "array<object>"
+   }
+  },
+  "fal-ai/ffmpeg-api/merge-videos": {
+   "category": "video-to-video",
+   "status": "active",
+   "post_path": "/fal-ai/ffmpeg-api/merge-videos",
+   "required": [
+    "video_urls"
+   ],
+   "input": {
+    "target_fps": {
+     "type": "number",
+     "nullable": true,
+     "min": 1,
+     "max": 60
+    },
+    "resolution_aspect_ratio_video_index": {
+     "type": "integer",
+     "nullable": true,
+     "min": 0
+    },
+    "resolution": {
+     "type": "object|string",
+     "nullable": true,
+     "enum": [
+      "square_hd",
+      "square",
+      "portrait_4_3",
+      "portrait_16_9",
+      "landscape_4_3",
+      "landscape_16_9"
+     ],
+     "props": [
+      "height",
+      "width"
+     ]
+    },
+    "video_urls": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "min_items": 2
+    }
+   },
+   "output": {
+    "video": "object",
+    "metadata": "object"
+   }
+  },
+  "fal-ai/flux/dev": {
+   "category": "text-to-image",
+   "status": "active",
+   "post_path": "/fal-ai/flux/dev",
+   "required": [
+    "prompt"
+   ],
+   "input": {
+    "image_size": {
+     "type": "object|string",
+     "enum": [
+      "square_hd",
+      "square",
+      "portrait_4_3",
+      "portrait_16_9",
+      "landscape_4_3",
+      "landscape_16_9"
+     ],
+     "default": "landscape_4_3",
+     "props": [
+      "height",
+      "width"
+     ]
+    },
+    "seed": {
+     "type": "integer",
+     "nullable": true
+    },
+    "prompt": {
+     "type": "string"
+    },
+    "output_format": {
+     "type": "string",
+     "enum": [
+      "jpeg",
+      "png"
+     ],
+     "default": "jpeg"
+    },
+    "enable_safety_checker": {
+     "type": "boolean",
+     "default": true
+    },
+    "num_inference_steps": {
+     "type": "integer",
+     "default": 28,
+     "min": 1,
+     "max": 50
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    },
+    "num_images": {
+     "type": "integer",
+     "default": 1,
+     "min": 1,
+     "max": 4
+    },
+    "acceleration": {
+     "type": "string",
+     "enum": [
+      "none",
+      "regular",
+      "high"
+     ],
+     "default": "none"
+    },
+    "guidance_scale": {
+     "type": "number",
+     "default": 3.5,
+     "min": 1,
+     "max": 20
+    }
+   },
+   "output": {
+    "images": "array<object>",
+    "timings": "object",
+    "seed": "integer",
+    "has_nsfw_concepts": "array<boolean>",
+    "prompt": "string"
+   }
+  },
+  "fal-ai/ltx-2.3-22b/image-to-video": {
+   "category": "image-to-video",
+   "status": "active",
+   "post_path": "/fal-ai/ltx-2.3-22b/image-to-video",
+   "required": [
+    "prompt",
+    "image_url"
+   ],
+   "input": {
+    "prompt": {
+     "type": "string"
+    },
+    "image_url": {
+     "type": "string"
+    },
+    "end_image_url": {
+     "type": "string",
+     "nullable": true
+    },
+    "num_frames": {
+     "type": "integer",
+     "default": 121,
+     "min": 9,
+     "max": 481
+    },
+    "video_size": {
+     "type": "object|string",
+     "enum": [
+      "auto",
+      "square_hd",
+      "square",
+      "portrait_4_3",
+      "portrait_16_9",
+      "landscape_4_3",
+      "landscape_16_9"
+     ],
+     "default": "auto",
+     "props": [
+      "height",
+      "width"
+     ]
+    },
+    "generate_audio": {
+     "type": "boolean",
+     "default": true
+    },
+    "use_multiscale": {
+     "type": "boolean",
+     "default": true
+    },
+    "fps": {
+     "type": "number",
+     "default": 24,
+     "min": 1,
+     "max": 60
+    },
+    "num_inference_steps": {
+     "type": "integer",
+     "default": 40,
+     "min": 8,
+     "max": 50
+    },
+    "video_cfg_scale": {
+     "type": "number",
+     "default": 3,
+     "min": 1,
+     "max": 20
+    },
+    "video_stg_scale": {
+     "type": "number",
+     "default": 0,
+     "min": 0,
+     "max": 20
+    },
+    "video_rescaling_scale": {
+     "type": "number",
+     "default": 0.7,
+     "min": 0,
+     "max": 1
+    },
+    "video_modality_scale": {
+     "type": "number",
+     "default": 3,
+     "min": 0,
+     "max": 10
+    },
+    "audio_cfg_scale": {
+     "type": "number",
+     "default": 7,
+     "min": 1,
+     "max": 20
+    },
+    "audio_stg_scale": {
+     "type": "number",
+     "default": 0,
+     "min": 0,
+     "max": 20
+    },
+    "audio_rescaling_scale": {
+     "type": "number",
+     "default": 0.7,
+     "min": 0,
+     "max": 1
+    },
+    "audio_modality_scale": {
+     "type": "number",
+     "default": 3,
+     "min": 0,
+     "max": 10
+    },
+    "gradient_estimation_gamma": {
+     "type": "number",
+     "default": 2,
+     "min": 0,
+     "max": 10
+    },
+    "use_restart_sampling": {
+     "type": "boolean",
+     "default": false
+    },
+    "scheduler": {
+     "type": "string",
+     "enum": [
+      "ltx2",
+      "linear_quadratic",
+      "beta"
+     ],
+     "default": "ltx2"
+    },
+    "acceleration": {
+     "type": "string",
+     "enum": [
+      "none",
+      "regular",
+      "high",
+      "full"
+     ],
+     "default": "regular"
+    },
+    "camera_lora": {
+     "type": "string",
+     "enum": [
+      "dolly_in",
+      "dolly_out",
+      "dolly_left",
+      "dolly_right",
+      "jib_up",
+      "jib_down",
+      "static",
+      "none"
+     ],
+     "default": "none"
+    },
+    "camera_lora_scale": {
+     "type": "number",
+     "default": 1,
+     "min": 0,
+     "max": 1
+    },
+    "negative_prompt": {
+     "type": "string"
+    },
+    "seed": {
+     "type": "integer",
+     "nullable": true
+    },
+    "enable_prompt_expansion": {
+     "type": "boolean",
+     "default": true
+    },
+    "enable_safety_checker": {
+     "type": "boolean",
+     "default": true
+    },
+    "video_output_type": {
+     "type": "string",
+     "enum": [
+      "X264 (.mp4)",
+      "VP9 (.webm)",
+      "PRORES4444 (.mov)",
+      "GIF (.gif)"
+     ],
+     "default": "X264 (.mp4)"
+    },
+    "video_quality": {
+     "type": "string",
+     "enum": [
+      "low",
+      "medium",
+      "high",
+      "maximum"
+     ],
+     "default": "high"
+    },
+    "video_write_mode": {
+     "type": "string",
+     "enum": [
+      "fast",
+      "balanced",
+      "small"
+     ],
+     "default": "balanced"
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    },
+    "distill_lora_first_pass_scale": {
+     "type": "number",
+     "default": 0.2,
+     "min": 0,
+     "max": 1
+    },
+    "distill_lora_second_pass_scale": {
+     "type": "number",
+     "default": 0.5,
+     "min": 0,
+     "max": 1
+    },
+    "interpolation_direction": {
+     "type": "string",
+     "enum": [
+      "forward",
+      "backward"
+     ],
+     "default": "forward"
+    },
+    "image_strength": {
+     "type": "number",
+     "default": 1,
+     "min": 0,
+     "max": 1
+    },
+    "end_image_strength": {
+     "type": "number",
+     "default": 1,
+     "min": 0,
+     "max": 1
+    }
+   },
+   "output": {
+    "video": "object",
+    "seed": "integer",
+    "prompt": "string"
+   }
+  },
+  "fal-ai/nano-banana": {
+   "category": "text-to-image",
+   "status": "active",
+   "post_path": "/fal-ai/nano-banana",
+   "required": [
+    "prompt"
+   ],
+   "input": {
+    "output_format": {
+     "type": "string",
+     "enum": [
+      "jpeg",
+      "png",
+      "webp"
+     ],
+     "default": "png"
+    },
+    "num_images": {
+     "type": "integer",
+     "default": 1,
+     "min": 1,
+     "max": 4
+    },
+    "seed": {
+     "type": "integer",
+     "nullable": true
+    },
+    "limit_generations": {
+     "type": "boolean",
+     "default": true
+    },
+    "prompt": {
+     "type": "string"
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    },
+    "aspect_ratio": {
+     "type": "string",
+     "enum": [
+      "21:9",
+      "16:9",
+      "3:2",
+      "4:3",
+      "5:4",
+      "1:1",
+      "4:5",
+      "3:4",
+      "2:3",
+      "9:16"
+     ],
+     "default": "1:1"
+    },
+    "safety_tolerance": {
+     "type": "string",
+     "enum": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+     ],
+     "default": "4"
+    }
+   },
+   "output": {
+    "images": "array<object>",
+    "description": "string"
+   }
+  },
+  "fal-ai/qwen-image-layered": {
+   "category": "image-to-image",
+   "status": "active",
+   "post_path": "/fal-ai/qwen-image-layered",
+   "required": [
+    "image_url"
+   ],
+   "input": {
+    "prompt": {
+     "type": "string",
+     "nullable": true
+    },
+    "output_format": {
+     "type": "string",
+     "enum": [
+      "png",
+      "webp"
+     ],
+     "default": "png"
+    },
+    "num_layers": {
+     "type": "integer",
+     "default": 4,
+     "min": 1,
+     "max": 10
+    },
+    "num_inference_steps": {
+     "type": "integer",
+     "default": 28,
+     "min": 1,
+     "max": 50
+    },
+    "acceleration": {
+     "type": "string",
+     "enum": [
+      "none",
+      "regular",
+      "high"
+     ],
+     "default": "regular"
+    },
+    "guidance_scale": {
+     "type": "number",
+     "default": 5,
+     "min": 1,
+     "max": 20
+    },
+    "enable_safety_checker": {
+     "type": "boolean",
+     "default": true
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    },
+    "negative_prompt": {
+     "type": "string",
+     "default": ""
+    },
+    "image_url": {
+     "type": "string"
+    },
+    "seed": {
+     "type": "integer",
+     "nullable": true
+    }
+   },
+   "output": {
+    "images": "array<object>",
+    "timings": "object",
+    "seed": "integer",
+    "has_nsfw_concepts": "array<boolean>",
+    "prompt": "string"
+   }
+  },
+  "fal-ai/reve/text-to-image": {
+   "category": "text-to-image",
+   "status": null,
+   "post_path": "/fal-ai/reve/text-to-image",
+   "required": [
+    "prompt"
+   ],
+   "input": {
+    "aspect_ratio": {
+     "type": "string",
+     "enum": [
+      "16:9",
+      "9:16",
+      "3:2",
+      "2:3",
+      "4:3",
+      "3:4",
+      "1:1"
+     ],
+     "default": "3:2"
+    },
+    "prompt": {
+     "type": "string"
+    },
+    "num_images": {
+     "type": "integer",
+     "default": 1,
+     "min": 1,
+     "max": 4
+    },
+    "output_format": {
+     "type": "string",
+     "enum": [
+      "png",
+      "jpeg",
+      "webp"
+     ],
+     "default": "png"
+    },
+    "sync_mode": {
+     "type": "boolean",
+     "default": false
+    }
+   },
+   "output": {
+    "images": "array<object>"
+   }
+  }
+ }
+}
