@@ -80,7 +80,8 @@
     "maxImagesExceeded": "Maximum {max} images allowed for this model.",
     "videoUploadFailed": "Video upload failed: {message}",
     "imageUploadFailed": "Image upload failed: {message}",
-    "generationFailed": "Motion control video generation failed"
+    "generationFailed": "Motion control video generation failed",
+    "modelUnavailable": "This model isn't available on Aquora yet. Pick another model."
   },
   "defaults": {
     "selectedVideo": "Reference Video",

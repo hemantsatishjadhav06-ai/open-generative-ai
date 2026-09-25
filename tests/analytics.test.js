@@ -35,6 +35,15 @@ test('sanitize() drops secrets, user content and non-scalar values', async () =>
     assert.deepEqual(out, { ok: true, n: 3, s: 'x' });
 });
 
+test('sanitize() drops access codes, session identifiers and cookies', async () => {
+    const { sanitize } = await load();
+    const out = sanitize({
+        code: 'c', accessCode: 'c', access_code: 'c', session: 's', sessionId: 's', sid: 's',
+        cookie: 'aquora_session=x', token: 't', workspace: 'w', gate: 'codes', ok: false, reason: 'invalid_code',
+    });
+    assert.deepEqual(out, { gate: 'codes', ok: false, reason: 'invalid_code' });
+});
+
 test('the event buffer is capped at 200', async () => {
     const { track } = await load();
     stubBrowser();

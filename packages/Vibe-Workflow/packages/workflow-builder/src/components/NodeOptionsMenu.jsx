@@ -4,6 +4,7 @@ import { IoDuplicateOutline, IoTrashOutline } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { HiOutlinePhotograph } from "react-icons/hi";
 import { downloadFile } from "./utility";
+import { t } from "./i18n";
 
 const NodeOptionsMenu = ({ 
   nodeId, 
@@ -37,6 +38,9 @@ const NodeOptionsMenu = ({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
+        aria-label={t("stepOptions", { id: nodeId })}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
         className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-all outline-none"
       >
         <BsThreeDots size={18} />

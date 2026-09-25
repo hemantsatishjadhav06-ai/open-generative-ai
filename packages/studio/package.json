@@ -20,12 +20,10 @@
     "./WorkflowStudio": "./src/components/WorkflowStudio.jsx",
     "./AgentStudio": "./src/components/AgentStudio.jsx",
     "./DesignAgentStudio": "./src/components/DesignAgentStudio.jsx",
-    "./AppsStudio": "./src/components/AppsStudio.jsx",
-    "./McpCliStudio": "./src/components/McpCliStudio.jsx",
     "./AiInfluencerStudio": "./src/components/AiInfluencerStudio.jsx",
     "./LayersStudio": "./src/components/LayersStudio.jsx",
     "./MotionControlStudio": "./src/components/MotionControlStudio.jsx",
-    "./balance": "./src/balance.js",
+    "./session": "./src/session.js",
     "./formatError": "./src/utils/formatError.js",
     "./notify": "./src/utils/notify.js",
     "./useEscapeKey": "./src/components/prompt/useEscapeKey.js"
@@ -35,8 +33,9 @@
     "dist"
   ],
   "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build:css": "tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify",
-    "build": "npm run build:css && babel src --out-dir dist --extensions .js,.jsx"
+    "build": "npm run clean && npm run build:css && babel src --out-dir dist --extensions .js,.jsx"
   },
   "license": "MIT",
   "dependencies": {

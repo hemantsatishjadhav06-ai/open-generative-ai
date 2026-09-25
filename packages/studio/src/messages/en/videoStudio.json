@@ -105,7 +105,8 @@
     "noVideoUrlReturned": "No video URL returned by API",
     "videoGenerationFailed": "Video generation failed",
     "deleteItemFailed": "Failed to delete item",
-    "noContinuationSource": "Choose a compatible {family} result to continue."
+    "noContinuationSource": "Choose a compatible {family} result to continue.",
+    "modelUnavailable": "This model or option isn't available on Aquora yet. Pick another model or setting."
   },
   "modelControls": {
     "modes": {

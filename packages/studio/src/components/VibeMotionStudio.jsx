@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { runMotionGraphics, runMotionGraphicsEdit } from "../muapi.js";
+import { runMotionGraphics, runMotionGraphicsEdit } from "../gateway.js";
 import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { usePersistKey } from "../persistKey.js";
+import { isEndpointAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -82,11 +84,11 @@ export default function VibeMotionStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_vibe_motion_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_vibe_motion_studio_persistent");
+  // Motion graphics need a render pipeline Aquora's backend doesn't have
+  // yet; once the model list says so, generation is switched off.
+  const availability = useModelAvailability();
+  const motionAvailable = !availability || isEndpointAvailable("motion-graphics");
 
   // ── Params ────────────────────────────────────────────────────────────────
   const [prompt, setPrompt] = useState("");
@@ -118,6 +120,7 @@ export default function VibeMotionStudio({
 
   // ── Load from localStorage ─────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const saved = JSON.parse(localStorage.getItem(PERSIST_KEY) || "[]");
       if (Array.isArray(saved)) {
@@ -129,14 +132,15 @@ export default function VibeMotionStudio({
         setHistory(restored);
       }
     } catch (_) {}
-  }, []);
+  }, [PERSIST_KEY]);
 
   const saveHistory = useCallback((items) => {
     setHistory(items);
+    if (!PERSIST_KEY) return;
     // Strip canEdit from persisted data — it is an in-memory hint only
     const stripped = items.map(({ canEdit, ...rest }) => rest);
     try { localStorage.setItem(PERSIST_KEY, JSON.stringify(stripped)); } catch (_) {}
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Close dropdowns on outside click ─────────────────────────────────────
   useEffect(() => {
@@ -167,7 +171,7 @@ export default function VibeMotionStudio({
 
   // ── Generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
-    if (!prompt.trim() || generating) return;
+    if (!motionAvailable || !prompt.trim() || generating) return;
     onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
@@ -239,6 +243,7 @@ export default function VibeMotionStudio({
     }
   }, [
     apiKey,
+    motionAvailable,
     prompt,
     editMode,
     editSourceId,
@@ -462,10 +467,10 @@ export default function VibeMotionStudio({
                       </span>
                       <div className="flex gap-2">
                         {entry.aspectRatio && (
-                          <span className="text-[10px] text-white/40">{entry.aspectRatio}</span>
+                          <span className="text-[10px] text-white/60">{entry.aspectRatio}</span>
                         )}
                         {entry.duration && (
-                          <span className="text-[10px] text-white/40">{entry.duration}s</span>
+                          <span className="text-[10px] text-white/60">{entry.duration}s</span>
                         )}
                       </div>
                     </div>
@@ -486,9 +491,14 @@ export default function VibeMotionStudio({
                 {copy.empty.titleLine2}
               </span>
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/65 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.empty.description}
             </p>
+            {!motionAvailable && (
+              <p role="status" className="mt-4 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-center text-xs font-medium text-amber-200">
+                {copy.errors.unavailable}
+              </p>
+            )}
           </div>
         ) : null}
       </div>
@@ -680,7 +690,8 @@ export default function VibeMotionStudio({
             {/* ── Generate Button — matches VideoStudio exactly ── */}
             <PromptAction
               onClick={handleGenerate}
-              disabled={generating || !prompt.trim() || (editMode && !editSourceId)}
+              disabled={!motionAvailable || generating || !prompt.trim() || (editMode && !editSourceId)}
+              title={motionAvailable ? undefined : copy.errors.unavailable}
             >
               {generating ? (
                 <>

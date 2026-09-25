@@ -2,13 +2,11 @@
 // from 'studio' or StandaloneShell, so it ships almost no JS and every word
 // is in the HTML for crawlers and link unfurls.
 import Link from 'next/link';
-import { getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
+import { fillCopy, getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
 import { TABS } from '@/lib/studios';
 
 const SPARK_PATH = 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z';
 const GITHUB_URL = 'https://github.com/hemantsatishjadhav06-ai/open-generative-ai';
-const KEY_URL = 'https://muapi.ai/access-keys?utm_source=aquora&utm_medium=landing';
-const MUAPI_URL = 'https://muapi.ai?utm_source=aquora&utm_medium=landing';
 
 const GLOW_STYLE = {
   background:
@@ -32,7 +30,9 @@ export default function Landing({ locale = 'en' }) {
   const otherLocale = locale === 'zh' ? 'en' : 'zh';
   const otherConfig = getLocaleConfig(otherLocale);
   const langHref = otherConfig.rootPath || '/';
-  const chips = Array.isArray(copy.chips) ? copy.chips : [];
+  // Counts come from the tab registry so the copy can't drift from the nav.
+  const counts = { studios: TABS.length, count: TABS.length };
+  const chips = (Array.isArray(copy.chips) ? copy.chips : []).map((chip) => fillCopy(chip, counts));
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-surface-app text-white">
@@ -78,9 +78,7 @@ export default function Landing({ locale = 'en' }) {
               {copy.ctaPrimary} →
             </Link>
             <a
-              href={KEY_URL}
-              target="_blank"
-              rel="noreferrer"
+              href="#studios"
               className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-surface-card px-6 py-3 font-semibold text-white/85 transition-colors hover:border-white/20 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             >
               {copy.ctaSecondary}
@@ -100,7 +98,7 @@ export default function Landing({ locale = 'en' }) {
         {/* Studios */}
         <section aria-labelledby="studios" className="pb-16">
           <div className="mb-6">
-            <h2 id="studios" className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{copy.studiosHeading}</h2>
+            <h2 id="studios" className="scroll-mt-6 font-display text-2xl font-bold tracking-tight sm:text-3xl">{fillCopy(copy.studiosHeading, counts)}</h2>
             <p className="mt-2 text-sm text-secondary">{copy.studiosSub}</p>
           </div>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
@@ -141,7 +139,7 @@ export default function Landing({ locale = 'en' }) {
         {/* Footer */}
         <footer className="flex flex-col gap-3 border-t border-white/[0.07] py-8 text-[13px] text-white/60 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <a href={MUAPI_URL} target="_blank" rel="noreferrer" className="hover:text-white">{copy.footerRuns}</a>
+            <span>{copy.footerRuns}</span>
             <span>{copy.footerOss}</span>
             <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hover:text-white">{copy.footerGithub}</a>
           </div>

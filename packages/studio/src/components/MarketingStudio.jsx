@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { uploadFile, generateMarketingStudioAd } from "../muapi.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { uploadFile, generateMarketingStudioAd, getMarketingStudioAdModel } from "../gateway.js";
+import { usePersistKey } from "../persistKey.js";
+import { isModelAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
+import { formatErrorMessage } from "../utils/formatError.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -92,28 +95,18 @@ const RefIcon = () => (
   </svg>
 );
 
-// ── Assets ───────────────────────────────────────────────────────────────────
+// Reference clips longer or heavier than this are rejected by the video model.
+const MAX_REFERENCE_VIDEO_BYTES = 50 * 1024 * 1024;
+// Bumped when the saved state's shape changed (v2: presets removed, the
+// reference video is a user upload).
+const PERSIST_VERSION = 2;
 
-const ASSETS = {
-  avatar: [
-    { id: "aa252283-8591-4d14-91a8-41ce54187992", name: "Priya", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Priya.webp" },
-    { id: "ba6c9b18-f79c-4dab-9649-88a181d0a038", name: "Elena", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Elena.webp" },
-    { id: "30e2cadd-987c-4a7a-81c3-094d4fb3a65e", name: "Kai", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Kai.webp" },
-    { id: "fbed59e1-4b8d-4625-9140-ef2044e0be72", name: "Sora", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Sora.webp" },
-    { id: "bcd9e6ee-c000-48e6-9f4b-a20fc2a674f7", name: "Minji", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Minji.webp" },
-    { id: "1da384ed-3856-45e4-bf4c-a496c7aa95ff", name: "Margot", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Margot.webp" },
-    { id: "b799c8f5-fb6e-4905-b33b-cdefac153ec3", name: "Niko", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Niko.webp" },
-    { id: "b6971dd4-55fa-4e64-b318-392b16504284", name: "Jin", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/Jin.webp" }
-  ],
-  ugc: [
-    { id: 1, name: "UGC", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/ugc.mp4" },
-    { id: 2, name: "Tutorial", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/ugc_how_to.mp4" },
-    { id: 3, name: "Unboxing", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/ugc_unboxing.mp4" },
-    { id: 4, name: "Hyper Motion", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/hyper-motion-mini.mp4" },
-    { id: 5, name: "Product Review", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/product_review.mp4" },
-    { id: 6, name: "TV Spot", url: "https://d3adwkbyhxyrtq.cloudfront.net/web-app/tv-spot-mini.mp4" }
-  ]
-};
+const VideoIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="2" y="5" width="14" height="14" rx="2" />
+    <path d="M16 10l6-3v10l-6-3z" />
+  </svg>
+);
 
 const OPTIONS = {
   ratio: ["9:16", "3:4", "4:3", "16:9", "1:1"],
@@ -123,7 +116,7 @@ const OPTIONS = {
 
 // ── Components ───────────────────────────────────────────────────────────────
 
-function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, multiple = false, images = [] }) {
+function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, multiple = false, accept = "image/*", isVideo = false, clearLabel = "Remove" }) {
   const inputRef = useRef(null);
   const [isDraggingSlot, setIsDraggingSlot] = useState(false);
   const dragCounterRef = useRef(0);
@@ -166,7 +159,16 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
   return (
     <div className="relative group/slot flex items-center">
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={title}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragEnter={handleSlotDragEnter}
         onDragLeave={handleSlotDragLeave}
         onDragOver={handleSlotDragOver}
@@ -180,10 +182,14 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
           className="hidden"
+          tabIndex={-1}
           multiple={multiple}
-          onChange={(e) => onUpload(Array.from(e.target.files))}
+          onChange={(e) => {
+            onUpload(Array.from(e.target.files));
+            e.target.value = "";
+          }}
         />
 
         {progress > 0 && progress < 100 ? (
@@ -192,7 +198,11 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
           </div>
         ) : url ? (
           <div className="w-full h-full rounded-full overflow-hidden border border-black/20">
-            <img src={url} className="w-full h-full object-cover" alt={label} />
+            {isVideo ? (
+              <video src={url} muted playsInline preload="metadata" className="w-full h-full object-cover" aria-label={label} />
+            ) : (
+              <img src={url} className="w-full h-full object-cover" alt={label} />
+            )}
           </div>
         ) : (
           <div className="text-white/40 group-hover:text-primary transition-colors">
@@ -200,95 +210,20 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
           </div>
         )}
 
-        {/* Clear Button (Single) */}
-        {url && !multiple && (
-          <button 
-            onClick={(e) => { e.stopPropagation(); onClear(); }}
-            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity shadow-lg"
-          >
-            <CloseSvg />
-          </button>
-        )}
-      </div>      
-    </div>
-  );
-}
-
-function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo = false, onPreview = null, copy = en }) {
-  const ref = useRef(null);
-  
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) onClose();
-    };
-    const onEscapeKey = (e) => {
-      if (e.key === "Escape" && !e.defaultPrevented) {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener("click", handler);
-    document.addEventListener("keydown", onEscapeKey);
-    return () => {
-      window.removeEventListener("click", handler);
-      document.removeEventListener("keydown", onEscapeKey);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <PromptPopover
-      ref={ref}
-      className="w-[420px] max-w-[calc(100vw-2rem)]"
-    >
-      <PromptPopoverHeader className="mb-3">{title}</PromptPopoverHeader>
-      <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-        {items.map(item => (
-          <div 
-            key={item.id}
-            onClick={() => onSelect(item)}
-            className={`relative rounded overflow-hidden border-2 transition-all group cursor-pointer ${
-              selectedId === item.id || selectedId === item.url ? 'border-primary shadow-glow' : 'border-white/5 hover:border-white/20'
-            }`}
-          >
-            {onPreview && !isVideo && (
-              <button
-                type="button"
-                title={copy.buttons.enlargePreview}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPreview(item);
-                }}
-                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-brand hover:text-on-brand transition-all border border-white/10 z-20 text-white"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  <line x1="11" y1="8" x2="11" y2="14" />
-                  <line x1="8" y1="11" x2="14" y2="11" />
-                </svg>
-              </button>
-            )}
-
-            {isVideo ? (
-              <video src={item.url} autoPlay loop muted className="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-all duration-500" />
-            ) : (
-              <img src={item.url} className="w-full aspect-square object-cover group-hover:scale-105 transition-all duration-500" alt={item.name} />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-[9px] font-black text-white uppercase tracking-tight">{item.name}</span>
-            </div>
-            {(selectedId === item.id || selectedId === item.url) && (
-              <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                <CheckSvg />
-              </div>
-            )}
-          </div>
-        ))}
       </div>
-    </PromptPopover>
+
+      {/* Clear Button (Single): a sibling of the slot, not nested inside it */}
+      {url && !multiple && (
+        <button
+          type="button"
+          aria-label={`${clearLabel}: ${label}`}
+          onClick={onClear}
+          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/slot:opacity-100 focus-visible:opacity-100 transition-opacity shadow-lg"
+        >
+          <CloseSvg />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -350,12 +285,9 @@ export default function MarketingStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_marketing_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
-  
+  const PERSIST_KEY = usePersistKey("hg_marketing_studio_persistent");
+  const availability = useModelAvailability();
+
   const [prompt, setPrompt] = useState("");
   const [productImage, setProductImage] = useState(null);
   const [avatarImage, setAvatarImage] = useState(null);
@@ -363,51 +295,80 @@ export default function MarketingStudio({
   
   const [params, setParams] = useState({
     ratio: "9:16",
-    format: ASSETS.ugc[0].name,
-    videoUrl: ASSETS.ugc[0].url,
+    videoUrl: null,
     res: "1080p",
     duration: 5
   });
+  // Resolutions whose model the gateway can run (720p and 1080p use
+  // different reference-video endpoints).
+  const resolutionOptions = useMemo(
+    () => OPTIONS.res.filter((res) => isModelAvailable(getMarketingStudioAdModel(res))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recompute when the model list arrives
+    [availability],
+  );
 
   const [localHistory, setLocalHistory] = useState([]);
   const history = historyItems ?? localHistory;
   const [isGenerating, setIsGenerating] = useState(false);
   const [dropdown, setDropdown] = useState(null); // 'format' | 'avatar' | 'ratio' | 'res' | 'duration'
-  const [uploadProgress, setUploadProgress] = useState({ product: 0, avatar: 0, additional: 0 });
+  const [uploadProgress, setUploadProgress] = useState({ product: 0, avatar: 0, additional: 0, video: 0 });
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
   const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
   useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
   useFocusReturn(Boolean(fullscreenUrl));
-  const [previewAvatar, setPreviewAvatar] = useState(null);
-  const [slideDirection, setSlideDirection] = useState("next"); // 'next' | 'prev'
 
   const textareaRef = useRef(null);
 
   // ── Persistence ───────────────────────────────────────────────────────────
 
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
         const data = JSON.parse(stored);
+        // Drafts saved before v2 pointed at hosted preset avatars and format
+        // videos that no longer exist; keep everything except those.
+        const current = data.v === PERSIST_VERSION;
         if (data.prompt) setPrompt(data.prompt);
-        if (data.params) setParams(data.params);
+        if (data.params) {
+          setParams((prev) => ({
+            ...prev,
+            ratio: OPTIONS.ratio.includes(data.params.ratio) ? data.params.ratio : prev.ratio,
+            res: OPTIONS.res.includes(data.params.res) ? data.params.res : prev.res,
+            duration: OPTIONS.duration.includes(data.params.duration) ? data.params.duration : prev.duration,
+            videoUrl: current && typeof data.params.videoUrl === "string" ? data.params.videoUrl : null,
+          }));
+        }
         if (data.productImage) setProductImage(data.productImage);
-        if (data.avatarImage) setAvatarImage(data.avatarImage);
+        if (current && data.avatarImage) setAvatarImage(data.avatarImage);
         if (data.additionalImages) setAdditionalImages(data.additionalImages);
         if (data.localHistory) setLocalHistory(data.localHistory);
         else if (data.history) setLocalHistory(data.history);
       }
-    } catch (err) { console.warn("Load failed", err); }
-  }, []);
+    } catch (err) { console.warn("Failed to load MarketingStudio persistence:", err); }
+  }, [PERSIST_KEY]);
 
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
-      const state = { prompt, params, productImage, avatarImage, additionalImages, localHistory };
-      localStorage.setItem(PERSIST_KEY, JSON.stringify(state));
+      try {
+        const state = { v: PERSIST_VERSION, prompt, params, productImage, avatarImage, additionalImages, localHistory };
+        localStorage.setItem(PERSIST_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn("Failed to save MarketingStudio persistence:", err);
+      }
     }, 500);
     return () => clearTimeout(timer);
-  }, [prompt, params, productImage, avatarImage, additionalImages, localHistory]);
+  }, [prompt, params, productImage, avatarImage, additionalImages, localHistory, PERSIST_KEY]);
+
+  // Keep the resolution on one the gateway can run.
+  useEffect(() => {
+    if (resolutionOptions.length > 0 && !resolutionOptions.includes(params.res)) {
+      setParams((prev) => ({ ...prev, res: resolutionOptions[resolutionOptions.length - 1] }));
+    }
+  }, [resolutionOptions, params.res]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -431,7 +392,21 @@ export default function MarketingStudio({
   const handleUpload = async (files, target) => {
     if (!files || !files.length) return;
     
-    if (target === 'additional') {
+    if (target === 'video') {
+      const file = files[0];
+      if (!file.type.startsWith("video/")) {
+        notifyError(copy.errors.referenceVideoType);
+        return;
+      }
+      if (file.size > MAX_REFERENCE_VIDEO_BYTES) {
+        notifyError(copy.errors.referenceVideoTooLarge);
+        return;
+      }
+      try {
+        const url = await uploadFile(apiKey, file, (pct) => setUploadProgress(p => ({ ...p, video: pct })));
+        setParams((prev) => ({ ...prev, videoUrl: url }));
+      } catch (err) { notifyError(friendlyError(err)); }
+    } else if (target === 'additional') {
       const remaining = 6 - additionalImages.length;
       const toUpload = files.slice(0, remaining);
       for (const file of toUpload) {
@@ -454,6 +429,7 @@ export default function MarketingStudio({
   const handleGenerate = async () => {
     if (!prompt.trim()) return notifyError(copy.errors.missingScript);
     if (!productImage) return notifyError(copy.errors.missingProductImage);
+    if (!isModelAvailable(getMarketingStudioAdModel(params.res))) return notifyError(copy.errors.modelUnavailable);
 
     onGenerationStart?.();
     setIsGenerating(true);
@@ -472,7 +448,7 @@ export default function MarketingStudio({
           id: Date.now(),
           url: result.url,
           prompt,
-          format: params.format,
+          format: params.videoUrl ? copy.uploadSlots.referenceVideo : null,
           timestamp: new Date().toISOString()
         };
         if (!historyItems) {
@@ -482,7 +458,9 @@ export default function MarketingStudio({
         onGenerationComplete?.({ url: result.url, type: "video" });
       }
     } catch (err) {
-      onGenerationError?.(err.message?.slice(0, 120) || copy.errors.generationFailed);
+      const message = formatErrorMessage(err, copy.errors.generationFailed);
+      if (onGenerationError) onGenerationError(message);
+      else notifyError(message);
     } finally {
       setIsGenerating(false);
       onGenerationEnd?.();
@@ -598,7 +576,7 @@ export default function MarketingStudio({
                 {copy.empty.titleLine2}
               </span>
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/65 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.empty.subtitle}
             </p>
           </div>
@@ -611,8 +589,10 @@ export default function MarketingStudio({
             <div className="flex items-center gap-1.5">
               {additionalImages.map((img, idx) => (
                 <div key={idx} className="relative group/img flex-shrink-0">
-                  <img src={img} className="w-9 h-9 rounded-full object-cover border border-white/10" />
-                  <button 
+                  <img src={img} alt={`${copy.uploadSlots.references} ${idx + 1}`} className="w-9 h-9 rounded-full object-cover border border-white/10" />
+                  <button
+                    type="button"
+                    aria-label={`${copy.buttons.remove}: ${copy.uploadSlots.references} ${idx + 1}`}
                     onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
                     className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-black/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-white/10"
                   >
@@ -638,12 +618,13 @@ export default function MarketingStudio({
               
               {/* Asset Uploads Group */}
               <div className="flex items-center gap-1.5 pr-3 border-r border-white/10">
-                <UploadSlot 
+                <UploadSlot
                   label={copy.uploadSlots.product}
                   title={`${copy.uploadSlots.uploadPrefix} ${copy.uploadSlots.product}`}
-                  icon={<ProductIcon />} 
-                  url={productImage} 
-                  progress={uploadProgress.product} 
+                  icon={<ProductIcon />}
+                  url={productImage}
+                  progress={uploadProgress.product}
+                  clearLabel={copy.buttons.remove}
                   onUpload={(files) => handleUpload(files, 'product')}
                   onClear={() => setProductImage(null)}
                 />
@@ -653,8 +634,21 @@ export default function MarketingStudio({
                   icon={<AvatarIcon />}
                   url={avatarImage}
                   progress={uploadProgress.avatar}
+                  clearLabel={copy.buttons.remove}
                   onUpload={(files) => handleUpload(files, 'avatar')}
                   onClear={() => setAvatarImage(null)}
+                />
+                <UploadSlot
+                  label={copy.uploadSlots.referenceVideo}
+                  title={copy.uploadSlots.referenceVideoHint}
+                  icon={<VideoIcon />}
+                  url={params.videoUrl}
+                  progress={uploadProgress.video}
+                  accept="video/*"
+                  isVideo
+                  clearLabel={copy.buttons.remove}
+                  onUpload={(files) => handleUpload(files, 'video')}
+                  onClear={() => setParams((prev) => ({ ...prev, videoUrl: null }))}
                 />
                 <UploadSlot
                   label={copy.uploadSlots.references}
@@ -663,7 +657,7 @@ export default function MarketingStudio({
                   url={additionalImages[0]}
                   progress={uploadProgress.additional}
                   multiple
-                  images={additionalImages}
+                  clearLabel={copy.buttons.remove}
                   onUpload={(files) => handleUpload(files, 'additional')}
                   onClear={(idx) => {
                     if (idx !== undefined) {
@@ -672,88 +666,6 @@ export default function MarketingStudio({
                       setAdditionalImages([]);
                     }
                   }} 
-                />
-              </div>
-
-              {/* Format Button */}
-              <div className="relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDropdown(dropdown === 'format' ? null : 'format'); }}
-                  className={promptControlClassName({
-                    active: dropdown === "format",
-                  })}
-                >
-                  <div className="w-4 h-4 bg-primary/10 rounded flex items-center justify-center border border-primary/20">
-                    <span className="text-[8px] font-black text-primary uppercase">U</span>
-                  </div>
-                  <span className={PROMPT_CONTROL_LABEL_CLASS}>{params.format}</span>
-                  <PromptChevronIcon />
-                </button>
-                <Dropdown 
-                  isOpen={dropdown === 'format'} 
-                  title={copy.dropdowns.videoFormatPresets}
-                  items={ASSETS.ugc} 
-                  selectedId={params.format}
-                  onSelect={(item) => setParams({ ...params, format: item.name, videoUrl: item.url })}
-                  onClose={() => setDropdown(null)}
-                  isVideo
-                  copy={copy}
-                />
-              </div>
-
-              {/* Avatar Preset Button */}
-              <div className="relative flex items-center gap-1.5">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDropdown(dropdown === 'avatar' ? null : 'avatar'); }}
-                  className={promptControlClassName({
-                    active: dropdown === "avatar",
-                  })}
-                >
-                  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shadow-inner">
-                    <img src={avatarImage || ASSETS.avatar[0].url} className="w-full h-full object-cover" />
-                  </div>
-                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                    {ASSETS.avatar.find(a => a.url === avatarImage)?.name || copy.dropdowns.selectAvatarFallback}
-                  </span>
-                  <PromptChevronIcon />
-                </button>
-
-                {avatarImage && (
-                  <button
-                    type="button"
-                    title={copy.buttons.enlargeSelectedAvatar}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const currentAvatar = ASSETS.avatar.find(a => a.url === avatarImage);
-                      if (currentAvatar) {
-                        setPreviewAvatar(currentAvatar);
-                      } else {
-                        setPreviewAvatar({ id: "custom", name: "Custom Uploaded Avatar", url: avatarImage });
-                      }
-                    }}
-                    className={promptControlClassName({
-                      iconOnly: true,
-                      className: "text-white/40 hover:text-brand",
-                    })}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                      <line x1="11" y1="8" x2="11" y2="14" />
-                      <line x1="8" y1="11" x2="14" y2="11" />
-                    </svg>
-                  </button>
-                )}
-
-                <Dropdown 
-                  isOpen={dropdown === 'avatar'} 
-                  title={copy.dropdowns.avatarPresets}
-                  items={ASSETS.avatar} 
-                  selectedId={avatarImage}
-                  onSelect={(item) => setAvatarImage(item.url)}
-                  onPreview={(item) => setPreviewAvatar(item)}
-                  onClose={() => setDropdown(null)}
-                  copy={copy}
                 />
               </div>
 
@@ -790,7 +702,7 @@ export default function MarketingStudio({
                           ? copy.dropdowns.resolution
                           : copy.dropdowns.duration
                     }
-                    options={OPTIONS[key]} 
+                    options={key === "res" ? resolutionOptions : OPTIONS[key]}
                     selected={params[key]} 
                     onSelect={(val) => setParams({ ...params, [key]: val })} 
                     onClose={() => setDropdown(null)} 
@@ -823,186 +735,6 @@ export default function MarketingStudio({
         </div>
       )}
 
-      {/* ── AVATAR FULLSCREEN PREVIEW MODAL ── */}
-      {previewAvatar && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in select-none"
-          onClick={() => setPreviewAvatar(null)}
-        >
-          {/* Close button (cross) in the right corner */}
-          <button
-            type="button"
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10 z-50 animate-fade-in"
-            onClick={(e) => {
-              e.stopPropagation();
-              setPreviewAvatar(null);
-            }}
-          >
-            <CloseSvg />
-          </button>
-
-          {/* Inject dynamic CSS animation keyframes */}
-          <style>{`
-            @keyframes slide-in-next {
-              0% {
-                transform: translateX(80px) scale(0.95);
-                filter: blur(4px);
-                opacity: 0.5;
-              }
-              100% {
-                transform: translateX(0) scale(1);
-                filter: blur(0);
-                opacity: 1;
-              }
-            }
-            @keyframes slide-in-prev {
-              0% {
-                transform: translateX(-80px) scale(0.95);
-                filter: blur(4px);
-                opacity: 0.5;
-              }
-              100% {
-                transform: translateX(0) scale(1);
-                filter: blur(0);
-                opacity: 1;
-              }
-            }
-            .animate-slide-next {
-              animation: slide-in-next 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
-            .animate-slide-prev {
-              animation: slide-in-prev 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
-          `}</style>
-
-          {/* Left Arrow Button */}
-          {previewAvatar.id !== "custom" && (
-            <button
-              type="button"
-              className="absolute left-6 p-4 bg-white/5 hover:bg-white/10 hover:text-primary rounded-full text-white transition-all border border-white/10 z-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
-                if (currentIndex !== -1) {
-                  const prevAvatar = ASSETS.avatar[(currentIndex - 1 + ASSETS.avatar.length) % ASSETS.avatar.length];
-                  setSlideDirection("prev");
-                  setPreviewAvatar(prevAvatar);
-                }
-              }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-          )}
-
-          {/* Right Arrow Button */}
-          {previewAvatar.id !== "custom" && (
-            <button
-              type="button"
-              className="absolute right-6 p-4 bg-white/5 hover:bg-white/10 hover:text-primary rounded-full text-white transition-all border border-white/10 z-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
-                if (currentIndex !== -1) {
-                  const nextAvatar = ASSETS.avatar[(currentIndex + 1) % ASSETS.avatar.length];
-                  setSlideDirection("next");
-                  setPreviewAvatar(nextAvatar);
-                }
-              }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          )}
-
-          {/* Enlarged Image Card and side displays */}
-          <div className="flex items-center gap-6 md:gap-12 max-w-[95vw] justify-center relative">
-            {/* Previous Avatar Card (Left side) */}
-            {previewAvatar.id !== "custom" && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
-                  if (currentIndex !== -1) {
-                    const prevAvatar = ASSETS.avatar[(currentIndex - 1 + ASSETS.avatar.length) % ASSETS.avatar.length];
-                    setSlideDirection("prev");
-                    setPreviewAvatar(prevAvatar);
-                  }
-                }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface-app/50"
-              >
-                <img
-                  src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) - 1 + ASSETS.avatar.length) % ASSETS.avatar.length].url}
-                  alt={copy.alt.previousAvatar}
-                  className="w-full h-full object-cover aspect-[3/4]"
-                />
-              </div>
-            )}
-
-            {/* Main Active Avatar Card */}
-            <div
-              key={previewAvatar.id}
-              className={`relative flex flex-col items-center max-w-[90vw] md:max-w-[45vw] max-h-[85vh] z-10 ${
-                slideDirection === "next" ? "animate-slide-next" : "animate-slide-prev"
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-surface-app shadow-2xl">
-                <img
-                  src={previewAvatar.url}
-                  alt={previewAvatar.name}
-                  className="max-w-[80vw] md:max-w-[40vw] max-h-[70vh] md:max-h-[65vh] object-contain"
-                />
-                
-                {/* Overlay with Name of the Avatar */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 pt-10 flex flex-col items-center justify-end gap-3">
-                  <h2 className="text-xl font-black text-white tracking-wide uppercase">
-                    {previewAvatar.name}
-                  </h2>
-                  
-                  {/* Select button on the enlarged image */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAvatarImage(previewAvatar.url);
-                      setPreviewAvatar(null);
-                      setDropdown(null);
-                    }}
-                    className="bg-brand text-on-brand px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-brand/20"
-                  >
-                    <CheckSvg />
-                    {copy.buttons.selectAvatar}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Next Avatar Card (Right side) */}
-            {previewAvatar.id !== "custom" && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
-                  if (currentIndex !== -1) {
-                    const nextAvatar = ASSETS.avatar[(currentIndex + 1) % ASSETS.avatar.length];
-                    setSlideDirection("next");
-                    setPreviewAvatar(nextAvatar);
-                  }
-                }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface-app/50"
-              >
-                <img
-                  src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) + 1) % ASSETS.avatar.length].url}
-                  alt={copy.alt.nextAvatar}
-                  className="w-full h-full object-cover aspect-[3/4]"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

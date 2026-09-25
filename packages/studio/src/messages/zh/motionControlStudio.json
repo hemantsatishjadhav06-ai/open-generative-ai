@@ -80,7 +80,8 @@
     "maxImagesExceeded": "该模型最多支持 {max} 张图片。",
     "videoUploadFailed": "视频上传失败: {message}",
     "imageUploadFailed": "图片上传失败: {message}",
-    "generationFailed": "动作控制视频生成失败"
+    "generationFailed": "动作控制视频生成失败",
+    "modelUnavailable": "Aquora 暂不支持该模型，请换一个模型。"
   },
   "defaults": {
     "selectedVideo": "参考视频",

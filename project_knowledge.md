@@ -1,102 +1,100 @@
-> **Rebrand notes:** 2026-09-20 the product became **Creator Agency**; 2026-09-24 it was renamed **Aquora** (turquoise + electric-blue palette). It is built on the upstream open-source project Open Generative AI (MIT) by Anil Chandra Naidu Matcha and contributors. The notes below were written for the original codebase and are kept for reference; brand names and colours have been updated to the Aquora system.
+# Aquora: technical notes
 
-# Aquora: Technical Documentation & Context
+Internal notes for people working on the codebase. Aquora (formerly Creator
+Agency) is built on the open-source project Open Generative AI (MIT) by Anil
+Chandra Naidu Matcha and contributors. See README.md for setup and deployment.
 
-This document serves as a comprehensive knowledge base for the Aquora project. It details the architecture, key components, API integration patterns, and state management strategies used in the application.
+## 1. What it is
 
-## 1. Project Vision & Overview
+An AI studio for creators: image, video, audio, lip-sync, avatars, agents,
+workflows and a design agent, with Reelty (AI real-estate marketing) embedded as
+a tab. It runs on its own backend: media generation on fal.ai, text and agents
+on OpenRouter. Provider keys are server-only; people sign in with an access
+code.
 
-**Aquora** is an AI studio for creators: image, video, audio, lip-sync, avatars, agents and workflows, with Reelty (AI real-estate marketing) built in as a tab.
+- **Stack:** Next.js 15 (App Router, standalone output), React, Tailwind CSS,
+  plain JavaScript ESM (no TypeScript). Node 22.
+- **Deploy:** Railway, Dockerfile builder, `/api/health` healthcheck, one
+  replica, a volume at `/data`.
 
-- **Core Goal:** To build a feature-complete, self-hosted generative AI studio, starting with **Image Generation** (Nano) and expanding into **Video Generation** (Cinema) and other creative tools.
-- **Current State:** The Image Studio ("Nano Banana Pro" interface) is fully operational, featuring a premium dark-mode UI, history management, and multi-model support via the [Muapi.ai](https://muapi.ai) engine.
-- **Future Direction:** The architecture is designed to scale for video generation, model training interfaces, and advanced editing tools.
+## 2. Layout
 
-- **Stack:** Vite, Vanilla JavaScript, Tailwind CSS v4.
-- **Repository:** `https://github.com/hemantsatishjadhav06-ai/open-generative-ai`
-- **Primary Branch:** `main`
-
-## 2. Architecture & File Structure
-
-The project follows a component-based architecture using vanilla JS, where each component is a function that returns a DOM element.
-
-```tree
-src/
-├── components/
-│   ├── ImageStudio.js    # Core logic: Prompts, model picking, canvas, history.
-│   ├── Header.js         # Navigation, user settings, auth status.
-│   ├── AuthModal.js      # Modal for capturing and validating the API key.
-│   ├── SettingsModal.js   # Panel for managing settings (clearing API key).
-│   └── Sidebar.js        # (Currently unused/placeholder) Navigation sidebar.
-├── lib/
-│   ├── muapi.js          # The API Client. Handles auth, submission, and polling.
-│   └── models.js         # Source of truth for model definitions and endpoints.
-├── styles/
-│   ├── global.css        # Global resets, fonts, and animation keyframes.
-│   ├── studio.css        # Specific styles for the studio interface.
-│   └── variables.css     # CSS custom properties (colors, blur amounts).
-├── main.js               # Entry point. Renders the app layout and Header/Studio.
-└── style.css             # Tailwind CSS entry file (imports other CSS).
+```
+app/                   pages (en at /, zh at /zh) and API routes
+  api/session          access-code sign-in: GET status, POST {code}, DELETE
+  api/v1/[...path]     POST /api/v1/<model key or pipeline> → job token
+  api/v1/predictions   GET <token>/result, POST <token>/cancel
+  api/v1/upload_file   multipart upload → fal CDN URL
+  api/v1/models        which catalog models are enabled (studio pickers)
+  api/llm/chat         OpenRouter chat for the UI (fast / agent / vision)
+  api/agents, api/workflow, api/v1/creative-agent   agents, workflows, design agent
+lib/gateway/           gateway core (server-only)
+  config.js            env vars, gate mode (open | codes | setup_required)
+  session.js           HMAC cookie `aquora_session`, same-origin check
+  limits.js            token buckets, job slots, daily budget ledger
+  catalog/             generated catalog.json + studio → fal input transforms
+  generation.js, router.js, fal.js, falStorage.js, openrouter.js, jobs.js,
+  normalize.js, pricing.js, store.js, ssrf.js, pipelines/
+lib/*.js               shell helpers: locales, SEO, tab registry, session/budget
+                       helpers, middleware policy (CSP), analytics
+components/            StandaloneShell (nav, sign-in, budget pill, settings),
+                       AccessCodeModal, Landing
+messages/{en,zh}/      shell copy
+packages/studio/       studio components, model lists, gateway client
+                       (src/gateway.js) and session client (src/session.js)
+packages/*             vendored workflow builder, agents UI, design agent UI
+scripts/               build-gateway-catalog.mjs, mock-upstream.mjs
+tests/                 node:test suites; tests/gateway/* run against the mock
 ```
 
-## 3. Key Components & Logic
+## 3. Request flow
 
-### `ImageStudio.js` (The Brain)
-This is the most complex component. It handles:
-- **State:** Selected model (`selectedModel`), aspect ratio (`selectedAr`), and generation status.
-- **Prompt Input:** A textarea with auto-grow logic and max-height constraints (fixed in `bf2efdb`).
-- **Dynamic Controls:**
-    - **Model Picker:** Lists models from `models.js`.
-    - **Quality/Resolution:** Only appears for models with explicit resolution support (like `nano-banana-pro`). Hidden for others (like `flux-schnell`).
-- **Generation Flow:**
-    1. Checks for API key in `localStorage`. If missing, opens `AuthModal`.
-    2. Calls `muapi.generateImage()`.
-    3. Polling loop waits for result.
-    4. On success, adds result to `generationHistory` and displays it.
-- **History:**
-    - Stored in `localStorage` key `muapi_history`.
-    - Slides in from the right sidebar.
-    - Thumbnails are clickable to re-view; hover to download.
+1. The shell calls `GET /api/session`. Signed out (codes mode) → the
+   access-code wall. `setup_required` → a setup notice. Open mode (local dev)
+   → a session is minted automatically.
+2. A studio posts its payload to `/api/v1/<model key>` (the key is the model id
+   the studio has always used). The router looks the key up in the catalog,
+   builds the fal input (rename → transforms → fixed → allowlist → validate),
+   reserves the estimated cost against the budget, submits to the fal queue
+   and returns `{request_id: <signed job token>, status: 'processing'}`.
+3. The studio polls `/api/v1/predictions/<token>/result`. The token is
+   HMAC-signed and bound to the caller's session; results are normalized to
+   `{status, url, outputs, images?, video?, audio?}`. A failed job refunds its
+   estimate.
+4. A 401 anywhere makes the studio client dispatch `aquora:session-required`;
+   the shell re-checks `/api/session` and shows the sign-in overlay if the
+   session really ended. A 402 dispatches `aquora:budget-exceeded`; the shell
+   refreshes the "Today: $x of $y" pill.
 
-### `muapi.js` (The Engine)
-Encapsulates all communication with `api.muapi.ai`.
-- **Authentication:** Uses `x-api-key` header (NOT `Authorization: Bearer`).
-- **Pattern:** Submit -> Poll.
-    - `POST` to endpoint (e.g., `/api/v1/nano-banana-pro`).
-    - API returns a `request_id`.
-    - `POST` / `GET` loop on `/api/v1/predictions/{id}/result` until status is `completed`, `succeeded`, or `failed`.
-- **Normalization:** The polling response structure varies. `muapi.js` normalizes the result to ensure `url` is always populated (extracting from `outputs[0]` if necessary).
+## 4. Rules that matter
 
-### `models.js` (The Data)
-Contains the `t2iModels` array.
-- Each model has an `id`, `name`, `inputs` schema (resolution, aspect ratio support), and a crucial `endpoint` property.
-- **Crucial:** The `endpoint` property maps the internal ID to the API path (e.g., `flux-schnell` -> `flux-schnell-image`).
+- Never add a generic pass-through: the browser never sends a provider URL,
+  endpoint id or status URL. Only catalog models, server-built fal URLs and an
+  OpenRouter model allowlist.
+- Never log prompts, keys, cookies, access codes or media URLs.
+- Never put a provider key in `NEXT_PUBLIC_*` or a Docker build arg.
+- The CSP (`lib/middlewarePolicy.js`) allows the browser to connect only to
+  this origin and `fal.media`; provider APIs must never be added there.
+- User-facing strings go in both `messages/en` and `messages/zh` (and the
+  studio's own `packages/studio/src/messages`).
+- Model counts in copy are checked against the catalog by
+  `tests/landingCopy.test.js`; studio counts come from `lib/studioTabs.js`.
 
-## 4. UI & Styling (Tailwind v4)
+## 5. UI and styling
 
-- **Theme:** Dark mode by default (`bg-app-bg` = `#050b14`, a deep navy).
-- **Accent:** Turquoise (`#2ee6d6`) for primary actions and glows, with "Pop" electric blue (`#3b82f6`; use `#60a5fa` for blue text on dark) as the secondary accent. Brand gradient: `linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%)`.
-- **Type:** Inter for body copy, Space Grotesk for the wordmark and display headings.
-- **Glassmorphism:** Extensive use of `backdrop-blur` and `bg-white/5` or `bg-black/60` for panels, headers, and modals.
-- **Responsiveness:**
-    - **Mobile:** Stacked layout, simplified controls, hidden sidebar.
-    - **Desktop:** Wide canvas, floating prompt bar, side-by-side history.
-- **Animations:** Custom keyframes in `global.css` for `fade-in-up`, `pulse-glow`, etc.
+- **Theme:** dark by default (`surface-app` `#050b14`). Turquoise brand
+  (`#2ee6d6`, `brand`) for primary actions and glows, electric blue (`pop`,
+  `#3b82f6`; `pop-400` `#60a5fa` for blue text on dark) as the accent. Brand
+  gradient: `linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%)`.
+- **Type:** Inter for body copy, Space Grotesk (`font-display`) for the
+  wordmark and headings.
+- Tokens live in `tailwind.config.js` and `app/globals.css`; keep them in sync.
 
-## 5. Development Setup
+## 6. Testing
 
-- **Vite Proxy:** Local development uses a proxy in `vite.config.js` to route `/api` requests to `https://api.muapi.ai` to avoid CORS issues.
-- **Environment:** `muapi.js` detects `import.meta.env.DEV` to decide whether to use the relative `/api` path (proxy) or the full URL (production).
-
-## 6. Known Gotchas & Fixes
-
-- **Prompt Bar Overflow:** Fixed by limiting textarea max-height and enabling scrolling.
-- **Flux Resolution Picker:** Fixed logic to only show the resolution picker if the model *explicitly* lists enum values for resolution/megapixels.
-- **Hero Visibility:** The "Nano Banana Pro" hero text is completely hidden (`display: none`) when an image is shown to prevent bleed-through.
-- **API Key Logging:** Debug logs printing the API key were removed for security.
-
-## 7. Future Roadmap (Potential)
-
-- **Video Generation:** Expand `models.js` and `ImageStudio.js` to support video models (already present in `schema_data` but not wired up).
-- **In-painting/Out-painting:** Add canvas editing tools.
-- **User Accounts:** Move beyond local storage for history.
+- `npm test`: unit tests plus the gateway suites against
+  `scripts/mock-upstream.mjs` (a local fal + OpenRouter stand-in). No network.
+- `npm run mock:upstream` prints the env vars that point a dev server at the
+  mock, for manual or Playwright runs.
+- `node scripts/build-gateway-catalog.mjs --check` fails when the catalog is
+  stale.

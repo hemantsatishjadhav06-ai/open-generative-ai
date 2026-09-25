@@ -1,0 +1,2763 @@
+[
+  {
+    "model_id": "seedance-lite-t2v",
+    "key": "seedance-lite-t2v",
+    "name": "Seedance 1.0 Lite",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/lite/text-to-video",
+    "fallback_endpoint": "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 3-12 -> string \"3\"..\"12\" (fal enum \"2\"..\"12\")",
+      "aspect_ratio": "passthrough (fal enum 21:9,16:9,4:3,1:1,3:4,9:16,9:21 covers Legacy set incl. 9:21)",
+      "resolution": "passthrough 480p|720p|1080p (fal default is 720p, Legacy default 480p -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/lite/text-to-video/api",
+    "notes": "Same model (Seedance 1.0 Lite T2V). fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410. Optional fal extras: camera_fixed, seed, num_frames."
+  },
+  {
+    "model_id": "seedance-pro-t2v",
+    "key": "seedance-pro-t2v",
+    "name": "Seedance 1.0 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 3-12 -> string",
+      "aspect_ratio": "passthrough (fal: 21:9,16:9,4:3,1:1,3:4,9:16)",
+      "resolution": "passthrough; fal default 1080p vs Legacy 480p -> always send"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/text-to-video/api",
+    "notes": "Exact model. Optional: camera_fixed(bool), seed, num_frames."
+  },
+  {
+    "model_id": "seedance-pro-t2v-fast",
+    "key": "seedance-pro-t2v-fast",
+    "name": "Seedance 1.0 Pro Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 2-12 -> string",
+      "aspect_ratio": "passthrough",
+      "resolution": "passthrough (always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/fast/text-to-video/api",
+    "notes": "Exact model (Seedance 1.0 Pro Fast)."
+  },
+  {
+    "model_id": "seedance-v1.5-pro-t2v",
+    "key": "seedance-v1.5-pro-t2v",
+    "name": "Seedance 1.5 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 4-12 -> string \"4\"..\"12\"",
+      "aspect_ratio": "passthrough (fal also has 'auto')",
+      "resolution": "passthrough 480p|720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
+    "notes": "Exact model. fal generate_audio defaults true (native audio) - Legacy did not expose it; leave default or expose as a toggle. Optional: camera_fixed, seed."
+  },
+  {
+    "model_id": "seedance-v1.5-pro-t2v-fast",
+    "key": "seedance-v1.5-pro-t2v-fast",
+    "name": "Seedance v1.5 Pro Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 4-12 -> string",
+      "aspect_ratio": "passthrough",
+      "resolution": "passthrough 720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
+    "notes": "fal has no Seedance 1.5 Pro *Fast* tier (only v1.5/pro/text-to-video in the text-to-video listing). Same model, slower/pricier tier."
+  },
+  {
+    "model_id": "seedance-v2.0-t2v",
+    "key": "seedance-v2.0-t2v",
+    "name": "Seedance 2.0",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "duration": "int 5|10|15 -> string \"5\"|\"10\"|\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "quality": "quality (Legacy legacy 'basic'|'high') has no fal field. Inferred rule: 'high' -> standard tier (bytedance/seedance-2.0/text-to-video), 'basic' -> fast tier (bytedance/seedance-2.0/fast/text-to-video)."
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Seedance 2.0 T2V (Legacy legacy route). No resolution input on Legacy -> fixed 720p (fal default; inferred to match Legacy default). fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-v2.0-extend",
+    "key": "seedance-v2.0-extend",
+    "name": "Seedance 2.0 Extend",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "image_urls[0] (last frame of resolved source video)",
+      "images_list": "image_urls[1..]",
+      "video_files": "video_urls",
+      "duration": "duration",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "duration": "int -> string enum \"4\"..\"15\" (fal also accepts \"auto\")",
+      "prompt": "prompt reference tokens: Legacy @imageN/@videoN/@audioN -> fal @ImageN/@VideoN/@AudioN (fal docs use capitalised tokens; case-sensitivity inferred) and keep list order identical so N lines up; @image1 stays the source last frame",
+      "quality": "'high' -> bytedance/seedance-2.0/reference-to-video, 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (inferred, same rule as Seedance 2.0 T2V)",
+      "image_urls": "max 9 total (1 last-frame + up to 8 refs)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy Seedance 2.0 Extend continues a prior generation: per Legacy's own field doc (models.js seedance-v2.0-extend) 'the source video's last frame is always @image1'. fal has no Seedance-2.0 'extend' endpoint; reproduce it on reference-to-video: (1) resolve request_id -> source video URL from our job store, (2) grab its last frame with fal-ai/ffmpeg-api/extract-frame, (3) send it as image_urls[0] followed by images_list, (4) optionally concatenate source+new clip with fal-ai/ffmpeg-api/merge-videos if the UI expects the full extended video (Legacy output shape not verified). Fallback bytedance/seedance-2.5/reference-to-video has a native task='extension' mode that takes the source video in video_urls directly (different model version). request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "kling-v2.1-master-t2v",
+    "key": "kling-v2.1-master-t2v",
+    "name": "Kling 2.1 Master",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.1/master/text-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 5-10 -> string \"5\"|\"10\" (snap: <=7 -> \"5\", else \"10\")",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (Legacy fixedParameters 1080p; fal has no resolution field)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.1/master/text-to-video/api",
+    "notes": "Exact model. fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410. (deprecated 2026-09-15). fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-v2.5-turbo-pro-t2v",
+    "key": "kling-v2.5-turbo-pro-t2v",
+    "name": "Kling 2.5 Turbo Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 5-10 -> string \"5\"|\"10\" (snap: <=7 -> \"5\", else \"10\")",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/text-to-video/api",
+    "notes": "Exact model. Legacy default aspect 9:16 vs fal 16:9 -> always send. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-v2.6-pro-t2v",
+    "key": "kling-v2.6-pro-t2v",
+    "name": "Kling 2.6 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.6/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "sound": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 5|10 -> string",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)",
+      "generate_audio": "bool passthrough (Legacy 'sound')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video/api",
+    "notes": "Exact model. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-o1-text-to-video",
+    "key": "kling-o1-text-to-video",
+    "name": "Kling O1 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/reference-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/o3/pro/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 5|10 -> string (fal enum \"3\"..\"10\")",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/reference-to-video/api",
+    "notes": "fal has no Kling O1 *text-to-video* endpoint (O1 on fal: image-to-video, reference-to-video, video-to-video/edit|reference). fal-ai/kling-video/o1/reference-to-video lists only 'prompt' as required (image_urls/elements are nullable), so a prompt-only call should behave as T2V - inferred from the schema, not documented. Fallback: Kling O3 (Omni successor) text-to-video."
+  },
+  {
+    "model_id": "kling-v3.0-pro-text-to-video",
+    "key": "kling-v3.0-pro-text-to-video",
+    "name": "Kling 3.0 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (Legacy fixedParameters 1080p; implied by /pro)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video/api",
+    "notes": "Exact model. fal also supports multi_prompt[] + shot_type ('customize'|'intelligent') for multi-shot; prompt is nullable when multi_prompt is used. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-v3.0-standard-text-to-video",
+    "key": "kling-v3.0-standard-text-to-video",
+    "name": "Kling 3.0 Standard",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/standard/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (Legacy fixedParameters 720p; implied by /standard)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video/api",
+    "notes": "Exact model. fal also supports multi_prompt[] + shot_type ('customize'|'intelligent') for multi-shot; prompt is nullable when multi_prompt is used. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "veo3-text-to-video",
+    "key": "veo3-text-to-video",
+    "name": "Veo 3",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3",
+    "fallback_endpoint": "fal-ai/veo3.1",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3/api",
+    "notes": "Exact model (Veo 3). fal defaults duration '8s', resolution '720p'. fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410. fal extras: negative_prompt, seed, generate_audio (default true), auto_fix, safety_tolerance ('1'-'6', default '4'). prompt max 20000."
+  },
+  {
+    "model_id": "veo3-fast-text-to-video",
+    "key": "veo3-fast-text-to-video",
+    "name": "Veo 3 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3/fast",
+    "fallback_endpoint": "fal-ai/veo3.1/fast",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3/fast/api",
+    "notes": "Exact model (Veo 3 Fast). fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410. fal extras: negative_prompt, seed, generate_audio (default true), auto_fix, safety_tolerance ('1'-'6', default '4'). prompt max 20000."
+  },
+  {
+    "model_id": "veo3.1-text-to-video",
+    "key": "veo3.1-text-to-video",
+    "name": "Veo 3.1",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3.1",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "duration": "int 8 -> \"8s\" (fal enum \"4s\"|\"6s\"|\"8s\")",
+      "resolution": "passthrough 720p|1080p|4k (fal default 720p, Legacy default 1080p -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/api",
+    "notes": "Exact model. fal extras: negative_prompt, seed, generate_audio (default true), auto_fix, safety_tolerance ('1'-'6', default '4'). prompt max 20000."
+  },
+  {
+    "model_id": "veo3.1-fast-text-to-video",
+    "key": "veo3.1-fast-text-to-video",
+    "name": "Veo 3.1 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/fast",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "duration": "int 8 -> \"8s\" (fal enum \"4s\"|\"6s\"|\"8s\")",
+      "resolution": "passthrough 720p|1080p|4k (fal default 720p, Legacy default 1080p -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/fast/api",
+    "notes": "Exact model. fal extras: negative_prompt, seed, generate_audio (default true), auto_fix, safety_tolerance ('1'-'6', default '4'). prompt max 20000."
+  },
+  {
+    "model_id": "veo3.1-lite-text-to-video",
+    "key": "veo3.1-lite-text-to-video",
+    "name": "Veo 3.1 Lite",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/lite",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "duration": "int 8 -> \"8s\"",
+      "resolution": "720p|1080p passthrough; Legacy '4k' not offered by fal Lite -> clamp to 1080p (or route to fal-ai/veo3.1/fast for 4k)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/lite/api",
+    "notes": "Exact model; fal Lite enum lacks 4k. fal extras: negative_prompt, seed, generate_audio (default true), auto_fix, safety_tolerance ('1'-'6', default '4'). prompt max 20000."
+  },
+  {
+    "model_id": "runway-text-to-video",
+    "key": "runway-text-to-video",
+    "name": "Runway Gen-3",
+    "list": "t2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/luma-dream-machine/ray-2",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16|4:3|3:4 passthrough; 1:1 not supported by Ray 2 -> 16:9",
+      "duration": "5 -> \"5s\", 8 -> \"9s\"",
+      "resolution": "720p|1080p passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2/api",
+    "notes": "Runway is not available on fal (api.fal.ai/v1/models?q=runway returns nothing, 2026-09-24). param_map targets the suggested different-family fallback Luma Ray 2 (verified schema: prompt, aspect_ratio, duration '5s'|'9s', resolution 540p|720p|1080p, loop)."
+  },
+  {
+    "model_id": "wan2.1-text-to-video",
+    "key": "wan2.1-text-to-video",
+    "name": "Wan 2.1",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan-t2v",
+    "fallback_endpoint": "fal-ai/wan-pro/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "num_frames",
+      "resolution": "resolution",
+      "quality": "turbo_mode"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "resolution": "passthrough 480p|720p (fal also 580p)",
+      "num_frames": "fal allows 81-100 frames at frames_per_second 5-24 (default 16): 5s -> num_frames 81 @16fps; >6s -> num_frames 100 and frames_per_second=round(100/duration) (motion gets choppier) - Legacy 10s cannot be matched at 16fps",
+      "turbo_mode": "quality 'medium' -> true, 'high' -> false (inferred)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-t2v/api",
+    "notes": "Wan 2.1 14B T2V. fal extras: negative_prompt, seed, num_inference_steps (default 30), enable_prompt_expansion. Alternative for quality=high at 1080p: fal-ai/wan-pro/text-to-video (Wan 2.1 Pro, prompt+seed only)."
+  },
+  {
+    "model_id": "wan2.2-text-to-video",
+    "key": "wan2.2-text-to-video",
+    "name": "Wan 2.2",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-a14b/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "num_frames",
+      "resolution": "resolution",
+      "quality": "video_quality"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal adds 1:1)",
+      "resolution": "passthrough 480p|720p",
+      "num_frames": "duration*16+1 at frames_per_second 16 (5s=81, 8s=129; fal range 17-161)",
+      "video_quality": "passthrough medium|high"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-a14b/text-to-video/api",
+    "notes": "Exact model (Wan 2.2 A14B). Output also returns seed & prompt. fal extras: negative_prompt, seed, guidance_scale(3.5), guidance_scale_2, shift, num_inference_steps(27), acceleration, interpolator_model. Turbo variant: fal-ai/wan/v2.2-a14b/text-to-video/turbo."
+  },
+  {
+    "model_id": "wan2.2-5b-fast-t2v",
+    "key": "wan2.2-5b-fast-t2v",
+    "name": "Wan 2.2 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-5b/text-to-video/fast-wan",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16|1:1",
+      "resolution": "passthrough 480p|580p|720p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-5b/text-to-video/fast-wan/api",
+    "notes": "Exact model (Wan 2.2 5B FastWan). Default 81 frames @24fps (~3.4s). fal extras: num_frames 17-161, seed, negative_prompt."
+  },
+  {
+    "model_id": "wan2.5-text-to-video",
+    "key": "wan2.5-text-to-video",
+    "name": "Wan 2.5",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "audio_url": "audio_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5-10 -> \"5\"|\"10\" (snap)",
+      "aspect_ratio": "passthrough (fal adds 1:1)",
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p -> always send)",
+      "audio_url": "passthrough (optional background/driving audio URL)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/text-to-video/api",
+    "notes": "Exact model (Wan 2.5 preview). Output video is VideoFile (has width/height/fps/duration). fal extras: negative_prompt, seed, enable_prompt_expansion (default true)."
+  },
+  {
+    "model_id": "wan2.5-text-to-video-fast",
+    "key": "wan2.5-text-to-video-fast",
+    "name": "Wan 2.5 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "audio_url": "audio_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5-10 -> \"5\"|\"10\" (snap)",
+      "aspect_ratio": "passthrough (fal adds 1:1)",
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p -> always send)",
+      "audio_url": "passthrough (optional background/driving audio URL)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/text-to-video/api",
+    "notes": "fal has no Wan 2.5 'fast' tier; same model on the standard endpoint."
+  },
+  {
+    "model_id": "wan2.6-text-to-video",
+    "key": "wan2.6-text-to-video",
+    "name": "Wan 2.6",
+    "list": "t2vModels",
+    "fal_endpoint": "wan/v2.6/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "shot_type": "multi_shots",
+      "audio_url": "audio_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "multi_shots": "shot_type 'single' -> false, 'multi' -> true (fal default true -> always send)",
+      "duration": "int 5|10|15 -> string",
+      "aspect_ratio": "passthrough (fal adds 1:1,4:3,3:4)",
+      "resolution": "passthrough 720p|1080p (fal default 1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/wan/v2.6/text-to-video/api",
+    "notes": "Exact model. fal OpenAPI POST path alias /fal-ai/wan-26-t2v/text-to-video. fal extras: negative_prompt, seed, enable_prompt_expansion."
+  },
+  {
+    "model_id": "hunyuan-text-to-video",
+    "key": "hunyuan-text-to-video",
+    "name": "Hunyuan",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/hunyuan-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16 passthrough; 1:1 not supported by fal -> 16:9 (or crop in post)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/hunyuan-video/api",
+    "notes": "Same model (HunyuanVideo). fal extras: resolution 480p|580p|720p (default 720p), num_frames 129|85, pro_mode (55 steps, 2x cost), seed. 1:1 missing -> medium. Newer same-family option: fal-ai/hunyuan-video-v1.5/text-to-video."
+  },
+  {
+    "model_id": "hunyuan-fast-text-to-video",
+    "key": "hunyuan-fast-text-to-video",
+    "name": "Hunyuan Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/hunyuan-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16 passthrough; 1:1 not supported by fal -> 16:9 (or crop in post)"
+    },
+    "fixed_params": {
+      "pro_mode": false,
+      "num_frames": 85
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/hunyuan-video/api",
+    "notes": "fal has no distilled FastHunyuan endpoint; use standard HunyuanVideo with pro_mode=false and the shorter 85-frame option for speed (inferred)."
+  },
+  {
+    "model_id": "pixverse-v4.5-t2v",
+    "key": "pixverse-v4.5-t2v",
+    "name": "PixVerse V4.5",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v4.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5|8 -> string; 1080p forces \"5\" (same rule as Legacy)",
+      "aspect_ratio": "passthrough 16:9|4:3|1:1|3:4|9:16 (identical)",
+      "resolution": "passthrough 360p|540p|720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v4.5/text-to-video/api",
+    "notes": "Exact model. fal extras: negative_prompt, seed, style (anime|3d_animation|clay|comic|cyberpunk)."
+  },
+  {
+    "model_id": "pixverse-v5-t2v",
+    "key": "pixverse-v5-t2v",
+    "name": "PixVerse V5",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5-8 -> \"5\"|\"8\" (snap)",
+      "aspect_ratio": "passthrough 16:9|4:3|1:1|3:4|9:16 (identical)",
+      "resolution": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v5/text-to-video/api",
+    "notes": "Exact model. fal extras: negative_prompt, seed, style (anime|3d_animation|clay|comic|cyberpunk)."
+  },
+  {
+    "model_id": "pixverse-v5.5-t2v",
+    "key": "pixverse-v5.5-t2v",
+    "name": "PixVerse V5.5",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v5.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "style": "style",
+      "thinking": "thinking_type",
+      "audio": "generate_audio_switch",
+      "multi_clip": "generate_multi_clip_switch",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "style": "'none' -> omit; else passthrough",
+      "thinking_type": "passthrough auto|enabled|disabled",
+      "duration": "int 5|8|10 -> string (1080p: 5|8 only)",
+      "aspect_ratio": "passthrough 16:9|4:3|1:1|3:4|9:16 (identical)",
+      "resolution": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v5.5/text-to-video/api",
+    "notes": "Exact model. fal extras: negative_prompt, seed."
+  },
+  {
+    "model_id": "minimax-hailuo-02-standard-t2v",
+    "key": "minimax-hailuo-02-standard-t2v",
+    "name": "MiniMax Hailuo 02 Standard",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-02/standard/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 6|10 -> string"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (768P implied by /standard; fal has no field)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/text-to-video/api",
+    "notes": "Exact model. fal extra: prompt_optimizer (default true). prompt max 2000."
+  },
+  {
+    "model_id": "minimax-hailuo-02-pro-t2v",
+    "key": "minimax-hailuo-02-pro-t2v",
+    "name": "MiniMax Hailuo 02 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-02/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "duration (6s fixed on fal pro)",
+      "resolution (1080P implied by /pro)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/pro/text-to-video/api",
+    "notes": "Exact model. fal extra: prompt_optimizer (default true). prompt max 2000."
+  },
+  {
+    "model_id": "minimax-hailuo-2.3-pro-t2v",
+    "key": "minimax-hailuo-2.3-pro-t2v",
+    "name": "MiniMax Hailuo 2.3 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-2.3/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (1080p implied by /pro)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/text-to-video/api",
+    "notes": "Exact model. Legacy fixed duration 6 == fal pro fixed length. fal extra: prompt_optimizer (default true). prompt max 2000."
+  },
+  {
+    "model_id": "minimax-hailuo-2.3-standard-t2v",
+    "key": "minimax-hailuo-2.3-standard-t2v",
+    "name": "MiniMax Hailuo 2.3 Standard",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-2.3/standard/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 6|10 -> string"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/standard/text-to-video/api",
+    "notes": "Exact model (768p). fal extra: prompt_optimizer (default true). prompt max 2000."
+  },
+  {
+    "model_id": "openai-sora",
+    "key": "openai-sora",
+    "name": "Sora",
+    "list": "t2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/sora-2/text-to-video",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16 passthrough; 1:1 unsupported -> 16:9",
+      "duration": "fal default 4 (4|8|12|16|20)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (Sora 2 base is 720p only)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video/api",
+    "notes": "Sora 1 is not on fal. Nearest same-family model is Sora 2 (fal-ai/sora-2/text-to-video), which is itself deprecated on fal; param_map targets it. Active different-family alternative: fal-ai/veo3.1."
+  },
+  {
+    "model_id": "openai-sora-2-text-to-video",
+    "key": "openai-sora-2-text-to-video",
+    "name": "Sora 2",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/sora-2/text-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "duration": "int passthrough 4|8|12|16|20 (fal integer enum; fal default 4 vs Legacy 8 -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video/api",
+    "notes": "Exact model. fal extras: character_ids, detect_and_block_ip, delete_video (default true), model (sora-2 snapshot, base only). Output also returns thumbnail, spritesheet, video_id. prompt max 5000. fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410. No active Sora endpoint remains on fal; nearest active alternative listed as fallback."
+  },
+  {
+    "model_id": "openai-sora-2-pro-text-to-video",
+    "key": "openai-sora-2-pro-text-to-video",
+    "name": "Sora 2 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/sora-2/text-to-video/pro",
+    "fallback_endpoint": "fal-ai/veo3.1",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough",
+      "duration": "int passthrough 4|8|12|16|20",
+      "resolution": "passthrough 720p|1080p (fal also 'true_1080p'; fal default 1080p vs Legacy 720p -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video/pro/api",
+    "notes": "Exact model. fal extras: character_ids, detect_and_block_ip, delete_video (default true), model (sora-2 snapshot, base only). Output also returns thumbnail, spritesheet, video_id. prompt max 5000. fal lists this endpoint with metadata.status='deprecated' (api.fal.ai/v1/models, checked 2026-09-24); it still serves an OpenAPI schema but can be removed at any time -> gateway should retry on fallback_endpoint when it returns 404/410."
+  },
+  {
+    "model_id": "vidu-v2.0-t2v",
+    "key": "vidu-v2.0-t2v",
+    "name": "Vidu 2.0",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/vidu/q1/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 9:16 (fal 16:9|9:16|1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "duration (Q1 fixed 5s; Legacy 4s)",
+      "resolution (Q1 is 1080p; matches Legacy 1080p)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q1/text-to-video/api",
+    "notes": "fal serves Vidu 2.0 only as image/reference/start-end/template-to-video (no Vidu 2.0 T2V). Nearest same-family T2V is Vidu Q1 (1080p) -> low. fal extras: style general|anime, movement_amplitude, seed."
+  },
+  {
+    "model_id": "ovi-text-to-video",
+    "key": "ovi-text-to-video",
+    "name": "Ovi",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/ovi",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "aspect_ratio 16:9 -> '992x512', 9:16 -> '512x992' (fal enum 512x992,992x512,960x512,512x960,720x720,448x1120,1120x448)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ovi/api",
+    "notes": "Same model (Ovi, joint video+audio; Legacy lists provider 'legacy' but it is the open Ovi model). fal extras: negative_prompt, audio_negative_prompt, num_inference_steps(30), seed. Output video may be null on failure - check."
+  },
+  {
+    "model_id": "grok-imagine-text-to-video",
+    "key": "grok-imagine-text-to-video",
+    "name": "Grok Imagine",
+    "list": "t2vModels",
+    "fal_endpoint": "xai/grok-imagine-video/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal enum 16:9,4:3,3:2,1:1,2:3,3:4,9:16 covers Legacy set)",
+      "resolution": "passthrough 480p|720p",
+      "duration": "int 6-30 -> clamp to fal max 15 (fal 1-15)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "mode (normal|fun|spicy - xAI consumer-app presets, not exposed by fal)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-video/text-to-video/api",
+    "notes": "Same model (Grok Imagine Video). fal OpenAPI POST path alias /fal-ai/xai/text-to-video. Newer: xai/grok-imagine-video/v1.5/text-to-video (adds 1080p)."
+  },
+  {
+    "model_id": "ltx-2-pro-text-to-video",
+    "key": "ltx-2-pro-text-to-video",
+    "name": "LTX 2 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/ltx-2/text-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int passthrough 6|8|10 (fal integer enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2/text-to-video/api",
+    "notes": "Exact model (LTX-2 Pro). fal extras: resolution 1080p|1440p|2160p (default 1080p), fps 25|50. fal model page says 'This endpoint will be deprecated on August 15, 2026. Migrate to LTX-2.3' and the endpoint is no longer in the api.fal.ai model listing (OpenAPI still served, page noindex; checked 2026-09-24) -> prefer fallback in production."
+  },
+  {
+    "model_id": "ltx-2-fast-text-to-video",
+    "key": "ltx-2-fast-text-to-video",
+    "name": "LTX 2 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/ltx-2/text-to-video/fast",
+    "fallback_endpoint": "fal-ai/ltx-2.3/text-to-video/fast",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int passthrough 6..20 even (fal integer enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2/text-to-video/fast/api",
+    "notes": "Exact model (LTX-2 Fast). fal model page says 'This endpoint will be deprecated on August 15, 2026. Migrate to LTX-2.3' and the endpoint is no longer in the api.fal.ai model listing (OpenAPI still served, page noindex; checked 2026-09-24) -> prefer fallback in production."
+  },
+  {
+    "model_id": "ltx-2-19b-text-to-video",
+    "key": "ltx-2-19b-text-to-video",
+    "name": "LTX 2 19B",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/ltx-2-19b/text-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3-22b/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "video_size",
+      "resolution": "video_size",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "video_size": "aspect_ratio+resolution -> video_size {width,height} (multiples of 32): 16:9 480p=864x480, 720p=1280x704, 1080p=1920x1088; 9:16 swap w/h. (landscape_16_9/portrait_16_9 presets also accepted)",
+      "num_frames": "duration -> num_frames = duration*24+1 with fps=24 (5s=121, 20s=481; fal range 9-481)"
+    },
+    "fixed_params": {
+      "fps": 24
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2-19b/text-to-video/api",
+    "notes": "Exact model (LTX-2 19B open weights). Endpoint serves OpenAPI but is absent from the api.fal.ai listing (likely retired alongside LTX-2) -> fallback is the LTX-2.3 22B open-weights endpoint with the same video_size/num_frames/fps shape. fal extras: seed, negative_prompt, generate_audio, camera_lora, num_inference_steps(40), guidance_scale."
+  },
+  {
+    "model_id": "veo3.1-extend-video",
+    "key": "veo3.1-extend-video",
+    "name": "Veo 3.1 Extend",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/extend-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "video_url"
+    },
+    "value_transforms": {
+      "video_url": "request_id -> URL of the persisted Veo output from our job store"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/extend-video/api",
+    "notes": "Same capability (Veo 3.1 extend; fal category video-to-video). fal defaults duration '7s', resolution '720p', aspect 'auto', generate_audio true. Fast variant: fal-ai/veo3.1/fast/extend-video. request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL."
+  },
+  {
+    "model_id": "veo3.1-4k-video",
+    "key": "veo3.1-4k-video",
+    "name": "Veo 3.1 4K",
+    "list": "t2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "none",
+    "param_map": {
+      "request_id": "video_url"
+    },
+    "value_transforms": {
+      "video_url": "request_id -> persisted output URL (our job store)"
+    },
+    "fixed_params": {
+      "upscale_mode": "target",
+      "target_resolution": "2160p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/seedvr/upscale/video/api",
+    "notes": "Legacy re-renders an existing Veo 3.1 generation at 4K by request id. fal has no Veo post-hoc 4K endpoint. Options: generate natively at 4K (fal-ai/veo3.1 or /fast with resolution='4k') or upscale the existing clip with a generic upscaler; param_map/fixed_params target the fallback fal-ai/seedvr/upscale/video (verified fields: video_url required, upscale_mode target|factor, target_resolution 720p|1080p|1440p|2160p). request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL."
+  },
+  {
+    "model_id": "seedance-2-t2v",
+    "key": "seedance-v2.0-t2v",
+    "name": "Seedance 2 T2V",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "duration": "int 5|10|15 -> string \"5\"|\"10\"|\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "quality": "quality (Legacy legacy 'basic'|'high') has no fal field. Inferred rule: 'high' -> standard tier (bytedance/seedance-2.0/text-to-video), 'basic' -> fast tier (bytedance/seedance-2.0/fast/text-to-video)."
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Alias of Legacy endpoint seedance-v2.0-t2v (historical id). Same mapping. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-extend",
+    "key": "seedance-v2.0-extend",
+    "name": "Seedance 2 Extend",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "image_urls[0] (last frame of resolved source video)",
+      "images_list": "image_urls[1..]",
+      "video_files": "video_urls",
+      "duration": "duration",
+      "quality": "(endpoint selector)",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "duration": "int -> string enum \"4\"..\"15\" (fal also accepts \"auto\")",
+      "prompt": "prompt reference tokens: Legacy @imageN/@videoN/@audioN -> fal @ImageN/@VideoN/@AudioN (fal docs use capitalised tokens; case-sensitivity inferred) and keep list order identical so N lines up; @image1 stays the source last frame",
+      "quality": "'high' -> bytedance/seedance-2.0/reference-to-video, 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (inferred, same rule as Seedance 2.0 T2V)",
+      "image_urls": "max 9 total (1 last-frame + up to 8 refs)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy Seedance 2.0 Extend continues a prior generation: per Legacy's own field doc (models.js seedance-v2.0-extend) 'the source video's last frame is always @image1'. fal has no Seedance-2.0 'extend' endpoint; reproduce it on reference-to-video: (1) resolve request_id -> source video URL from our job store, (2) grab its last frame with fal-ai/ffmpeg-api/extract-frame, (3) send it as image_urls[0] followed by images_list, (4) optionally concatenate source+new clip with fal-ai/ffmpeg-api/merge-videos if the UI expects the full extended video (Legacy output shape not verified). Fallback bytedance/seedance-2.5/reference-to-video has a native task='extension' mode that takes the source video in video_urls directly (different model version). request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "ltx-2.3-text-to-video",
+    "key": "ltx-2.3-text-to-video",
+    "name": "LTX 2.3",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/ltx-2.3-22b/text-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3/text-to-video/fast",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "num_frames",
+      "aspect_ratio": "video_size",
+      "resolution": "video_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "video_size": "aspect_ratio+resolution -> video_size {width,height} (multiples of 32): 16:9 480p=864x480, 720p=1280x704, 1080p=1920x1088; 9:16 swap w/h. (landscape_16_9/portrait_16_9 presets also accepted)",
+      "num_frames": "duration -> num_frames = duration*24+1 with fps=24 (5s=121, 20s=481; fal range 9-481)",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int"
+    },
+    "fixed_params": {
+      "fps": 24
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3-22b/text-to-video/api",
+    "notes": "Legacy 'LTX 2.3' exposes 5-20s, 480p-1080p and seed, which matches fal's open-weights LTX-2.3 22B endpoint (video_size/num_frames/seed) rather than the hosted LTX 2.3 Pro/Fast API (fal-ai/ltx-2.3/text-to-video[/fast]: 1080p+ only, 6-20s, no seed) - variant choice inferred. Output also returns seed & prompt; generate_audio default true."
+  },
+  {
+    "model_id": "seedance-2-new-t2v",
+    "key": "seedance-2.0-new-t2v",
+    "name": "Seedance 2 New T2V",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "quality": "quality (Legacy legacy 'basic'|'high') has no fal field. Inferred rule: 'high' -> standard tier (bytedance/seedance-2.0/text-to-video), 'basic' -> fast tier (bytedance/seedance-2.0/fast/text-to-video)."
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'Original updated' legacy route of Seedance 2.0. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "grok-imagine-extend",
+    "key": "grok-imagine-extend",
+    "name": "Grok Imagine Extend",
+    "list": "t2vModels",
+    "fal_endpoint": "xai/grok-imagine-video/extend-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "video_url",
+      "extend_times": "duration"
+    },
+    "value_transforms": {
+      "video_url": "request_id -> persisted Grok output URL (our job store)",
+      "duration": "extend_times 6|10 -> int 6|10 (fal 2-10)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fal extend has no resolution field; follows source)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-video/extend-video/api",
+    "notes": "Same capability (fal category video-to-video, POST alias /fal-ai/xai/extend-video). prompt required on both. request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL."
+  },
+  {
+    "model_id": "pixverse-v6-t2v",
+    "key": "pixverse-v6-t2v",
+    "name": "PixVerse V6",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v6/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio_switch": "generate_audio_switch"
+    },
+    "value_transforms": {
+      "duration": "int 1-15 passthrough (fal integer 1-15)",
+      "aspect_ratio": "passthrough (fal enum identical incl. 2:3,3:2,21:9)",
+      "resolution": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v6/text-to-video/api",
+    "notes": "Exact model. fal extras: thinking_type, generate_multi_clip_switch, style, negative_prompt, seed."
+  },
+  {
+    "model_id": "wan2.7-text-to-video",
+    "key": "wan2.7-text-to-video",
+    "name": "Wan2.7",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "audio_url": "audio_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "negative_prompt": "negative_prompt"
+    },
+    "value_transforms": {
+      "duration": "int 2-15 passthrough (fal integer enum 2..15)",
+      "aspect_ratio": "passthrough (identical set)",
+      "resolution": "passthrough 720p|1080p (fal default 1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/text-to-video/api",
+    "notes": "Exact model. fal OpenAPI POST path alias /fal-ai/wan-27-t2v/text-to-video. fal extras: seed, enable_prompt_expansion (default true)."
+  },
+  {
+    "model_id": "seedance-2-t2v-480p",
+    "key": "seedance-2.0-t2v-480p",
+    "name": "Seedance 2 T2V 480P",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "quality": "quality (Legacy legacy 'basic'|'high') has no fal field. Inferred rule: 'high' -> standard tier (bytedance/seedance-2.0/text-to-video), 'basic' -> fast tier (bytedance/seedance-2.0/fast/text-to-video)."
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy Seedance 2.0 route pinned to 480p. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-text-to-video",
+    "key": "seedance-2-text-to-video",
+    "name": "Seedance 2",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Exact model (Seedance 2.0 standard). Legacy 'default' resolution -> fal default 720p (inferred). fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-text-to-video-fast",
+    "key": "seedance-2-text-to-video-fast",
+    "name": "Seedance 2.0 Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+    "notes": "Exact model (Seedance 2.0 fast tier; fal fast supports 480p|720p only). fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-vip-text-to-video",
+    "key": "seedance-2-vip-text-to-video",
+    "name": "Seedance 2 VIP",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-vip-text-to-video-fast",
+    "key": "seedance-2-vip-text-to-video-fast",
+    "name": "Seedance 2 VIP Text to Video Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "happy-horse-1-text-to-video-1080p",
+    "key": "happy-horse-1-text-to-video-1080p",
+    "name": "HappyHorse 1.0 1080P",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/happy-horse/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16|1:1|4:3|3:4",
+      "duration": "int 3-15 passthrough (fal integer enum 3..15)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/text-to-video/api",
+    "notes": "Exact model (HappyHorse 1.0). fal POST alias /fal-ai/happy-horse/text-to-video. fal extra: seed."
+  },
+  {
+    "model_id": "happy-horse-1-text-to-video-720p",
+    "key": "happy-horse-1-text-to-video-720p",
+    "name": "HappyHorse 1.0 720P",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/happy-horse/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16|1:1|4:3|3:4",
+      "duration": "int 3-15 passthrough (fal integer enum 3..15)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/text-to-video/api",
+    "notes": "Exact model (HappyHorse 1.0) pinned to 720p."
+  },
+  {
+    "model_id": "veo-4-text-to-video",
+    "key": "veo-4-text-to-video",
+    "name": "Veo 4",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/veo3.1",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16 passthrough; 1:1 unsupported on Veo 3.1 -> 16:9",
+      "duration": "int 5-30 -> \"4s\"|\"6s\"|\"8s\" (nearest, max 8s)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/api",
+    "notes": "No Veo 4 on fal (api.fal.ai/v1/models?q=veo returns only veo2/veo3/veo3.1 families, 2026-09-24). Nearest same-family model is Veo 3.1 -> low; long durations and 1:1 are lost."
+  },
+  {
+    "model_id": "seedance-2-vip-text-to-video-1080p",
+    "key": "sd-2-vip-text-to-video-1080p",
+    "name": "Seedance 2 VIP Text to Video 1080P",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-vip-text-to-video-fast-1080p",
+    "key": "sd-2-vip-text-to-video-fast-1080p",
+    "name": "Seedance 2 VIP Text to Video Fast 1080P",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal's fast tier caps at 720p, so 1080p is only possible on the standard tier -> routed to standard endpoint (slower, pricier). fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "kling-v3.0-4k-text-to-video",
+    "key": "kling-v3.0-4k-text-to-video",
+    "name": "Kling 3.0 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/4k/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (Legacy fixedParameters 4K; implied by /4k)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/4k/text-to-video/api",
+    "notes": "Exact model. fal also supports multi_prompt[] + shot_type ('customize'|'intelligent') for multi-shot; prompt is nullable when multi_prompt is used. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "vidu-q3-pro-text-to-video",
+    "key": "vidu-q3-pro-text-to-video",
+    "name": "Vidu Q3 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "audio": "audio"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 360p|540p|720p|1080p",
+      "aspect_ratio": "passthrough 16:9|9:16|4:3|3:4|1:1",
+      "duration": "int 1-16 passthrough",
+      "audio": "bool passthrough (fal default true vs Legacy false -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/text-to-video/api",
+    "notes": "Exact model (Vidu Q3 Pro). fal extra: seed. prompt max 2000."
+  },
+  {
+    "model_id": "vidu-q3-turbo-text-to-video",
+    "key": "vidu-q3-turbo-text-to-video",
+    "name": "Vidu Q3 Turbo",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/text-to-video/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "audio": "audio"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 360p|540p|720p|1080p",
+      "aspect_ratio": "passthrough 16:9|9:16|4:3|3:4|1:1",
+      "duration": "int 1-16 passthrough",
+      "audio": "bool passthrough (fal default true vs Legacy false -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/text-to-video/turbo/api",
+    "notes": "Exact model (Vidu Q3 Turbo)."
+  },
+  {
+    "model_id": "vidu-q2-pro-text-to-video",
+    "key": "vidu-q2-pro-text-to-video",
+    "name": "Vidu Q2 Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 720p|1080p (fal also 360p|520p)",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1",
+      "duration": "int 2-8 passthrough (fal integer enum 2..8; bgm=true -> 4 per Legacy rule)",
+      "bgm": "bool passthrough",
+      "movement_amplitude": "passthrough auto|small|medium|large"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/text-to-video/api",
+    "notes": "fal exposes a single Vidu Q2 T2V endpoint (Pro/Turbo split exists only for Q2 image-to-video) -> tier not selectable. fal extra: seed. prompt max 3000."
+  },
+  {
+    "model_id": "vidu-q2-turbo-text-to-video",
+    "key": "vidu-q2-turbo-text-to-video",
+    "name": "Vidu Q2 Turbo",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 720p|1080p (fal also 360p|520p)",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1",
+      "duration": "int 2-8 passthrough (fal integer enum 2..8; bgm=true -> 4 per Legacy rule)",
+      "bgm": "bool passthrough",
+      "movement_amplitude": "passthrough auto|small|medium|large"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/text-to-video/api",
+    "notes": "Same as Q2 Pro row: single fal Q2 T2V endpoint, Turbo tier not selectable."
+  },
+  {
+    "model_id": "seedance-2-vip-extend",
+    "key": "sd-2-vip-extend",
+    "name": "Seedance 2 VIP Extend",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "image_urls[0] (last frame of resolved source video)",
+      "images_list": "image_urls[1..]",
+      "video_files": "video_urls",
+      "duration": "duration",
+      "quality": "(endpoint selector)",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "duration": "int -> string enum \"4\"..\"15\" (fal also accepts \"auto\")",
+      "prompt": "prompt reference tokens: Legacy @imageN/@videoN/@audioN -> fal @ImageN/@VideoN/@AudioN (fal docs use capitalised tokens; case-sensitivity inferred) and keep list order identical so N lines up; @image1 stays the source last frame",
+      "quality": "'high' -> bytedance/seedance-2.0/reference-to-video, 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (inferred, same rule as Seedance 2.0 T2V)",
+      "image_urls": "max 9 total (1 last-frame + up to 8 refs)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. Legacy Seedance 2.0 Extend continues a prior generation: per Legacy's own field doc (models.js seedance-v2.0-extend) 'the source video's last frame is always @image1'. fal has no Seedance-2.0 'extend' endpoint; reproduce it on reference-to-video: (1) resolve request_id -> source video URL from our job store, (2) grab its last frame with fal-ai/ffmpeg-api/extract-frame, (3) send it as image_urls[0] followed by images_list, (4) optionally concatenate source+new clip with fal-ai/ffmpeg-api/merge-videos if the UI expects the full extended video (Legacy output shape not verified). Fallback bytedance/seedance-2.5/reference-to-video has a native task='extension' mode that takes the source video in video_urls directly (different model version). request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-vip-extend-1080p",
+    "key": "sd-2-vip-extend-1080p",
+    "name": "Seedance 2 VIP Extend 1080P",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "request_id": "image_urls[0] (last frame of resolved source video)",
+      "images_list": "image_urls[1..]",
+      "video_files": "video_urls",
+      "duration": "duration",
+      "quality": "(endpoint selector)",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "duration": "int -> string enum \"4\"..\"15\" (fal also accepts \"auto\")",
+      "prompt": "prompt reference tokens: Legacy @imageN/@videoN/@audioN -> fal @ImageN/@VideoN/@AudioN (fal docs use capitalised tokens; case-sensitivity inferred) and keep list order identical so N lines up; @image1 stays the source last frame",
+      "quality": "'high' -> bytedance/seedance-2.0/reference-to-video, 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (inferred, same rule as Seedance 2.0 T2V)",
+      "image_urls": "max 9 total (1 last-frame + up to 8 refs)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. 1080p only exists on the standard (non-fast) reference endpoint. Legacy Seedance 2.0 Extend continues a prior generation: per Legacy's own field doc (models.js seedance-v2.0-extend) 'the source video's last frame is always @image1'. fal has no Seedance-2.0 'extend' endpoint; reproduce it on reference-to-video: (1) resolve request_id -> source video URL from our job store, (2) grab its last frame with fal-ai/ffmpeg-api/extract-frame, (3) send it as image_urls[0] followed by images_list, (4) optionally concatenate source+new clip with fal-ai/ffmpeg-api/merge-videos if the UI expects the full extended video (Legacy output shape not verified). Fallback bytedance/seedance-2.5/reference-to-video has a native task='extension' mode that takes the source video in video_urls directly (different model version). request_id refers to a PRIOR generation in Legacy's history. With Legacy gone, the gateway must look up its own job store (request_id -> persisted output video URL) and pass that URL. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "kling-v3.0-omni-standard-text-to-video",
+    "key": "kling-v3.0-omni-standard-text-to-video",
+    "name": "Kling 3.0 Omni Standard",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/standard/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fixed 720p; implied by /standard)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/standard/text-to-video/api",
+    "notes": "Kling 3.0 Omni == Kling O3 on fal. fal generate_audio default false (same as Legacy). Supports multi_prompt/shot_type. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-v3.0-omni-pro-text-to-video",
+    "key": "kling-v3.0-omni-pro-text-to-video",
+    "name": "Kling 3.0 Omni Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "generate_audio": "generate_audio",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fixed 1080p; implied by /pro)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/pro/text-to-video/api",
+    "notes": "Kling 3.0 Omni == Kling O3 on fal. fal generate_audio default false (same as Legacy). Supports multi_prompt/shot_type. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "kling-v3.0-omni-4k-text-to-video",
+    "key": "kling-v3.0-omni-4k-text-to-video",
+    "name": "Kling 3.0 Omni 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/4k/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fixed 4K; implied by /4k)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/4k/text-to-video/api",
+    "notes": "Kling 3.0 Omni == Kling O3 on fal. fal generate_audio default false (same as Legacy). Supports multi_prompt/shot_type. fal prompt maxLength 2500. Optional fal extras: negative_prompt, cfg_scale."
+  },
+  {
+    "model_id": "gemini-omni-text-to-video",
+    "key": "gemini-omni-text-to-video",
+    "name": "Gemini Omni Flash",
+    "list": "t2vModels",
+    "fal_endpoint": "google/gemini-omni-flash",
+    "fallback_endpoint": "google/gemini-omni-flash/v1.1/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "duration": "int 4|6|8|10 passthrough (fal integer 3-10)",
+      "aspect_ratio": "passthrough 16:9|9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fal v1 Omni Flash has no resolution field; v1.1 has 360p|720p|1080p|4k)",
+      "seed (not in fal schema)",
+      "audio_ids (Legacy-hosted audio library ids)",
+      "character_ids (Legacy-hosted character ids)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/api",
+    "notes": "Same model (Gemini Omni Flash T2V; fal POST alias /fal-ai/gemini-omni-flash). Legacy resolution/seed/audio_ids/character_ids have no fal counterpart. For reference images use google/gemini-omni-flash/reference-to-video (image_urls 1-10 required). If resolution control matters, fallback v1.1 T2V exposes it."
+  },
+  {
+    "model_id": "kling-v3-turbo-standard-text-to-video",
+    "key": "kling-v3-turbo-standard-text-to-video",
+    "name": "Kling 3.0 Turbo Standard",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fixed 720p; implied)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/turbo/standard/text-to-video/api",
+    "notes": "Exact model (Kling 3.0 Turbo Standard, 720p, native audio per fal description). multi_prompt supported."
+  },
+  {
+    "model_id": "kling-v3-turbo-pro-text-to-video",
+    "key": "kling-v3-turbo-pro-text-to-video",
+    "name": "Kling 3.0 Turbo Pro",
+    "list": "t2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\"",
+      "aspect_ratio": "passthrough 16:9|9:16|1:1 (identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution (fixed 1080p; implied)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/turbo/pro/text-to-video/api",
+    "notes": "Exact model (Kling 3.0 Turbo Pro, 1080p). multi_prompt supported."
+  },
+  {
+    "model_id": "seedance-2.5-text-to-video",
+    "key": "seedance-2.5-text-to-video",
+    "name": "Seedance 2.5",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Exact model. Legacy default resolution -> 720p (fal default; inferred). fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-text-to-video-480p",
+    "key": "seedance-2.5-text-to-video-480p",
+    "name": "Seedance 2.5 480p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Exact model pinned to 480p. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2-mini-text-to-video",
+    "key": "seedance-2-mini-text-to-video",
+    "name": "Seedance 2.0 Mini",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/mini/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough",
+      "resolution": "passthrough 480p|720p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "high_bitrate"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/mini/text-to-video/api",
+    "notes": "Exact model (Seedance 2.0 Mini). fal mini has no bitrate_mode field -> high_bitrate dropped. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "happy-horse-1.1-text-to-video-1080p",
+    "key": "happy-horse-1.1-text-to-video-1080p",
+    "name": "HappyHorse 1.1 1080P",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16|1:1|4:3|3:4",
+      "duration": "int 3-15 passthrough (fal integer enum 3..15)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/text-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1; fal POST alias /fal-ai/happy-horse-1.5/text-to-video). fal also accepts 21:9, 9:21, 5:4, 4:5."
+  },
+  {
+    "model_id": "happy-horse-1.1-text-to-video-720p",
+    "key": "happy-horse-1.1-text-to-video-720p",
+    "name": "HappyHorse 1.1 720P",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16|1:1|4:3|3:4",
+      "duration": "int 3-15 passthrough (fal integer enum 3..15)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/text-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1) pinned to 720p."
+  },
+  {
+    "model_id": "seedance-2-mini-omni-reference",
+    "key": "seedance-2-mini-omni-reference",
+    "name": "Seedance 2 Mini Omni Reference",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "video_files": "video_urls",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "image_urls": "array passthrough (max 9)",
+      "video_urls": "array passthrough (max 3; combined 2-15s, <50MB, MP4/MOV)",
+      "audio_urls": "array passthrough (max 3)",
+      "prompt": "prompt reference tokens: Legacy @imageN/@videoN/@audioN -> fal @ImageN/@VideoN/@AudioN (fal docs use capitalised tokens; case-sensitivity inferred) and keep list order identical so N lines up",
+      "resolution": "passthrough 480p|720p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "high_bitrate"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/mini/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.0 Mini reference-to-video; fal category image-to-video). Although listed under t2vModels in Legacy, this is an omni-reference route. Uploaded files must be public URLs (fal storage or our own bucket). fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-vip-text-to-video-4k",
+    "key": "sd-2-vip-text-to-video-4k",
+    "name": "Seedance 2 VIP Text to Video 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "4k"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal standard tier natively supports resolution '4k'. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-text-to-video",
+    "key": "seedance-2.5-spicy-text-to-video",
+    "name": "Seedance 2.5 Spicy",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode",
+      "resolution": "resolution",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\"",
+      "resolution": "480p|720p|1080p passthrough; '4K' -> '1080p' (+ optional fal-ai/seedvr/upscale/video target_resolution '2160p')"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy default resolution 1080p. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2-spicy-text-to-video",
+    "key": "seedance-2-spicy-text-to-video",
+    "name": "Seedance 2 Spicy",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-spicy-text-to-video-fast",
+    "key": "seedance-2-spicy-text-to-video-fast",
+    "name": "Seedance 2 Spicy Text to Video Fast",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/text-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal generate_audio defaults true; codec auto. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "seedance-2-mini-spicy-text-to-video",
+    "key": "seedance-2-mini-spicy-text-to-video",
+    "name": "Seedance 2 Mini Spicy",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/mini/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "aspect_ratio": "passthrough",
+      "resolution": "passthrough 480p|720p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "high_bitrate"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/mini/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal OpenAPI POST path aliases: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/* - submit to https://queue.fal.run/<endpoint_id> as usual."
+  },
+  {
+    "model_id": "minimax-h3-text-to-video",
+    "key": "minimax-h3-text-to-video",
+    "name": "MiniMax H3",
+    "list": "t2vModels",
+    "fal_endpoint": "minimax/h3/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "resolution": "'2k' -> '2K' (fal enum 480P|768P|2K|4K, upper-case)",
+      "duration": "int 5-15 passthrough",
+      "aspect_ratio": "passthrough 21:9|16:9|4:3|1:1|3:4|9:16 (fal enum); 9:21 not supported -> 9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/text-to-video/api",
+    "notes": "Exact model (MiniMax H3). fal OpenAPI POST path alias /fal-ai/minimax_h3/text-to-video. fal extras: prompt_expansion_mode (default 'balanced'), target_audio_url, seed. Output also returns expanded_prompt."
+  },
+  {
+    "model_id": "minimax-h3-open-text-to-video",
+    "key": "minimax-h3-open-text-to-video",
+    "name": "MiniMax H3 Base FL2VA",
+    "list": "t2vModels",
+    "fal_endpoint": "minimax/h3/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P'",
+      "duration": "int 5-15 passthrough",
+      "aspect_ratio": "passthrough 21:9|16:9|4:3|1:1|3:4|9:16 (fal enum); 9:21 not supported -> 9:16",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/text-to-video/api",
+    "notes": "Legacy labels this 'MiniMax H3 Base FL2VA' (an 'open'/base routing of H3 at 480p/768p with seed). fal exposes one H3 T2V endpoint with the same 480P/768P options and seed; the 'base/open' distinction is not reproducible -> medium. fal OpenAPI POST path alias /fal-ai/minimax_h3/text-to-video. fal extras: prompt_expansion_mode (default 'balanced'), target_audio_url, seed. Output also returns expanded_prompt."
+  },
+  {
+    "model_id": "flux-3-text-to-video",
+    "key": "flux-3-text-to-video",
+    "name": "FLUX 3",
+    "list": "t2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 5-20 passthrough (fal enum 'auto',5..20)",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16 covers Legacy set)",
+      "resolution": "passthrough 720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/text-to-video/api",
+    "notes": "Exact model. fal POST alias /fal-ai/flux-3/text-to-video. fal extra: safety_tolerance 0-4 (default 2). Output also returns seed."
+  },
+  {
+    "model_id": "wan3.0-text-to-video",
+    "key": "wan3.0-text-to-video",
+    "name": "Wan 3.0",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal enum adaptive,16:9,4:3,1:1,3:4,9:16 identical)",
+      "duration": "int 2-30 passthrough (null = smart duration)",
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p)",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/text-to-video/api",
+    "notes": "Exact model. fal OpenAPI POST path alias /fal-ai/wan-3/text-to-video. Output also returns duration, actual_prompt. fal extra: enable_prompt_expansion (default true)."
+  },
+  {
+    "model_id": "wan3.0-spicy-text-to-video",
+    "key": "wan3.0-spicy-text-to-video",
+    "name": "Wan 3.0 Spicy",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal enum adaptive,16:9,4:3,1:1,3:4,9:16 identical)",
+      "duration": "int 2-30 passthrough (null = smart duration)",
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p)",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low."
+  },
+  {
+    "model_id": "seedance-2.5-text-to-video-1080p",
+    "key": "seedance-2.5-text-to-video-1080p",
+    "name": "Seedance 2.5 1080p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Exact model pinned to 1080p. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-text-to-video-4k",
+    "key": "seedance-2.5-text-to-video-4k",
+    "name": "Seedance 2.5 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-text-to-video",
+    "key": "seedance-2.5-intl-text-to-video",
+    "name": "Seedance 2.5 Intl",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-text-to-video-480p",
+    "key": "seedance-2.5-intl-text-to-video-480p",
+    "name": "Seedance 2.5 Intl 480p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-text-to-video-480p",
+    "key": "seedance-2.5-spicy-text-to-video-480p",
+    "name": "Seedance 2.5 Spicy 480p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-text-to-video-1080p",
+    "key": "seedance-2.5-intl-text-to-video-1080p",
+    "name": "Seedance 2.5 Intl 1080p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-text-to-video-1080p",
+    "key": "seedance-2.5-spicy-text-to-video-1080p",
+    "name": "Seedance 2.5 Spicy 1080p",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-text-to-video-4k",
+    "key": "seedance-2.5-intl-text-to-video-4k",
+    "name": "Seedance 2.5 Intl 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-text-to-video-4k",
+    "key": "seedance-2.5-spicy-text-to-video-4k",
+    "name": "Seedance 2.5 Spicy 4K",
+    "list": "t2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-30 -> string \"4\"..\"30\"",
+      "aspect_ratio": "'adaptive' -> 'auto'; 9:21 not in fal enum (auto,21:9,16:9,4:3,1:1,3:4,9:16) -> map 9:21 to 9:16; rest passthrough",
+      "bitrate_mode": "high_bitrate: true -> bitrate_mode \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal Seedance 2.5 T2V has NO seed input (seed dropped) and max resolution 1080p. fal POST path alias /fal-ai/seedance-2.5/text-to-video. generate_audio defaults true. US-hosted variant bytedance/seedance-2.5/us/text-to-video (480p|720p only)."
+  },
+  {
+    "model_id": "minimax-h3-text-to-video-lora",
+    "key": "minimax-h3-text-to-video-lora",
+    "name": "MiniMax H3 Text to Video LoRA",
+    "list": "t2vModels",
+    "fal_endpoint": "minimax/h3/text-to-video/lora",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed",
+      "loras": "loras"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P'",
+      "duration": "int 3-15 -> clamp to fal min 5 (5-15)",
+      "aspect_ratio": "passthrough 21:9|16:9|4:3|1:1|3:4|9:16 (fal enum); 9:21 not supported -> 9:16",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int",
+      "loras": "[{path, scale}] -> [{path, scale, weight_name?}] (1-3 items, scale 0-4). Legacy accepts Civitai model IDs; fal needs a URL or HF repo id -> resolve Civitai id to a download URL first (e.g. https://civitai.com/api/download/models/<versionId>, inferred)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/text-to-video/lora/api",
+    "notes": "Same model+mode (H3 T2V with LoRA). fal requires 1-3 loras. fal OpenAPI POST path alias /fal-ai/minimax_h3/text-to-video. fal extras: prompt_expansion_mode (default 'balanced'), target_audio_url, seed. Output also returns expanded_prompt."
+  },
+  {
+    "model_id": "ltx-2.5-text-to-video",
+    "key": "ltx-2.5-text-to-video",
+    "name": "LTX 2.5",
+    "list": "t2vModels",
+    "fal_endpoint": "lightricks/ltx-2.5/text-to-video/fast",
+    "fallback_endpoint": "lightricks/ltx-2.5/text-to-video/pro",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5-20 -> nearest even 6..20 (fal enum 6,8,...,20|'auto')",
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "resolution": "720p|1080p passthrough; '2k' -> '1440p'; '4k' -> '2160p'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed (not in fal schema)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/lightricks/ltx-2.5/text-to-video/fast/api",
+    "notes": "Same model (LTX 2.5). The /fast tier is the only one with 1440p/2160p and 20s, matching Legacy's options; /pro (fal POST alias /fal-ai/ltx-2.5/text-to-video/pro) limits to 6|8|10s and 720p|1080p. fal extras: generate_audio (default true), camera_motion, fps."
+  },
+  {
+    "model_id": "wan3.0-prime-text-to-video",
+    "key": "wan3.0-prime-text-to-video",
+    "name": "Wan 3.0 Prime",
+    "list": "t2vModels",
+    "fal_endpoint": "alibaba/wan-3.0-prime/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal enum adaptive,16:9,4:3,1:1,3:4,9:16 identical)",
+      "duration": "int 2-30 passthrough (null = smart duration)",
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p)",
+      "seed": "seed: -1/null/'' -> omit field (fal picks random); otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0-prime/text-to-video/api",
+    "notes": "Exact model. fal OpenAPI POST path alias /fal-ai/wan-3-prime/text-to-video."
+  },
+  {
+    "model_id": "flux-3-text-to-video-draft",
+    "key": "flux-3-text-to-video-draft",
+    "name": "FLUX 3 Text to Video Draft",
+    "list": "t2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/text-to-video/draft",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 5-20 passthrough (fal enum 'auto',5..20)",
+      "aspect_ratio": "passthrough (fal enum auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16 covers Legacy set)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/text-to-video/draft/api",
+    "notes": "Exact model (FLUX 3 draft tier). Output also returns draft_cache (File) usable for a later full-quality render. Legacy default aspect 9:16 vs fal 'auto' -> always send."
+  },
+  {
+    "model_id": "gemini-omni-flash-1-1-text-to-video",
+    "key": "gemini-omni-flash-1-1-text-to-video",
+    "name": "Gemini Omni 1.1 Flash",
+    "list": "t2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/v1.1/text-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "image_urls": "image_urls (-> reference-to-video)",
+      "video_url": "video_url (-> edit)"
+    },
+    "value_transforms": {
+      "duration": "int 4|6|8|10 passthrough (fal 3-10)",
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "resolution": "passthrough 720p|1080p|4k (fal also 360p)",
+      "image_urls": "if non-empty route to google/gemini-omni-flash/v1.1/reference-to-video (image_urls max 10; reference_video_urls max 3, each <=3s)",
+      "video_url": "if set route to google/gemini-omni-flash/v1.1/edit (fields: prompt, video_url, resolution); trim_start/trim_end must be applied beforehand (e.g. ffmpeg trim) - fal edit has no trim fields"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "trim_start",
+      "trim_end",
+      "audio_ids (Legacy library ids)",
+      "character_ids (Legacy character ids)",
+      "seed (not in fal schema)"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/v1.1/text-to-video/api",
+    "notes": "Same model family/version (Gemini Omni Flash 1.1). fal splits Legacy's single multimodal route into three endpoints: v1.1/text-to-video (POST alias /fal-ai/gemini-omni-1.1-flash), v1.1/reference-to-video, v1.1/edit - all output video.url."
+  }
+]

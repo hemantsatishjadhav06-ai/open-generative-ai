@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { generateAudio, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { generateAudio, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
 import { audioModels, getAudioModelById } from "../models.js";
+import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
+import { useAvailableModels } from "../useModelAvailability.js";
 import en from "../messages/en/audioStudio.json";
 import zh from "../messages/zh/audioStudio.json";
 import { resolveCopy } from "../i18nUtils";
@@ -494,6 +496,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
+              aria-label={copy.player.volume}
               className="w-16 h-1 bg-zinc-700 rounded appearance-none cursor-pointer accent-primary hover:bg-zinc-600 transition-all opacity-0 group-hover/volume:opacity-100"
             />
           </div>
@@ -541,14 +544,11 @@ export default function AudioStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_audio_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_audio_studio_persistent");
 
   // ── Mode & model state ──────────────────────────────────────────────────
-  const [selectedModelId, setSelectedModelId] = useState(audioModels[0]?.id ?? "");
+  const [selectedModelId, setSelectedModelId] = useState(() => firstAvailableModel(audioModels)?.id ?? "");
+  const visibleModels = useAvailableModels(audioModels, selectedModelId, (model) => setSelectedModelId(model.id));
   const [params, setParams] = useState({});
   const [openDropdown, setOpenDropdown] = useState(false);
   const [openParamDropdown, setOpenParamDropdown] = useState(null);
@@ -597,7 +597,9 @@ export default function AudioStudio({
   }, [selectedModelId]); // Only reset when model ID changes
 
   // ── Persistence: Load ────────────────────────────────────────────────────
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -612,10 +614,11 @@ export default function AudioStudio({
     } catch (err) {
       console.warn("Failed to load AudioStudio persistence:", err);
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -632,7 +635,7 @@ export default function AudioStudio({
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [selectedModelId, params, internalHistory, activeResultUrl, activeResultTitle, view]);
+  }, [selectedModelId, params, internalHistory, activeResultUrl, activeResultTitle, view, PERSIST_KEY]);
 
   // ── Handle Dropped Files ────────────────────────────────────────────────
   useEffect(() => {
@@ -686,6 +689,10 @@ export default function AudioStudio({
 
   const handleGenerate = async () => {
     if (!selectedModel) return;
+    if (!isModelAvailable(selectedModel)) {
+      notifyError(copy.generate.modelUnavailable);
+      return;
+    }
 
     // Check required fields
     if (selectedModel.required) {
@@ -740,7 +747,7 @@ export default function AudioStudio({
         });
       }
     } catch (e) {
-      console.error("[AudioStudio]", e);
+      logStudioError("[AudioStudio]", e);
       const errMsg = formatErrorMessage(e, copy.generate.genericError);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
@@ -783,7 +790,7 @@ export default function AudioStudio({
 
             {openDropdown && (
               <div className="absolute left-0 right-0 mt-2 z-50 bg-surface-panel border border-zinc-700 rounded shadow-3xl max-h-60 overflow-y-auto custom-scrollbar p-1.5">
-                {audioModels.map((model) => (
+                {visibleModels.map((model) => (
                   <button
                     key={model.id}
                     type="button"
@@ -954,6 +961,7 @@ export default function AudioStudio({
                         step={step}
                         value={params[key] !== undefined ? params[key] : (schema.default || 0)}
                         onChange={(e) => setParams(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
+                        aria-label={schema.title || key}
                         className="flex-1 h-1.5 bg-surface-raised rounded-full appearance-none cursor-pointer accent-primary hover:bg-zinc-700 transition-all"
                       />
                       <span className="text-[10px] text-zinc-300 font-medium w-6 text-left">{schema.maxValue}</span>

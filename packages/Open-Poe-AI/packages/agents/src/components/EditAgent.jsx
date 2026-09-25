@@ -9,23 +9,16 @@ import toast from "react-hot-toast";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdClose } from "react-icons/md";
 import { themes } from "./themes";
+import { getAgentCopy } from "../i18n";
+import { AGENTS_API as BASE_URL, errorMessage, uploadImage } from "../utils/api";
 
-const BASE_URL = "/api/agents";
+// Catalog model used for "Generate with AI" profile icons (fast + cheap).
+const ICON_MODEL = "flux-schnell-image";
 
-const EditAgent = ({ useUser, usedIn }) => {
-  // Project-specific user detail extraction
-  const userContext = useUser ? useUser() : {};
-  let user = null;
+const sameSkills = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
 
-  if (usedIn === "vadoo") {
-    const { serverDetails } = userContext;
-    user = serverDetails?.user_details
-      ? { email: serverDetails.user_details.email, name: serverDetails.user_details.name }
-      : null;
-  } else {
-    // muapiapp
-    user = userContext.user || null;
-  }
+const EditAgent = ({ locale = "en" }) => {
+  const copy = getAgentCopy(locale);
   const { id } = useParams();
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -37,8 +30,6 @@ const EditAgent = ({ useUser, usedIn }) => {
     icon_url: "",
     skill_ids: [],
     theme: "cosmic",
-    is_published: false,
-    is_template: false,
   });
   
   const [availableSkills, setAvailableSkills] = useState([]);
@@ -48,7 +39,6 @@ const EditAgent = ({ useUser, usedIn }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
   const [initialSkills, setInitialSkills] = useState([]);
   const [realignedPrompt, setRealignedPrompt] = useState("");
   const [isRealigning, setIsRealigning] = useState(false);
@@ -76,29 +66,23 @@ const EditAgent = ({ useUser, usedIn }) => {
       
       const agent = agentRes.data;
       if (!agent.is_owner) {
-        setError("You are not authorized to edit this agent.");
+        setError(copy.errors.templateReadOnly);
         setLoading(false);
         return;
       }
+      const skillIds = (agent.skills || []).map(s => s.id);
       setFormData({
         name: agent.name,
         description: agent.description || "",
         system_prompt: agent.system_prompt,
         icon_url: agent.icon_url || "",
-        skill_ids: agent.skills.map(s => s.id),
+        skill_ids: skillIds,
         theme: agent.theme || "cosmic",
-        is_published: agent.is_published || false,
-        is_template: agent.is_template || false,
       });
-      setInitialSkills(agent.skills.map(s => s.id));
-      setAvailableSkills(skillsRes.data);
+      setInitialSkills(skillIds);
+      setAvailableSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
     } catch (err) {
-      console.error("Error fetching data:", err);
-      setError(
-        err.response?.data?.message || 
-        err.response?.data?.detail || 
-        "Failed to load agent details."
-      );
+      setError(errorMessage(err, copy, copy.errors.loadFailed));
     } finally {
       setLoading(false);
     }
@@ -131,9 +115,7 @@ const EditAgent = ({ useUser, usedIn }) => {
       toast.success("Agent deleted successfully");
       router.push("/agents");
     } catch (err) {
-      console.error("Delete error:", err);
-      toast.error("Failed to delete agent");
-      setError(err.response?.data?.detail || "Delete failed");
+      toast.error(errorMessage(err, copy, "Failed to delete agent"));
     } finally {
       setSaving(false);
     }
@@ -191,39 +173,14 @@ const EditAgent = ({ useUser, usedIn }) => {
     }
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
     try {
       setUploading(true);
       setUploadProgress(0);
-      const { data: uploadParams } = await axios.get("/api/app/get_file_upload_url", {
-        params: { filename: file.name }
-      });
-
-      const { url, fields } = uploadParams;
-      const uploadData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        uploadData.append(key, value);
-      });
-      uploadData.append("file", file);
-
-      await axios.post(url, uploadData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percent);
-        }
-      });
-      const prefix = usedIn === "vadoo" ? "https://d3adwkbyhxyrtq.cloudfront.net/": "https://cdn.muapi.ai/";
-      const uploadedUrl = `${prefix}${fields.key}`;
+      const uploadedUrl = await uploadImage(file, { copy, onProgress: setUploadProgress });
       setFormData(prev => ({ ...prev, icon_url: uploadedUrl }));
       toast.success("Profile image updated");
     } catch (err) {
-      console.error("Upload failed:", err);
-      toast.error("Failed to upload image");
+      toast.error(err?.message || copy.errors.uploadFailed);
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -240,25 +197,21 @@ const EditAgent = ({ useUser, usedIn }) => {
       setGeneratingIcon(true);
       const prompt = customPrompt || `A professional, clean profile icon for an AI agent named "${formData.name}". Description: ${formData.description || "An AI assistant"}. Minimalist, high-quality, circular composition.`;
       
-      const response = await axios.post("/api/api/v1/flux-schnell-image", {
+      // Runs synchronously through the gateway (sync:true) → {outputs:[url]}.
+      const response = await axios.post(`/api/v1/${ICON_MODEL}`, {
         prompt,
-        width: 1024,
-        height: 1024,
+        image_size: "square_hd",
         num_images: 1,
         sync: true
       });
 
-      if (response.data && response.data.outputs && response.data.outputs.length > 0) {
-        const generatedUrl = response.data.outputs[0];
-        setFormData(prev => ({ ...prev, icon_url: generatedUrl }));
-        setShowIconPromptModal(false);
-        toast.success("AI icon generated!");
-      } else {
-        throw new Error("No image generated");
-      }
+      const generatedUrl = response.data?.outputs?.[0] || response.data?.url;
+      if (!generatedUrl) throw new Error(copy.errors.iconFailed);
+      setFormData(prev => ({ ...prev, icon_url: generatedUrl }));
+      setShowIconPromptModal(false);
+      toast.success("AI icon generated!");
     } catch (err) {
-      console.error("Icon generation failed:", err);
-      toast.error(err.response?.data?.detail || "Failed to generate AI icon");
+      toast.error(err?.response ? errorMessage(err, copy, copy.errors.iconFailed) : copy.errors.iconFailed);
     } finally {
       setGeneratingIcon(false);
     }
@@ -275,8 +228,7 @@ const EditAgent = ({ useUser, usedIn }) => {
       setShowRealignModal(true);
       toast.success("Prompt realigned! Please review.");
     } catch (err) {
-      console.error("Realign failed:", err);
-      toast.error("Failed to realign prompt");
+      toast.error(errorMessage(err, copy, "Failed to realign prompt"));
     } finally {
       setIsRealigning(false);
     }
@@ -293,23 +245,15 @@ const EditAgent = ({ useUser, usedIn }) => {
     try {
       setSaving(true);
       setError(null);
-      setSuccess(false);
       
       await axios.put(`${BASE_URL}/by-slug/${id}`, formData);
       
-      setSuccess(true);
       toast.success("Agent profile updated successfully!");
       setTimeout(() => {
         router.push("/agents");
       }, 1500);
     } catch (err) {
-      console.error("Error updating agent:", err);
-      setError(
-        err.response?.data?.message || 
-        err.response?.data?.detail || 
-        "Failed to update agent."
-      );
-      toast.error("Failed to save changes");
+      toast.error(errorMessage(err, copy, "Failed to save changes"));
     } finally {
       setSaving(false);
     }
@@ -332,13 +276,10 @@ const EditAgent = ({ useUser, usedIn }) => {
         <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-2">
           <IoCloseOutline className="w-10 h-10 text-red-500 dark:text-red-400" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Access Denied</h2>
-        <p className="text-gray-600 dark:text-secondary-text max-w-md font-medium">
-          {error}
-        </p>
+        <h2 role="alert" className="text-xl font-bold text-gray-900 dark:text-white max-w-md">{error}</h2>
         <Link 
           href="/agents"
-          className="mt-4 px-8 py-3 bg-gray-900 dark:bg-primary text-white font-bold rounded-xl hover:bg-gray-800 dark:hover:bg-primary/90 transition-all shadow-lg active:scale-95"
+          className="mt-4 px-8 py-3 bg-brand text-on-brand font-bold rounded-xl hover:bg-brand-hover transition-all shadow-lg active:scale-95"
         >
           Return to My Agents
         </Link>
@@ -358,7 +299,7 @@ const EditAgent = ({ useUser, usedIn }) => {
         </Link>
         <div className="flex items-center gap-3">
           <Link 
-            href={`${window.location.origin}/agents/${id}`}
+            href={`/agents/${id}`}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-bold text-white transition-all active:scale-95 shadow-sm"
           >
             <IoChatbubblesOutline className="w-4 h-4" />
@@ -367,25 +308,22 @@ const EditAgent = ({ useUser, usedIn }) => {
           <button 
             type="button"
             onClick={handleShare}
+            aria-label="Copy chat link"
+            title="Copy chat link"
             className="flex items-center gap-2 px-4 py-2 border border-gray-100 dark:border-divider rounded-xl text-sm font-bold text-gray-600 dark:text-primary-text hover:bg-gray-50 dark:hover:bg-secondary-bg transition-all active:scale-95"
           >
-            <IoShareOutline className="w-4 h-4" />
+            <IoShareOutline aria-hidden="true" className="w-4 h-4" />
           </button>
           <button 
             type="button"
             onClick={handleDelete}
             disabled={saving}
+            aria-label="Delete agent"
+            title="Delete agent"
             className="flex items-center gap-2 px-4 py-2 border border-red-50 dark:border-red-900/30 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all active:scale-95 disabled:opacity-50"
           >
-            <IoTrashOutline className="w-4 h-4" />
+            <IoTrashOutline aria-hidden="true" className="w-4 h-4" />
           </button>
-          <Link 
-            href="/docs/agents"
-            target="_blank"
-            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-secondary-bg border border-gray-100 dark:border-divider rounded-lg text-xs font-bold text-blue-600 dark:text-primary hover:bg-blue-50 dark:hover:bg-primary-bg transition-all active:scale-95 shadow-sm"
-          >
-            Docs
-          </Link>
         </div>
       </div>
       <div className="flex flex-col items-center gap-2 w-full">
@@ -394,7 +332,16 @@ const EditAgent = ({ useUser, usedIn }) => {
             <div className="flex items-center gap-8 w-full">
               <div className="relative">
                 <div 
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Profile Icon"
                   onClick={() => setShowIconSelectionModal(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setShowIconSelectionModal(true);
+                    }
+                  }}
                   className="w-28 h-28 rounded-full bg-gray-100 dark:bg-secondary-bg overflow-hidden ring-4 ring-white dark:ring-primary-bg shadow-sm border border-gray-100 dark:border-divider cursor-pointer group transition-all hover:ring-blue-500/30"
                 >
                   {formData.icon_url ? (
@@ -465,23 +412,10 @@ const EditAgent = ({ useUser, usedIn }) => {
                 type="submit"
                 form="edit-agent-form"
                 disabled={saving}
-                className="px-6 py-3 whitespace-nowrap bg-black dark:bg-primary hover:bg-gray-800 dark:hover:bg-primary/90 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-lg text-sm active:scale-95"
+                className="px-6 py-3 whitespace-nowrap bg-brand text-on-brand hover:bg-brand-hover disabled:opacity-50 font-bold rounded-xl transition-all shadow-lg text-sm active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
-              <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-secondary-bg rounded-2xl border border-gray-200 dark:border-divider w-fit">
-                <div 
-                  onClick={() => setFormData(prev => ({ ...prev, is_published: !prev.is_published }))}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
-                    formData.is_published 
-                      ? "bg-white dark:bg-primary-bg shadow-sm text-blue-600 dark:text-primary" 
-                      : "text-gray-400 hover:text-gray-600 dark:text-secondary-text dark:hover:text-primary-text"
-                  }`}
-                >
-                  <div className={`w-2 h-2 rounded-full transition-all duration-500 ${formData.is_published ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-gray-300 dark:bg-gray-600"}`} />
-                  <span className="text-xs font-bold tracking-wider">Publish</span>
-                </div>
-              </div>
             </div>
           </div>
           <div className="flex flex-col gap-12">
@@ -499,9 +433,9 @@ const EditAgent = ({ useUser, usedIn }) => {
                     <button
                       type="button"
                       onClick={handleRealign}
-                      disabled={isRealigning || JSON.stringify(formData.skill_ids.sort()) === JSON.stringify(initialSkills.sort())}
+                      disabled={isRealigning || sameSkills(formData.skill_ids, initialSkills)}
                       className="flex items-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-sm"
-                      title={JSON.stringify(formData.skill_ids.sort()) === JSON.stringify(initialSkills.sort()) ? "No changes to skills" : "Sync instructions with current skills"}
+                      title={sameSkills(formData.skill_ids, initialSkills) ? "No changes to skills" : "Sync instructions with current skills"}
                     >
                       {isRealigning ? <BiLoaderAlt className="animate-spin" /> : "✨ Realign with Skills"}
                     </button>
@@ -602,7 +536,7 @@ const EditAgent = ({ useUser, usedIn }) => {
                     >
                       <div className="w-8 h-8 rounded-full bg-gray-400 overflow-hidden">
                         {formData.icon_url ? (
-                          <img src={formData.icon_url} className="w-full h-full object-cover" />
+                          <img src={formData.icon_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <RiRobot2Fill className="w-full h-full p-1.5 text-white/50" />
                         )}
@@ -884,7 +818,7 @@ const EditAgent = ({ useUser, usedIn }) => {
             <div className="p-8 border-b border-gray-50 dark:border-divider flex items-center justify-between">
               <div>
                 <h3 className="text-2xl font-black dark:text-white leading-tight">Profile Icon</h3>
-                <p className="text-sm text-gray-500 dark:text-secondary-text mt-1 font-medium">Choose how to update your agent's look</p>
+                <p className="text-sm text-gray-500 dark:text-secondary-text mt-1 font-medium">Choose how to update your agent&apos;s look</p>
               </div>
               <button 
                 onClick={() => setShowIconSelectionModal(false)}

@@ -45,16 +45,21 @@
     "resetZoomPan": "Reset Zoom & Pan",
     "addImage": "Add Image",
     "runLayerDecomposition": "Run Layer Decomposition",
+    "runEdit": "Edit image",
     "backToTools": "Back to Tools",
     "closePanel": "Close Panel",
     "regionalPromptPlaceholder": "Type your prompt here..."
   },
-  "sample": {
-    "clickToLoad": "Click to load this layer decomposition example",
-    "original": "Original",
-    "layersCount": "5 Layers",
-    "try": "Try →",
-    "clickToExplore": "Click to explore sample"
+  "promptBar": {
+    "label": "Describe the edit",
+    "placeholderEdit": "Describe how to edit the image...",
+    "placeholderSplit": "Describe how to edit image or split layers...",
+    "placeholderRegions": "Describe layers for {count} marked region(s)..."
+  },
+  "canvas": {
+    "uploading": "Uploading image... {progress}%",
+    "dropHeading": "Click or drop an image here",
+    "dropHint": "Supports PNG, JPEG, WEBP up to 20MB"
   },
   "settings": {
     "heading": "Settings",
@@ -130,23 +135,21 @@
     "decomposing": "Decomposing ({progress}%)...",
     "separateLayers": "Separate layers {count}",
     "upscaling": "Upscaling ({progress}%)...",
-    "upscaleCost": "Upscale {cost}",
+    "upscale": "Upscale",
+    "withEstimate": "{label} · about {cost}",
     "removingBackground": "Removing background ({progress}%)...",
-    "removeBackgroundCost": "Remove Background 1.0",
+    "removeBackground": "Remove Background",
     "expandingBorders": "Expanding borders ({progress}%)...",
-    "expandImageCost": "Expand Image 0.03"
+    "expandImage": "Expand Image"
   },
   "toasts": {
-    "enterApiKeyUpload": "Please enter your API Key to upload images.",
     "imageUploaded": "Image uploaded successfully!",
     "uploadFailed": "Upload failed: {error}",
     "uploadImageFileOnly": "Please upload an image file.",
     "fileTooLarge": "File too large (max 20MB): {name}",
     "viewReset": "View reset",
-    "enterApiKey": "Please enter your API key.",
     "enterRegionPrompt": "Please enter a prompt for the selected region.",
     "editFailed": "Edit failed: {error}",
-    "apiKeyMissingSet": "API key is missing. Please set your API key.",
     "uploadOrSelectDecompose": "Please upload or select an image to decompose into layers.",
     "decomposedInto": "Decomposed into {count} layer(s)!",
     "decompositionFailed": "Decomposition failed: {error}",
@@ -166,11 +169,14 @@
     "resetCategory": "Reset {category}",
     "colorGradingReset": "Color grading reset to default",
     "downloadedGraded": "Downloaded color graded image!",
-    "loadedSample": "Loaded Seedream 5-layer sample!",
-    "apiKeyMissing": "API key is missing.",
     "uploadImageFirst": "Please upload an image first.",
     "toolCompleted": "{tool} completed successfully!",
     "operationFailed": "Operation failed: {error}",
-    "downloadingAll": "Downloading all layers..."
+    "downloadingAll": "Downloading all layers...",
+    "toolUnavailable": "This tool isn't available on Aquora yet.",
+    "regionEditDone": "Region edited!",
+    "layersGenerated": "Generated {count} layer(s)!",
+    "enterEditPrompt": "Describe the edit you want first.",
+    "editLabel": "Edit"
   }
 }

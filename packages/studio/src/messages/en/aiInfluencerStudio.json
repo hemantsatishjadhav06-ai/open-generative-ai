@@ -58,6 +58,18 @@
     "download": "Download"
   },
   "errors": {
-    "generationFailed": "Generation failed. Please try again."
+    "generationFailed": "Generation failed. Please try again.",
+    "modelUnavailable": "Character generation isn't available on Aquora right now. Try again later."
+  },
+  "reference": {
+    "upload": "Face reference",
+    "hint": "Optional: upload a photo of a face to keep that person's look",
+    "uploading": "Uploading {progress}%",
+    "active": "Face reference",
+    "alt": "Face reference photo",
+    "remove": "Remove face reference",
+    "notAnImage": "Choose an image file for the face reference.",
+    "tooLarge": "The face reference must be 10 MB or smaller.",
+    "uploadFailed": "Upload failed: {message}"
   }
 }

@@ -14,6 +14,7 @@
     "nowPlaying": "正在播放",
     "defaultTitle": "生成的音轨",
     "muteUnmute": "静音/取消静音",
+    "volume": "音量",
     "pause": "暂停",
     "play": "播放",
     "download": "下载音频",
@@ -34,7 +35,8 @@
     "cta": "生成音轨",
     "noUrlError": "API 未返回音频地址。",
     "genericError": "音频生成失败",
-    "droppedFileUploadError": "上传拖放的文件失败：{message}"
+    "droppedFileUploadError": "上传拖放的文件失败：{message}",
+    "modelUnavailable": "Aquora 暂不支持该模型，请换一个模型。"
   },
   "result": {
     "errorHeading": "生成错误",

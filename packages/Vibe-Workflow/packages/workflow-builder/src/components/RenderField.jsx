@@ -1,4 +1,5 @@
-import axios from "axios";
+import { errorMessage, uploadFile } from "./gatewayClient";
+import { t } from "./i18n";
 import Image from "next/image";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { FaAngleDown } from "react-icons/fa6";
@@ -50,61 +51,42 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
     } else {
       return;
     }
-    const acceptedTypes = 
-      isImageField ? ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"] : 
-      isVideoField ? ["video/mp4", "video/webm"] : 
-      isAudioField ? ["audio/mpeg", "audio/wav", "audio/webm", "audio/mp3"] :
-        ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "video/mp4", "video/webm"];
+    // The server checks the file's real type; this only catches obvious mix-ups.
+    const mime = typeof file.type === "string" ? file.type : "";
+    const accepted =
+      isImageField ? mime.startsWith("image/") :
+      isVideoField ? mime.startsWith("video/") :
+      isAudioField ? mime.startsWith("audio/") :
+        mime.startsWith("image/") || mime.startsWith("video/");
 
-    if (!acceptedTypes.includes(file.type)) {
-      toast.error("Unsupported file type");
+    if (!accepted) {
+      toast.error(t("unsupportedFileType"));
       return;
     };
 
     setUploading(true);
-    axios.get("/api/app/get_file_upload_url", {
-      params: { filename: file.name }
-    })
-    .then((response) => {
-      const { url, fields } = response.data;
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
-      axios.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        }
-      })
-      .then(() => {
-        const uploadedUrl = `https://cdn.muapi.ai/${fields.key}`;
-        setFormValues((prev) => { 
+    uploadFile(file, setUploadProgress)
+      .then((uploadedUrl) => {
+        setFormValues((prev) => {
           const current = prev[field];
           const updatedValue = fieldSchema.type === 'array'
             ? [...(current || []), uploadedUrl]
-            : uploadedUrl
-
-            return { ...prev, [field]: updatedValue };
+            : uploadedUrl;
+          return { ...prev, [field]: updatedValue };
         });
         setTimeout(() => {
           setUploading(false);
           setUploadProgress(0);
         }, 500);
       })
-    })
-    .catch((error) => {
-      console.error("Upload failed", error);
-      toast.error("Upload failed.", error?.response?.data);
-      setUploading(false);
-      setUploadProgress(0);
-    })
+      .catch((error) => {
+        toast.error(errorMessage(error, t("uploadFailed")));
+        setUploading(false);
+        setUploadProgress(0);
+      });
   };
 
-  const isInputModel = modelName.includes("passthrough");
+  const isInputModel = String(modelName || "").includes("passthrough");
   if (isInputModel && meta.type !== "boolean") return null;
 
   if (meta.enum) {

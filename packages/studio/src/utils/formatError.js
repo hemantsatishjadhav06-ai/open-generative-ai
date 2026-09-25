@@ -11,8 +11,8 @@ function probeText(raw, message) {
 export function formatErrorMessage(err, fallback = "Generation failed", strings = {}) {
   const s = {
     unreachable: "Couldn't reach the AI service. Try again in a sec.",
-    auth: "Authentication failed. Please check your account session or API key.",
-    credits: "Insufficient credits. Please top up your wallet.",
+    auth: "Authentication failed. Enter your access code to continue.",
+    credits: "Today's AI budget is used up. It resets at 00:00 UTC.",
     rateLimited: "Too many requests. Please wait a moment and try again.",
     ...strings,
   };
@@ -46,8 +46,8 @@ export function formatErrorMessage(err, fallback = "Generation failed", strings 
     }
   }
 
-  // The proxy's own envelopes for non-JSON/unreachable upstreams: the status
-  // code there (e.g. a 403 block page) says nothing about the key or credits.
+  // The gateway's envelopes for unreachable/non-JSON upstreams: the status
+  // code there (e.g. a 403 block page) says nothing about the session or budget.
   if (/upstream_unavailable|upstream_unreachable|returned an unexpected response|Couldn't reach the AI service/i.test(probeText(raw, message))) {
     return s.unreachable;
   }
@@ -55,7 +55,7 @@ export function formatErrorMessage(err, fallback = "Generation failed", strings 
   // Handle common HTTP error codes (checked on the original text so a status
   // code in the prefix still counts after the JSON body was unwrapped).
   const probe = `${raw} ${message}`;
-  if (probe.includes('402') || probe.includes('INSUFFICIENT_CREDITS') || probe.toLowerCase().includes('insufficient credits')) {
+  if (probe.includes('402') || probe.includes('budget_exceeded') || probe.includes('INSUFFICIENT_CREDITS') || probe.toLowerCase().includes('insufficient credits')) {
     return s.credits;
   }
   if (probe.includes('401') || probe.includes('403') || /\bunauthori[sz]ed\b/i.test(message)) {
@@ -74,4 +74,21 @@ export function formatErrorMessage(err, fallback = "Generation failed", strings 
   }
 
   return message.length > 150 ? message.slice(0, 147) + '...' : message;
+}
+
+/**
+ * True for gateway errors the app already handles on its own: 401 (the shell
+ * shows the access-code overlay) and 402 (the budget message + header pill).
+ */
+export function isHandledGatewayError(err) {
+  return Boolean(err) && typeof err === 'object' && (err.status === 401 || err.status === 402 || err.code === 'budget_exceeded');
+}
+
+/**
+ * console.error for studio failures, minus the handled 401/402 cases above
+ * (they are expected, already shown to the user, and not bugs).
+ */
+export function logStudioError(...args) {
+  if (args.some(isHandledGatewayError)) return;
+  console.error(...args);
 }

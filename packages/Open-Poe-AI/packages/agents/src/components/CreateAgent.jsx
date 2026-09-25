@@ -1,26 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { BiLoaderAlt } from "react-icons/bi";
-import { RiRobot2Fill } from "react-icons/ri";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import { getAgentCopy } from "../i18n";
+import { AGENTS_API as BASE_URL, errorMessage } from "../utils/api";
 
-const BASE_URL = "/api/agents";
-
-const CreateAgent = ({ useUser, usedIn }) => {
-  const userContext = useUser ? useUser() : {};
-  let user = null;
-
-  if (usedIn === "vadoo") {
-    const { serverDetails } = userContext;
-    user = serverDetails?.user_details
-      ? { email: serverDetails.user_details.email, name: serverDetails.user_details.name }
-      : null;
-  } else {
-    // muapiapp
-    user = userContext.user || null;
-  }
+const CreateAgent = ({ locale = "en" }) => {
+  const copy = getAgentCopy(locale);
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,8 +33,6 @@ const CreateAgent = ({ useUser, usedIn }) => {
         skill_ids: suggestion.recommended_skill_ids || [],
         welcome_message: suggestion.welcome_message || "",
         initial_suggestions: suggestion.initial_suggestions || [],
-        is_published: false,
-        is_template: false,
       };
 
       const createResponse = await axios.post(`${BASE_URL}`, createPayload);
@@ -55,13 +41,7 @@ const CreateAgent = ({ useUser, usedIn }) => {
         router.push(`/agents/edit/${createdAgent.agent_id}`);
       }
     } catch (err) {
-      console.error("Agent creation failed:", err);
-      setError(
-        err.response?.data?.message ||
-        err.response?.data?.detail ||
-        err.message ||
-        "Failed to architect agent. Please try again.",
-      );
+      setError(errorMessage(err, copy, copy.errors.createFailed));
     } finally {
       setLoading(false);
     }
@@ -72,9 +52,11 @@ const CreateAgent = ({ useUser, usedIn }) => {
       <div className="flex items-start gap-2 w-full">
         <Link
           href="/agents"
+          aria-label={copy.backToAgents}
+          title={copy.backToAgents}
           className="p-2 hover:bg-gray-100 dark:hover:bg-secondary-bg rounded-full transition-colors group"
         >
-          <IoArrowBackOutline className="w-4 h-4 text-gray-800 dark:text-primary-text group-hover:scale-110 transition-transform" />
+          <IoArrowBackOutline aria-hidden="true" className="w-4 h-4 text-gray-800 dark:text-primary-text group-hover:scale-110 transition-transform" />
         </Link>
         <div className="flex flex-col gap-2 w-full">
           <h1 className="text-2xl font-bold text-black dark:text-white">
@@ -87,11 +69,12 @@ const CreateAgent = ({ useUser, usedIn }) => {
       </div>
       <form onSubmit={handleArchitectAgent} className="space-y-8 w-full">
         <div className="space-y-4">
-          <label className="text-lg font-semibold text-black dark:text-white block">
+          <label htmlFor="agent-idea" className="text-lg font-semibold text-black dark:text-white block">
             What should your assistant be able to do and be knowledgeable in?
           </label>
           <div className="relative">
             <textarea
+              id="agent-idea"
               value={prompt}
               autoFocus
               onChange={(e) => setPrompt(e.target.value)}
@@ -109,7 +92,7 @@ const CreateAgent = ({ useUser, usedIn }) => {
           <button
             type="submit"
             disabled={loading || !prompt.trim()}
-            className="w-full py-3 bg-blue-500 dark:bg-primary hover:bg-blue-600 dark:hover:bg-primary/90 disabled:bg-gray-200 dark:disabled:bg-divider disabled:text-gray-400 dark:disabled:text-secondary-text disabled:cursor-not-allowed text-white text-base font-semibold rounded-xl transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+            className="w-full py-3 bg-brand text-on-brand hover:bg-brand-hover disabled:bg-divider disabled:text-secondary-text disabled:cursor-not-allowed text-base font-semibold rounded-xl transition-all flex items-center justify-center gap-3 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
           >
             {loading ? (
               <>
@@ -126,7 +109,7 @@ const CreateAgent = ({ useUser, usedIn }) => {
             </p>
           )}
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-in fade-in duration-300">
+            <div role="alert" className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-in fade-in duration-300">
               <svg
                 className="w-5 h-5 flex-shrink-0"
                 fill="none"

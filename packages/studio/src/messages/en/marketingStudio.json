@@ -8,41 +8,40 @@
     "product": "Product",
     "avatar": "Avatar",
     "references": "References",
-    "uploadPrefix": "Upload"
+    "uploadPrefix": "Upload",
+    "referenceVideo": "Reference video",
+    "referenceVideoHint": "Upload a reference video (optional, 2–15 s, up to 50 MB) to copy its format and pacing"
   },
   "prompt": {
     "placeholder": "Describe your ad script... Use @image1 for product, @image2 for avatar."
   },
   "dropdowns": {
-    "videoFormatPresets": "Video Format Presets",
-    "avatarPresets": "Avatar Presets",
     "aspectRatio": "Aspect Ratio",
     "resolution": "Resolution",
-    "duration": "Duration",
-    "selectAvatarFallback": "Select Avatar"
+    "duration": "Duration"
   },
   "buttons": {
     "generating": "Generating...",
     "launch": "Launch",
-    "enlargePreview": "Enlarge preview",
-    "enlargeSelectedAvatar": "Enlarge selected avatar",
-    "selectAvatar": "Select Avatar",
     "download": "Download",
-    "delete": "Delete"
+    "delete": "Delete",
+    "remove": "Remove"
   },
   "history": {
     "badge": "Marketing Studio"
   },
-  "alt": {
-    "previousAvatar": "Previous Avatar",
-    "nextAvatar": "Next Avatar"
-  },
   "errors": {
     "missingScript": "Please enter an ad script.",
     "missingProductImage": "Please upload a product image.",
-    "generationFailed": "Marketing generation failed"
+    "generationFailed": "Marketing generation failed",
+    "referenceVideoType": "Choose a video file for the reference.",
+    "referenceVideoTooLarge": "The reference video must be 50 MB or smaller.",
+    "modelUnavailable": "Marketing ads aren't available at this resolution yet. Pick another resolution."
   },
   "confirm": {
     "deleteItem": "Are you sure you want to delete this generated item?"
+  },
+  "fullscreen": {
+    "close": "Close"
   }
 }

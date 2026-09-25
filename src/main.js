@@ -1,6 +1,12 @@
 import './style.css';
+import { migrateLegacyStorage } from './lib/legacyStorage.js';
+import { SESSION_REQUIRED_EVENT, getSessionStatus } from './lib/gateway.js';
+import { openAccessCodeModal } from './components/AccessCodeModal.js';
 import { Header } from './components/Header.js';
 import { ImageStudio } from './components/ImageStudio.js';
+
+// Before any studio reads its history.
+migrateLegacyStorage();
 
 const app = document.querySelector('#app');
 let contentArea;
@@ -47,10 +53,6 @@ function navigate(page) {
       import('./components/AgentStudio.js').then(({ AgentStudio }) => {
         wrapper.appendChild(AgentStudio());
       });
-    } else if (page === 'mcp-cli') {
-      import('./components/McpCliStudio.js').then(({ McpCliStudio }) => {
-        wrapper.appendChild(McpCliStudio());
-      });
     }
   }
 }
@@ -66,6 +68,17 @@ app.appendChild(contentArea);
 
 // Initial Route
 navigate('image');
+
+// Aquora session: learn it up front (budget pill, pickers), and ask for the
+// access code again whenever the gateway answers 401 (expired or signed out).
+getSessionStatus().catch(() => {});
+window.addEventListener(SESSION_REQUIRED_EVENT, () => {
+  getSessionStatus({ force: true })
+    .then((session) => {
+      if (!session?.authenticated) openAccessCodeModal({ reason: 'expired', gate: session?.gate || null });
+    })
+    .catch(() => {});
+});
 
 // Event Listener for Navigation
 window.addEventListener('navigate', (e) => {

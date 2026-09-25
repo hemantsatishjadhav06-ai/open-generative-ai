@@ -1,4 +1,5 @@
-const STORAGE_KEY = 'muapi_uploads';
+// Recently uploaded reference images (hosted by the Aquora gateway).
+const STORAGE_KEY = 'aquora_uploads';
 const MAX_UPLOADS = 20;
 
 export function getUploadHistory() {

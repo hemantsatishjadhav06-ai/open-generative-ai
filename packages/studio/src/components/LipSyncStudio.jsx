@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { processLipSync, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { processLipSync, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
+import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
+import { useAvailableModels } from "../useModelAvailability.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -77,10 +79,11 @@ function MediaPickerButton({
   };
 
   const handleChange = async (e) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    // Copy the files first: clearing the input empties its live FileList.
+    const files = Array.from(e.target.files || []);
     e.target.value = "";
-    await onUpload(Array.from(files));
+    if (files.length === 0) return;
+    await onUpload(files);
   };
 
   const handleDragEnter = (e) => {
@@ -394,23 +397,25 @@ export default function LipSyncStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_lipsync_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_lipsync_studio_persistent");
 
   // ── Mode & model state ──────────────────────────────────────────────────
   const [inputMode, setInputMode] = useState("image"); // 'image' | 'video'
 
-  const currentModels =
+  const modeModels =
     inputMode === "image" ? imageLipSyncModels : videoLipSyncModels;
-  const firstModel = currentModels[0];
+  const [firstModel] = useState(() => firstAvailableModel(imageLipSyncModels));
 
   const [selectedModelId, setSelectedModelId] = useState(firstModel?.id ?? "");
   const [selectedResolution, setSelectedResolution] = useState(
     firstModel?.inputs?.resolution?.default ?? "480p",
   );
+  // Only models the gateway can run are offered; a disabled selection falls
+  // back to the first runnable model for the current mode.
+  const currentModels = useAvailableModels(modeModels, selectedModelId, (model) => {
+    setSelectedModelId(model.id);
+    setSelectedResolution(model.inputs?.resolution?.default ?? "480p");
+  });
 
   // ── Upload state ────────────────────────────────────────────────────────
   const [imageState, setImageState] = useState(UPLOAD_STATE.IDLE);
@@ -460,7 +465,9 @@ export default function LipSyncStudio({
   const hasRestored = useRef(false);
 
   // ── Persistence: Load ────────────────────────────────────────────────────
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -491,10 +498,11 @@ export default function LipSyncStudio({
     } finally {
       hasRestored.current = true;
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -528,6 +536,7 @@ export default function LipSyncStudio({
     audioName,
     prompt,
     internalHistory,
+    PERSIST_KEY,
   ]);
 
   // ── Derived model info ──────────────────────────────────────────────────
@@ -541,7 +550,7 @@ export default function LipSyncStudio({
     if (hasRestored.current) return;
     const models =
       inputMode === "image" ? imageLipSyncModels : videoLipSyncModels;
-    const first = models[0];
+    const first = firstAvailableModel(models);
     if (!first) return;
     setSelectedModelId(first.id);
     setSelectedResolution(first.inputs?.resolution?.default ?? "480p");
@@ -660,7 +669,7 @@ export default function LipSyncStudio({
     setVideoUrl(null);
     setVideoState(UPLOAD_STATE.IDLE);
     setVideoName("");
-    const first = imageLipSyncModels[0];
+    const first = firstAvailableModel(imageLipSyncModels);
     if (first) {
       setSelectedModelId(first.id);
       setSelectedResolution(first.inputs?.resolution?.default ?? "480p");
@@ -673,7 +682,7 @@ export default function LipSyncStudio({
     setImageUrl(null);
     setImageState(UPLOAD_STATE.IDLE);
     setImageName("");
-    const first = videoLipSyncModels[0];
+    const first = firstAvailableModel(videoLipSyncModels);
     if (first) {
       setSelectedModelId(first.id);
       setSelectedResolution(first.inputs?.resolution?.default ?? "480p");
@@ -715,6 +724,10 @@ export default function LipSyncStudio({
 
   // ── Generation ──────────────────────────────────────────────────────────
   const handleGenerate = async () => {
+    if (!isModelAvailable(selectedModelId)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
     if (!audioUrl) {
       notifyError(copy.errors.needAudio);
       return;
@@ -771,7 +784,7 @@ export default function LipSyncStudio({
         });
       }
     } catch (e) {
-      console.error("[LipSyncStudio]", e);
+      logStudioError("[LipSyncStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
@@ -927,7 +940,7 @@ export default function LipSyncStudio({
                         {copy.badges.lipSync}
                       </span>
                       {entry.resolution && (
-                        <span className="text-[10px] text-white/40">{entry.resolution}</span>
+                        <span className="text-[10px] text-white/60">{entry.resolution}</span>
                       )}
                     </div>
                   </div>
@@ -946,7 +959,7 @@ export default function LipSyncStudio({
                 {copy.hero.titleLine2}
               </span>
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/65 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.hero.subtitle}
             </p>
           </div>

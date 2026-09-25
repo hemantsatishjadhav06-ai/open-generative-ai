@@ -1269,6 +1269,39 @@ const CanvasArea = forwardRef(
       return moves.length;
     };
 
+    // Lay out the named nodes (asset labels, in order) as a 'grid', 'row' or
+    // 'column' from the top-left of their current bounding box, using their
+    // real sizes. Returns how many of them are on the canvas.
+    const layoutNodes = (labels, layout = "grid", gap = 32) => {
+      const all = [...images, ...videos, ...audios];
+      const nodes = (Array.isArray(labels) ? labels : [])
+        .map((label) => all.find((n) => n.assetLabel === label))
+        .filter(Boolean)
+        .map((n) => ({ asset_id: n.assetLabel, x: n.x, y: n.y, w: n.width || 200, h: n.height || 200 }));
+      if (!nodes.length) return 0;
+      const originX = Math.min(...nodes.map((n) => n.x));
+      const originY = Math.min(...nodes.map((n) => n.y));
+      const moves = [];
+      if (layout === "row") {
+        let x = originX;
+        nodes.forEach((n) => { moves.push({ asset_id: n.asset_id, x, y: originY }); x += n.w + gap; });
+      } else if (layout === "column") {
+        let y = originY;
+        nodes.forEach((n) => { moves.push({ asset_id: n.asset_id, x: originX, y }); y += n.h + gap; });
+      } else {
+        const columns = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
+        const cellW = Math.max(...nodes.map((n) => n.w));
+        let y = originY;
+        for (let start = 0; start < nodes.length; start += columns) {
+          const row = nodes.slice(start, start + columns);
+          row.forEach((n, col) => moves.push({ asset_id: n.asset_id, x: originX + col * (cellW + gap), y }));
+          y += Math.max(...row.map((n) => n.h)) + gap;
+        }
+      }
+      arrangeNodes(moves);
+      return nodes.length;
+    };
+
     useImperativeHandle(
       ref,
       () => ({
@@ -1282,6 +1315,7 @@ const CanvasArea = forwardRef(
         // switched to non-destructive side-by-side placement.
         replaceAt: placeNextToSource,
         arrangeNodes,
+        layoutNodes,
         zoomIn: () => updateZoom(Math.min(5, zoom + 0.1)),
         zoomOut: () => updateZoom(Math.max(0.1, zoom - 0.1)),
         resetZoom: () => updateZoom(1),

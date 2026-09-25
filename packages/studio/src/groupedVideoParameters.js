@@ -28,6 +28,7 @@ import {
   planMiniMaxSelection,
 } from "./minimaxParameters.js";
 import { getGroupedVideoConfiguration } from "./groupedVideoModels.js";
+import { isModelAvailable } from "./modelAvailability.js";
 import { videoModelCatalog } from "./modelFamilies.js";
 import { getVideoWorkflowMediaAdjustments } from "./videoWorkflows.js";
 import {
@@ -80,9 +81,11 @@ function mediaAdjustments({ currentModelId, selection, currentWorkflowId, workfl
   );
 }
 
+// Plans that land on a variant the gateway can't run count as impossible
+// (the option shows as unavailable instead of failing on submit).
 export function planGroupedVideoSelection(options) {
   const plan = handlersByFamilyId.get(options.familyId)?.plan(options);
-  if (!plan) return null;
+  if (!plan || !isModelAvailable(plan.selection.modelId)) return null;
   const adjustments = mediaAdjustments({ ...options, selection: plan.selection });
   return adjustments.length > 0
     ? { ...plan, adjustments: [...plan.adjustments, ...adjustments] }
@@ -90,7 +93,9 @@ export function planGroupedVideoSelection(options) {
 }
 
 export function getGroupedVideoResolutionOptions(familyId, ...args) {
-  return handlersByFamilyId.get(familyId)?.resolutions(familyId, ...args) ?? { value: "", options: [] };
+  const field = handlersByFamilyId.get(familyId)?.resolutions(familyId, ...args) ?? { value: "", options: [] };
+  const options = field.options.filter((option) => !option.modelId || isModelAvailable(option.modelId));
+  return options.length === field.options.length ? field : { ...field, options };
 }
 
 export function getGroupedVideoSelectionAdjustments(options) {

@@ -1,8 +1,8 @@
 
-import { muapi } from '../lib/muapi.js';
+import { gateway } from '../lib/gateway.js';
 import { CameraControls } from './CameraControls.js';
 import { buildNanoBananaPrompt, CAMERA_MAP, LENS_MAP, FOCAL_PERSPECTIVE, APERTURE_EFFECT } from '../lib/promptUtils.js';
-import { AuthModal } from './AuthModal.js';
+import { requireSession } from './AccessCodeModal.js';
 import { t } from '../lib/i18n.js';
 
 export function CinemaStudio() {
@@ -538,11 +538,7 @@ export function CinemaStudio() {
         const basePrompt = textarea.value.trim();
         if (!basePrompt) return;
 
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) {
-            AuthModal(() => generateBtn.click());
-            return;
-        }
+        if (!(await requireSession(() => generateBtn.click()))) return;
 
         generateBtn.disabled = true;
         generateBtn.innerHTML = t('cinema.shooting');
@@ -557,7 +553,7 @@ export function CinemaStudio() {
         );
 
         try {
-            const res = await muapi.generateImage({
+            const res = await gateway.generateImage({
                 model: 'nano-banana-pro',
                 prompt: finalPrompt,
                 aspect_ratio: currentSettings.aspect_ratio,

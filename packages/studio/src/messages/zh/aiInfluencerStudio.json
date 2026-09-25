@@ -58,6 +58,18 @@
     "download": "下载"
   },
   "errors": {
-    "generationFailed": "生成失败，请重试。"
+    "generationFailed": "生成失败，请重试。",
+    "modelUnavailable": "Aquora 暂时无法生成角色，请稍后再试。"
+  },
+  "reference": {
+    "upload": "人脸参考",
+    "hint": "可选：上传一张人脸照片，保留这个人的样貌",
+    "uploading": "上传中 {progress}%",
+    "active": "人脸参考",
+    "alt": "人脸参考照片",
+    "remove": "移除人脸参考",
+    "notAnImage": "请选择图片文件作为人脸参考。",
+    "tooLarge": "人脸参考图片不能超过 10 MB。",
+    "uploadFailed": "上传失败：{message}"
   }
 }

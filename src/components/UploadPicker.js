@@ -1,5 +1,5 @@
-import { muapi } from '../lib/muapi.js';
-import { AuthModal } from './AuthModal.js';
+import { gateway } from '../lib/gateway.js';
+import { requireSession } from './AccessCodeModal.js';
 import { getUploadHistory, saveUpload, removeUpload, generateThumbnail } from '../lib/uploadHistory.js';
 
 /**
@@ -13,12 +13,13 @@ import { getUploadHistory, saveUpload, removeUpload, generateThumbnail } from '.
  * @param {number} [options.maxImages=1] - Maximum number of images selectable
  * @returns {{ trigger: HTMLElement, panel: HTMLElement, reset: function, setMaxImages: function }}
  */
-export function createUploadPicker({ anchorContainer, onSelect, onClear, maxImages: initialMaxImages = 1, uploadFn, requireApiKey }) {
-    // uploadFn(file) → Promise<string url>. Defaults to Muapi-hosted upload.
-    // requireApiKey() → boolean. Lets the caller suppress the AuthModal when
-    // the active provider doesn't need a Muapi key (e.g. local Wan2GP).
-    const doUpload = uploadFn || ((file) => muapi.uploadFile(file));
-    const needsKey = typeof requireApiKey === 'function' ? requireApiKey : () => true;
+export function createUploadPicker({ anchorContainer, onSelect, onClear, maxImages: initialMaxImages = 1, uploadFn, requiresSession }) {
+    // uploadFn(file) → Promise<string url>. Defaults to an upload to the
+    // Aquora gateway's storage.
+    // requiresSession() → boolean. Lets the caller skip the access-code check
+    // when the active provider runs locally (sd.cpp, Wan2GP).
+    const doUpload = uploadFn || ((file) => gateway.uploadFile(file));
+    const needsSession = typeof requiresSession === 'function' ? requiresSession : () => true;
     let panelOpen = false;
     let maxImages = initialMaxImages;
     let selectedEntries = []; // [{ url, thumbnail }, ...]
@@ -323,12 +324,9 @@ export function createUploadPicker({ anchorContainer, onSelect, onClear, maxImag
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
-        if (needsKey()) {
-            const apiKey = localStorage.getItem('muapi_key');
-            if (!apiKey) {
-                AuthModal(() => fileInput.click());
-                return;
-            }
+        if (needsSession() && !(await requireSession(() => fileInput.click()))) {
+            fileInput.value = '';
+            return;
         }
 
         showSpinner();

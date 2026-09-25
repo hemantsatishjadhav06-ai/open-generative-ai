@@ -45,16 +45,21 @@
     "resetZoomPan": "重置缩放与平移",
     "addImage": "添加图片",
     "runLayerDecomposition": "运行图层分解",
+    "runEdit": "编辑图片",
     "backToTools": "返回工具",
     "closePanel": "关闭面板",
     "regionalPromptPlaceholder": "在此输入提示词..."
   },
-  "sample": {
-    "clickToLoad": "点击加载此图层分解示例",
-    "original": "原图",
-    "layersCount": "5 个图层",
-    "try": "试试 →",
-    "clickToExplore": "点击查看示例"
+  "promptBar": {
+    "label": "描述要做的编辑",
+    "placeholderEdit": "描述要如何编辑这张图片...",
+    "placeholderSplit": "描述要如何编辑图片或拆分图层...",
+    "placeholderRegions": "描述 {count} 个标记区域的图层..."
+  },
+  "canvas": {
+    "uploading": "图片上传中... {progress}%",
+    "dropHeading": "点击或拖入一张图片",
+    "dropHint": "支持 PNG、JPEG、WEBP，最大 20MB"
   },
   "settings": {
     "heading": "设置",
@@ -130,23 +135,21 @@
     "decomposing": "分解中（{progress}%）...",
     "separateLayers": "分离图层 {count}",
     "upscaling": "超分辨率处理中（{progress}%）...",
-    "upscaleCost": "超分辨率 {cost}",
+    "upscale": "超分辨率",
+    "withEstimate": "{label} · 约 {cost}",
     "removingBackground": "正在移除背景（{progress}%）...",
-    "removeBackgroundCost": "移除背景 1.0",
+    "removeBackground": "移除背景",
     "expandingBorders": "正在扩展边界（{progress}%）...",
-    "expandImageCost": "扩展图像 0.03"
+    "expandImage": "扩展图像"
   },
   "toasts": {
-    "enterApiKeyUpload": "请输入您的 API 密钥以上传图片。",
     "imageUploaded": "图片上传成功！",
     "uploadFailed": "上传失败：{error}",
     "uploadImageFileOnly": "请上传图片文件。",
     "fileTooLarge": "文件过大（最大 20MB）：{name}",
     "viewReset": "视图已重置",
-    "enterApiKey": "请输入您的 API 密钥。",
     "enterRegionPrompt": "请为所选区域输入提示词。",
     "editFailed": "编辑失败：{error}",
-    "apiKeyMissingSet": "缺少 API 密钥，请先设置您的 API 密钥。",
     "uploadOrSelectDecompose": "请上传或选择一张图片以分解图层。",
     "decomposedInto": "已分解为 {count} 个图层！",
     "decompositionFailed": "图层分解失败：{error}",
@@ -166,11 +169,14 @@
     "resetCategory": "已重置 {category}",
     "colorGradingReset": "调色已重置为默认",
     "downloadedGraded": "已下载调色后的图像！",
-    "loadedSample": "已加载 Seedream 5 层示例！",
-    "apiKeyMissing": "缺少 API 密钥。",
     "uploadImageFirst": "请先上传一张图片。",
     "toolCompleted": "{tool} 已成功完成！",
     "operationFailed": "操作失败：{error}",
-    "downloadingAll": "正在下载所有图层..."
+    "downloadingAll": "正在下载所有图层...",
+    "toolUnavailable": "Aquora 暂不支持这个工具。",
+    "regionEditDone": "区域编辑完成！",
+    "layersGenerated": "已生成 {count} 个图层！",
+    "enterEditPrompt": "请先描述要做的编辑。",
+    "editLabel": "编辑"
   }
 }

@@ -1,0 +1,2828 @@
+[
+  {
+    "model_id": "video-watermark-remover",
+    "key": "video-watermark-remover",
+    "name": "AI Video Watermark Remover",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "bria/video/erase/prompt",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "prompt": "watermark, logo and overlaid text",
+      "preserve_audio": true,
+      "auto_trim": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bria/video/erase/prompt/api",
+    "notes": "models.js:24632. Legacy flagship utility (legacy.ai llms.txt: removes Sora 2 watermarks/logos/captions, 0.065/call). fal has no watermark remover (api.fal.ai/v1/models?q=watermark -> only fal-ai/invisible-watermark for images). Fallback Bria prompt-eraser works on clips <5 s only (auto_trim trims longer input) - not a like-for-like replacement; consider hiding this tool. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-v2.6-std-motion-control",
+    "key": "kling-v2.6-std-motion-control",
+    "name": "Kling 2.6 Standard Motion Control",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.6/standard/motion-control",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "character_orientation": "character_orientation"
+    },
+    "value_transforms": {
+      "character_orientation": "required on fal; pass Legacy value ('image'|'video', Legacy default 'image'); default to 'image' when absent"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/standard/motion-control/api",
+    "notes": "models.js:24643. Exact model+tier. fal required: image_url, video_url, character_orientation. fal also exposes keep_original_sound (default true) which Legacy v2.6 did not expose. 'video' orientation allows up to 30s motion reference. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-v3.0-std-motion-control",
+    "key": "kling-v3.0-std-motion-control",
+    "name": "Kling 3.0 Standard Motion Control",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/standard/motion-control",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "character_orientation": "character_orientation",
+      "keep_original_sound": "keep_original_sound"
+    },
+    "value_transforms": {
+      "character_orientation": "required on fal; pass Legacy value ('image'|'video', Legacy default 'image'); default to 'image' when absent"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/standard/motion-control/api",
+    "notes": "models.js:24657. Exact model+tier. fal adds optional elements[] (1 facial element, @Element1) not used by Legacy. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-v3.0-pro-motion-control",
+    "key": "kling-v3.0-pro-motion-control",
+    "name": "Kling 3.0 Pro Motion Control",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/pro/motion-control",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "character_orientation": "character_orientation",
+      "keep_original_sound": "keep_original_sound"
+    },
+    "value_transforms": {
+      "character_orientation": "required on fal; pass Legacy value ('image'|'video', Legacy default 'image'); default to 'image' when absent"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/motion-control/api",
+    "notes": "models.js:24670. Exact model+tier. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ai-video-face-swap",
+    "key": "ai-video-face-swap",
+    "name": "AI Video Face Swap",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/pixverse/swap",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "mode": "person",
+      "original_sound_switch": true
+    },
+    "drop_params": [
+      "target_gender",
+      "target_index"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/swap/api",
+    "notes": "models.js:24684. Legacy generic tool (legacy.ai/playground/ai-video-face-swap: image_url, video_url<=720p/10MB/600 frames, target_gender, target_index). fal has no dedicated video face-swap (q=face swap returns only fal-ai/hy-wu-edit, an image editor). PixVerse Swap mode=person (fal describes it as 'Swap for face replacement') is the nearest capability but swaps the whole person/identity and has no face-index/gender filter; resolution 360p|540p|720p (default 720p), keyframe_id default 1. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "mmaudio-v2-video-to-video",
+    "key": "mmaudio-v2/video-to-video",
+    "name": "MMAudio v2",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/mmaudio-v2",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "prompt": "fal requires prompt: send '' when user left it empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/mmaudio-v2/api",
+    "notes": "models.js:24696. Same model (MMAudio V2 video->audio). fal returns the input video with the generated soundtrack muxed in (output video.url). Optional fal knobs: duration 1-30 (default 8), negative_prompt, num_steps, cfg_strength, seed. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "runway-aleph-v2v",
+    "key": "runway-aleph-v2v",
+    "name": "Runway Aleph",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/luma-dream-machine/ray-2/modify",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "mode": "flex_1"
+    },
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2/modify/api",
+    "notes": "models.js:24707. Runway Aleph is not on fal (api.fal.ai/v1/models?q=runway returns 0 models, 2026-09-24). Fallback Luma Ray 2 Modify = prompt-driven restyle preserving motion/structure (mode adhere_1..reimagine_3, default flex_1); it has no aspect_ratio (output keeps source). Alternatives: fal-ai/kling-video/o3/pro/video-to-video/edit (prompt edit, keep_audio) or google/gemini-omni-flash/edit. Legacy aspect_ratio option from videoToolCapabilities.js:387-398. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ai-dance-effects",
+    "key": "ai-dance-effects",
+    "name": "AI Dance Effects",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/wan/v2.2-14b/animate/move",
+    "confidence": "none",
+    "param_map": {
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "'480p'|'720p' pass through (fal also accepts 580p)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "prompt"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/move/api",
+    "notes": "models.js:24719. Legacy-proprietary effect (provider legacy, family effects; API params per legacy.ai docs: prompt?, image_url, video_url, resolution 480p|720p). The parameter shape matches Wan 2.2 Animate Move exactly, so it is probably a wrapper around it (inferred, not documented). Fallback animates the image with the driving dance video; fal has no prompt input. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ai-video-upscaler",
+    "key": "ai-video-upscaler",
+    "name": "AI Video Upscaler",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/seedvr/upscale/video",
+    "fallback_endpoint": "fal-ai/bytedance-upscaler/upscale/video",
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "resolution": "target_resolution"
+    },
+    "value_transforms": {
+      "target_resolution": "'720p'->'720p', '1080p'->'1080p', '2k'->'1440p', '4k'->'2160p'"
+    },
+    "fixed_params": {
+      "upscale_mode": "target"
+    },
+    "drop_params": [
+      "copy_audio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/seedvr/upscale/video/api",
+    "notes": "models.js:24731. Legacy generic tool (underlying model undisclosed); options resolution 720p|1080p|2k|4k + copy_audio (videoToolCapabilities.js:279-299). SeedVR2 target mode covers all four tiers. SeedVR schema does not document audio passthrough: if copy_audio=true and output is silent, remux with fal-ai/ffmpeg-api/merge-audio-video (inferred need, verify). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "wan2.2-edit-video",
+    "key": "wan2.2-edit-video",
+    "name": "Wan2.2 Edit Video",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/wan-vace-apps/video-edit",
+    "fallback_endpoint": "fal-ai/wan/v2.2-a14b/video-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "'480p'|'720p' pass through (fal enum auto|240p|360p|480p|580p|720p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-vace-apps/video-edit/api",
+    "notes": "models.js:24742. Legacy 'Wan 2.2 Edit Video' (legacy.ai docs: instruction edit of attire/appearance, 480p/720p uploads up to 2 min). fal's instruction-edit endpoint for Wan is 'Wan VACE Video Edit' (auto-downsample for long clips, optional image_urls refs); fal does not state the Wan version (likely 2.1 VACE - inferred). Fallback Wan 2.2 A14B video-to-video is the exact Wan 2.2 checkpoint but is an SDEdit-style restyle (strength 0.9), not an instruction editor. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "heygen-video-translate",
+    "key": "heygen-video-translate",
+    "name": "HeyGen Video Translate",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/heygen/v2/translate/precision",
+    "fallback_endpoint": "fal-ai/heygen/v2/translate/speed",
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "language": "output_language"
+    },
+    "value_transforms": {
+      "output_language": "identical 178-value enum (Legacy videoToolCapabilities.js:1-180 == fal output_language enum, verified 2026-09-24); pass through, default Hindi"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/heygen/v2/translate/precision/api",
+    "notes": "models.js:24757. Same provider/product (HeyGen video translate, voice clone + lip sync). precision = lip-synced quality tier; /speed is the faster tier with identical schema. Extra fal options: enable_caption (returns caption_file), translate_audio_only, speaker_num, srt_url. Max 8 min input. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "topaz-video-upscale",
+    "key": "topaz-video-upscale",
+    "name": "Topaz Video Upscale",
+    "list": "v2vModels",
+    "fal_endpoint": "topaz/upscale/video/precision",
+    "fallback_endpoint": "fal-ai/topaz/upscale/video",
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "upscale_factor": "upscale_factor"
+    },
+    "value_transforms": {
+      "upscale_factor": "Legacy 1|2|4 -> number (fal range 1-4, default 2)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/topaz/upscale/video/precision/api",
+    "notes": "models.js:24768. Same vendor (Topaz). topaz/upscale/video/precision is the active listing entry; fal-ai/topaz/upscale/video has the same schema (upscale_factor 1-4, model enum incl. Proteus/Starlight) but is absent from the active category listing. Optional: model, target_fps (interpolation), H264_output (default false = H265 output; set true for browser playback). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ai-video-upscaler-pro",
+    "key": "ai-video-upscaler-pro",
+    "name": "AI Video Upscaler Pro",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/bytedance-upscaler/upscale/video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "resolution": "target_resolution"
+    },
+    "value_transforms": {
+      "target_resolution": "'720p'->'1080p' (fal minimum), '1080p'->'1080p', '2k'->'2k', '4k'->'4k'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance-upscaler/upscale/video/api",
+    "notes": "models.js:24779. Legacy generic 'Pro' upscaler (legacy.ai docs: video_url, resolution 720p|1080p|2k|4k; underlying model undisclosed). ByteDance upscaler covers 1080p..8k with enhancement_tier fast|standard|pro and preset general|ugc|aigc...; choose enhancement_tier='pro' for highest quality (costlier, inferred). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "remix-video",
+    "key": "remix-video",
+    "name": "Remix Video",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/luma-dream-machine/ray-2-flash/reframe",
+    "fallback_endpoint": "fal-ai/ltx-2.3/reframe",
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "'1:1'|'16:9'|'9:16' pass through; required on fal - default Legacy '9:16'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2-flash/reframe/api",
+    "notes": "models.js:24790. Legacy 'Remix Video' is an AI reframe/resize utility (legacy.ai/playground/remix-video: video_url <20MB & <10s, aspect_ratio 1:1|16:9|9:16 default 9:16). Luma Ray 2 Flash Reframe outpaints to the new aspect. LTX 2.3 reframe (1:1,4:5,5:4,9:16,16:9; 720p|1080p) is the alternative. The app sends no aspect_ratio today (no configurable input in videoToolCapabilities.js), so gateway must default to '9:16'. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-o1-video-edit",
+    "key": "kling-o1-video-edit",
+    "name": "Kling O1 Pro Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/video-to-video/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "image_urls",
+      "keep_original_sound": "keep_audio"
+    },
+    "value_transforms": {
+      "image_urls": "string[] pass through, max 4 (elements + images <= 4)",
+      "keep_audio": "boolean pass through; fal default false vs Legacy default true -> always send explicitly",
+      "prompt": "reference images as @Image1..@Image4 in the prompt (fal convention)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/video-to-video/edit/api",
+    "notes": "models.js:24801. Exact model (Kling O1 Pro edit). fal has no aspect_ratio (output follows source video). Source video constraints on fal: mp4/mov, 3-10 s, 720-2160 px, <=200MB. payloadDefaults images_list:[] (videoToolCapabilities.js:267-271) -> omit image_urls when empty. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-o1-video-edit-fast",
+    "key": "kling-o1-video-edit-fast",
+    "name": "Kling O1 Pro Edit Fast",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/standard/video-to-video/edit",
+    "fallback_endpoint": "fal-ai/kling-video/o1/video-to-video/edit",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "image_urls",
+      "keep_original_sound": "keep_audio"
+    },
+    "value_transforms": {
+      "image_urls": "string[] pass through, max 4 (elements + images <= 4)",
+      "keep_audio": "boolean pass through; fal default false vs Legacy default true -> always send explicitly",
+      "prompt": "reference images as @Image1..@Image4 in the prompt (fal convention)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/standard/video-to-video/edit/api",
+    "notes": "models.js:24821. fal has no 'fast' O1 edit tier; O1 edit exists only as pro (fal-ai/kling-video/o1/video-to-video/edit) and standard. Standard is the nearest lighter/faster tier (inferred). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-o1-standard-video-edit",
+    "key": "kling-o1-standard-video-edit",
+    "name": "Kling O1 Standard Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/standard/video-to-video/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "image_urls",
+      "keep_original_sound": "keep_audio"
+    },
+    "value_transforms": {
+      "image_urls": "string[] pass through, max 4 (elements + images <= 4)",
+      "keep_audio": "boolean pass through; fal default false vs Legacy default true -> always send explicitly",
+      "prompt": "reference images as @Image1..@Image4 in the prompt (fal convention)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/standard/video-to-video/edit/api",
+    "notes": "models.js:24841. Exact model+tier. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "wan2.2-spicy-video-extend",
+    "key": "wan2.2-spicy-video-extend",
+    "name": "Wan2.2 Spicy Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/ltx-2.3/extend-video",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "5|8 -> number seconds (fal 2-20)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3/extend-video/api",
+    "notes": "models.js:24861. No Wan 2.2 video-extend on fal, and Legacy 'spicy' = relaxed-moderation tier with no fal equivalent. Different-family fallback LTX 2.3 extend (mode 'end'). Another option: fal-ai/wan/v2.7/image-to-video with video_url (Wan 2.7 continuation, 720p|1080p). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-v1.5-pro-video-extend",
+    "key": "seedance-v1.5-pro-video-extend",
+    "name": "Seedance v1.5 Pro Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url]",
+      "duration": "int 4-12 -> string ('5')",
+      "resolution": "'480p'|'720p'|'1080p' pass through"
+    },
+    "fixed_params": {
+      "task": "extension"
+    },
+    "drop_params": [
+      "camera_fixed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:24880. fal hosts Seedance 1.5 Pro only as text-to-video/image-to-video (no extend). Fallback: Seedance 2.5 reference-to-video task='extension' (newer model). Alternative same-model emulation: take last frame -> fal-ai/bytedance/seedance/v1.5/pro/image-to-video -> concat with fal-ai/ffmpeg-api/merge-videos. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-v1.5-pro-video-extend-fast",
+    "key": "seedance-v1.5-pro-video-extend-fast",
+    "name": "Seedance v1.5 Pro Video Extend Fast",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url]",
+      "duration": "int 4-12 -> string ('5')",
+      "resolution": "'480p'|'720p'|'1080p' pass through"
+    },
+    "fixed_params": {
+      "task": "extension"
+    },
+    "drop_params": [
+      "camera_fixed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:24893. Same as seedance-v1.5-pro-video-extend (fast tier also absent on fal). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "add-video-watermark",
+    "key": "add-video-watermark",
+    "name": "Add Video Watermark",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:24909. Legacy states this is \"Free local processing using FFmpeg\" (legacy.ai/playground/add-video-watermark: video_url, watermark_image_url, position top-left|top-right|bottom-left|bottom-right|center, opacity 0.7, scale 0.15). Implement in our gateway with ffmpeg overlay (no model needed). fal-ai/ffmpeg-api/compose only stacks track keyframes (no position/opacity/scale), so it is not a fit. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2-watermark-remover",
+    "key": "seedance-2.0-watermark-remover",
+    "name": "Seedance 2 Watermark Remover",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "bria/video/erase/prompt",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "prompt": "Seedance watermark / logo text",
+      "auto_trim": true,
+      "preserve_audio": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bria/video/erase/prompt/api",
+    "notes": "models.js:24921. Legacy utility (LaMa inpainting over the known SD 2.0 watermark box; seedanceModels.js:174). No fal equivalent. Options: run our own ffmpeg delogo/LaMa on the fixed watermark region locally, or Bria prompt-eraser (<5 s clips). Better: generate on fal, whose Seedance outputs carry no Legacy/Dreamina watermark, making this tool unnecessary. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ai-captions",
+    "key": "ai-captions",
+    "name": "AI Captions",
+    "list": "v2vModels",
+    "fal_endpoint": "veed/subtitles",
+    "fallback_endpoint": "fal-ai/workflow-utilities/auto-subtitle",
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "language": "language",
+      "theme": "preset"
+    },
+    "value_transforms": {
+      "language": "Legacy name -> BCP-47: 'English'|'English (USA)'->'en-US', 'English (UK)'->'en-GB', 'English (Australia)'->'en-AU', 'Spanish (Spain)'->'es-ES', 'Spanish (Mexico)'->'es-MX', 'French (France)'->'fr-FR', 'French (Canada)'->'fr-CA', 'Portuguese (Brazil)'->'pt-BR', 'Portuguese (Portugal)'->'pt-PT', 'Japanese'->'ja-JP', 'Korean'->'ko-KR', 'German'->'de-DE', 'Chinese'->'zh', 'Arabic (Saudi Arabia)'->'ar-SA', 'Arabic (UAE)'->'ar-AE'; omit for auto-detect",
+      "preset": "required; Legacy themes -> VEED presets: 'Ali'->'ali', 'Karl'->'karl', others (Hormozi_1..3, Beast, Noah, Luke, Devin, Celine, Maya, Ella, Dan, David, Tracy, Umi, Iman, William) -> 'hustle'|'slay'|'simple' (style lookalikes, choose table); default 'hustle'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/veed/subtitles/api",
+    "notes": "models.js:24932. Legacy uses Vadoo's caption engine (legacy.ai/playground/ai-captions: video_url, language, theme Hormozi_1...). No Vadoo on fal. veed/subtitles = animated caption presets + 164 languages + optional translation_language; fal-ai/workflow-utilities/auto-subtitle = TikTok-style karaoke captions (font/colour/position knobs, language ISO code). Theme parity is visual-approximate. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "ltx-2.3-video-extend",
+    "key": "ltx-2.3-video-extend",
+    "name": "LTX 2.3 Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/ltx-2.3/extend-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 1-20 -> number; clamp to fal minimum 2"
+    },
+    "fixed_params": {
+      "mode": "end"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3/extend-video/api",
+    "notes": "models.js:24943. Exact model (LTX 2.3 Pro extend). fal also supports mode 'start' and context seconds. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2-video-watermark-remover-pro",
+    "key": "seedance-2-video-watermark-remover-pro",
+    "name": "Seedance 2 Video Watermark Remover Pro",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "bria/video/erase/prompt",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "prompt": "watermark, logo and overlaid text",
+      "auto_trim": true,
+      "preserve_audio": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bria/video/erase/prompt/api",
+    "notes": "models.js:24963. Legacy utility (\"SD 2\" model watermark removal). No fal equivalent; same fallback/advice as seedance-2-watermark-remover. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "pixverse-v6-extend",
+    "key": "pixverse-v6-extend",
+    "name": "PixVerse V6 Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v6/extend",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio_switch": "generate_audio_switch",
+      "negative_prompt": "negative_prompt",
+      "style": "style"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v6/extend/api",
+    "notes": "models.js:24974. Exact model; all inputs 1:1 (resolution 360p|540p|720p|1080p, duration 1-15, style enum identical). Optional seed. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "wan2.7-video-extend",
+    "key": "wan2.7-video-extend",
+    "name": "Wan 2.7 Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "audio_url": "audio_url",
+      "negative_prompt": "negative_prompt",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 5-15 pass through (fal enum 2-15)",
+      "resolution": "'720p'|'1080p' pass through (fal default 1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/image-to-video/api",
+    "notes": "models.js:25007. fal exposes Wan 2.7 continuation on the image-to-video endpoint: video_url = 'URL of a video clip to continue from' (2-10 s, <=100MB; cannot be combined with image_url); audio_url = driving audio (2-30 s). Same model family+mode. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "wan2.7-video-edit",
+    "key": "wan2.7-video-edit",
+    "name": "Wan 2.7 Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/edit-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "reference_image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "audio_setting": "audio_setting"
+    },
+    "value_transforms": {
+      "reference_image_url": "images_list[0] (fal accepts ONE reference image; Legacy allowed up to 3)",
+      "duration": "0 (match input) or 2-10; Legacy 1 -> 2"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "negative_prompt"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/edit-video/api",
+    "notes": "models.js:25029. Exact model (Wan 2.7 edit). Gaps: single reference image, no negative_prompt; fal adds optional aspect_ratio + seed. Input video 2-10 s, <=100MB. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "happy-horse-1-video-edit-1080p",
+    "key": "happy-horse-1-video-edit-1080p",
+    "name": "HappyHorse 1.0 Edit 1080P",
+    "list": "v2vModels",
+    "fal_endpoint": "alibaba/happy-horse/video-edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "reference_image_urls",
+      "audio_setting": "audio_setting",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "reference_image_urls": "string[] max 5 pass through (refer as @Image1..@Image5)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/video-edit/api",
+    "notes": "models.js:25058. Exact model (Happy Horse 1.0 video edit). Legacy fixedParameters resolution=1080p (models.js entry) -> fal resolution. Input 3-60 s, <=100MB (same constraints as videoToolCapabilities.js:217-228). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "happy-horse-1-video-edit-720p",
+    "key": "happy-horse-1-video-edit-720p",
+    "name": "HappyHorse 1.0 Edit 720P",
+    "list": "v2vModels",
+    "fal_endpoint": "alibaba/happy-horse/video-edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "reference_image_urls",
+      "audio_setting": "audio_setting",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "reference_image_urls": "string[] max 5 pass through (refer as @Image1..@Image5)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/video-edit/api",
+    "notes": "models.js:25074. Exact model (Happy Horse 1.0 video edit). Legacy fixedParameters resolution=720p (models.js entry) -> fal resolution. Input 3-60 s, <=100MB (same constraints as videoToolCapabilities.js:217-228). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "happy-horse-1.1-video-edit-1080p",
+    "key": "happy-horse-1.1-video-edit-1080p",
+    "name": "Happy Horse 1.1 Video Edit 1080P",
+    "list": "v2vModels",
+    "fal_endpoint": "alibaba/happy-horse/video-edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "reference_image_urls",
+      "audio_setting": "audio_setting",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "reference_image_urls": "string[] max 5 pass through"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/video-edit/api",
+    "notes": "models.js:25090. fal has Happy Horse v1.1 only for text/image/reference-to-video (alibaba/happy-horse/v1.1/*); video-edit exists only as v1.0 (alibaba/happy-horse/video-edit). Mapped to the 1.0 editor. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "happy-horse-1.1-video-edit-720p",
+    "key": "happy-horse-1.1-video-edit-720p",
+    "name": "Happy Horse 1.1 Video Edit 720P",
+    "list": "v2vModels",
+    "fal_endpoint": "alibaba/happy-horse/video-edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "images_list": "reference_image_urls",
+      "audio_setting": "audio_setting",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "reference_image_urls": "string[] max 5 pass through"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/video-edit/api",
+    "notes": "models.js:25106. fal has Happy Horse v1.1 only for text/image/reference-to-video (alibaba/happy-horse/v1.1/*); video-edit exists only as v1.0 (alibaba/happy-horse/video-edit). Mapped to the 1.0 editor. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "gemini-omni-video-edit",
+    "key": "gemini-omni-video-edit",
+    "name": "Gemini Omni Video Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "image_urls"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/edit/api",
+    "notes": "models.js:25122. Same model (Gemini Omni Flash edit). Legacy accepts up to 7 reference images (imageField image_urls, maxImages 7); fal's edit endpoint takes only prompt+video_url, so references are dropped (use google/gemini-omni-flash/reference-to-video for image-referenced generation). Not available to EEA/CH/UK uploaders per fal docs. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "video-background-remover",
+    "key": "video-background-remover",
+    "name": "Video Background Remover",
+    "list": "v2vModels",
+    "fal_endpoint": "bria/video/background-removal/v3",
+    "fallback_endpoint": "veed/video-background-removal",
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "preserve_audio": "preserve_audio",
+      "background_color": "background_color",
+      "output_container_and_codec": "output_container_and_codec"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "background_color": "Transparent",
+      "output_container_and_codec": "webm_vp9",
+      "preserve_audio": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bria/video/background-removal/v3/api",
+    "notes": "models.js:25136. Legacy's documented params (legacy.ai/playground/video-background-remover: preserve_audio, background_color 11 colours incl. Transparent, output_container_and_codec webm_vp9|mp4_h264|...|gif) are identical to Bria VRMBG 3.0 on fal, i.e. Legacy wraps it. fal default background_color is 'Black' vs Legacy 'Transparent' -> send Transparent when unspecified (fixed_params are defaults, user values win). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "kling-v2.6-pro-motion-control",
+    "key": "kling-v2.6-pro-motion-control",
+    "name": "Kling 2.6 Pro Motion Control",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.6/pro/motion-control",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "character_orientation": "character_orientation"
+    },
+    "value_transforms": {
+      "character_orientation": "required on fal; pass Legacy value ('image'|'video', Legacy default 'image'); default to 'image' when absent"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/motion-control/api",
+    "notes": "models.js:25147. Exact model+tier. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "infinitetalk-video-to-video",
+    "key": "infinitetalk-video-to-video",
+    "name": "InfiniteTalk",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/infinitalk/video-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "audio_url": "audio_url",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "prompt": "required on fal; send a neutral default (e.g. 'A person is talking') when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/infinitalk/video-to-video/api",
+    "notes": "models.js:25161. Exact model. fal extras: num_frames 41-241 (default 145; >81 billed 1.25x), acceleration, seed. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "wan2.2-animate",
+    "key": "wan2.2-animate",
+    "name": "Wan2.2 Animate",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-14b/animate/move",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "resolution": "resolution",
+      "mode": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "mode": "'animate' -> fal-ai/wan/v2.2-14b/animate/move ; 'replace' -> fal-ai/wan/v2.2-14b/animate/replace",
+      "resolution": "'480p'|'720p' pass through"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "prompt"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/move/api",
+    "notes": "models.js:25219. Exact model; fal splits the two modes into two endpoints with identical schemas. fal has no prompt input (prompt only echoed in output). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "volcengine-video-to-video-lip-sync",
+    "key": "volcengine-video-to-video-lip-sync",
+    "name": "Volcengine Lipsync",
+    "list": "v2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/sync-lipsync/v2",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "model": "lipsync-2"
+    },
+    "drop_params": [
+      "mode",
+      "separate_vocal",
+      "open_scenedet",
+      "align_audio",
+      "align_audio_reverse",
+      "templ_start_seconds"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sync-lipsync/v2/api",
+    "notes": "models.js:25289. Volcengine (ByteDance China cloud) lip-sync is not on fal. Fallback sync.so lipsync-2 (video+audio). For looping when audio is longer than video use fal-ai/latentsync loop_mode or sync v3 options.sync_mode. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-edit",
+    "key": "seedance-2.5-video-edit",
+    "name": "Seedance 2.5 Video Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25377. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-edit-480p",
+    "key": "seedance-2.5-video-edit-480p",
+    "name": "Seedance 2.5 Video Edit 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25480. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-edit-1080p",
+    "key": "seedance-2.5-video-edit-1080p",
+    "name": "Seedance 2.5 Video Edit 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25583. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-edit-4k",
+    "key": "seedance-2.5-video-edit-4k",
+    "name": "Seedance 2.5 Video Edit 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25686. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-extend",
+    "key": "seedance-2.5-video-extend",
+    "name": "Seedance 2.5 Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25789. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-extend-480p",
+    "key": "seedance-2.5-video-extend-480p",
+    "name": "Seedance 2.5 Video Extend 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25874. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-extend-1080p",
+    "key": "seedance-2.5-video-extend-1080p",
+    "name": "Seedance 2.5 Video Extend 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:25959. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-video-extend-4k",
+    "key": "seedance-2.5-video-extend-4k",
+    "name": "Seedance 2.5 Video Extend 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26044. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-edit",
+    "key": "seedance-2.5-intl-video-edit",
+    "name": "Seedance 2.5 Intl Video Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26129. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-edit",
+    "key": "seedance-2.5-spicy-video-edit",
+    "name": "Seedance 2.5 Spicy Video Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26232. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-edit-480p",
+    "key": "seedance-2.5-intl-video-edit-480p",
+    "name": "Seedance 2.5 Intl Video Edit 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26335. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-edit-480p",
+    "key": "seedance-2.5-spicy-video-edit-480p",
+    "name": "Seedance 2.5 Spicy Video Edit 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26438. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-edit-1080p",
+    "key": "seedance-2.5-intl-video-edit-1080p",
+    "name": "Seedance 2.5 Intl Video Edit 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26541. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-edit-1080p",
+    "key": "seedance-2.5-spicy-video-edit-1080p",
+    "name": "Seedance 2.5 Spicy Video Edit 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26644. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-edit-4k",
+    "key": "seedance-2.5-intl-video-edit-4k",
+    "name": "Seedance 2.5 Intl Video Edit 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26747. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-edit-4k",
+    "key": "seedance-2.5-spicy-video-edit-4k",
+    "name": "Seedance 2.5 Spicy Video Edit 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "images_list": "image_urls",
+      "audios_list": "audio_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5'); ignored by fal for task=editing (coerced to 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "string[] <=30 (refer as @Image1..)",
+      "audio_urls": "string[] <=10 (refer as @Audio1..)"
+    },
+    "fixed_params": {
+      "task": "editing",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26850. Exact model: fal Seedance 2.5 reference-to-video with task='editing' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-extend",
+    "key": "seedance-2.5-intl-video-extend",
+    "name": "Seedance 2.5 Intl Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:26953. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-extend",
+    "key": "seedance-2.5-spicy-video-extend",
+    "name": "Seedance 2.5 Spicy Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27038. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-extend-480p",
+    "key": "seedance-2.5-intl-video-extend-480p",
+    "name": "Seedance 2.5 Intl Video Extend 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27123. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-extend-480p",
+    "key": "seedance-2.5-spicy-video-extend-480p",
+    "name": "Seedance 2.5 Spicy Video Extend 480p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27208. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-extend-1080p",
+    "key": "seedance-2.5-intl-video-extend-1080p",
+    "name": "Seedance 2.5 Intl Video Extend 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27293. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-extend-1080p",
+    "key": "seedance-2.5-spicy-video-extend-1080p",
+    "name": "Seedance 2.5 Spicy Video Extend 1080p",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27378. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-intl-video-extend-4k",
+    "key": "seedance-2.5-intl-video-extend-4k",
+    "name": "Seedance 2.5 Intl Video Extend 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27463. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'Intl' = hosting/routing tier of the same model (seedanceModels.js:66-80); fal has one global endpoint plus bytedance/seedance-2.5/us/reference-to-video (US-hosted, 480p/720p only). fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "seedance-2.5-spicy-video-extend-4k",
+    "key": "seedance-2.5-spicy-video-extend-4k",
+    "name": "Seedance 2.5 Spicy Video Extend 4K",
+    "list": "v2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "high_bitrate": "bitrate_mode",
+      "aspect_ratio": "aspect_ratio",
+      "last_image": "image_urls"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (refer to it as @Video1 in prompt)",
+      "duration": "int 4-30 -> string ('5')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto' (unsupported), others pass through; fal coerces to 'auto' for editing/extension",
+      "seed": "-1 -> omit",
+      "image_urls": "last_image -> [last_image]; fal has no end-frame field, so add 'end on the frame shown in @Image1' to the prompt (inferred emulation)"
+    },
+    "fixed_params": {
+      "task": "extension",
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:27548. Exact model: fal Seedance 2.5 reference-to-video with task='extension' (fal: 'Editing modifies a reference video and automatically coerces aspect_ratio and duration to auto. Extension continues a reference video and automatically coerces aspect_ratio to auto.'). Unsuffixed Legacy Seedance 2.5 ids render at 720p (seedanceModels.js:153-165). Legacy 'spicy' = relaxed-moderation tier; fal applies standard moderation and has no switch, so NSFW-leaning edits will be refused. fal Seedance 2.5 tops out at 1080p: render 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p'). fal extras: codec auto|H264|H265, end_user_id. Limits: video_urls <=10 (each 1.8-30.2 s, combined <=30.2 s, <=200MB), image_urls <=30, audio_urls <=10. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "flux-3-video-extend",
+    "key": "flux-3-video-extend",
+    "name": "FLUX 3 Video Extend",
+    "list": "v2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/extend-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 5-20 pass through (fal accepts 5..20 or 'auto')",
+      "aspect_ratio": "pass through (fal also accepts auto, 2:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/extend-video/api",
+    "notes": "models.js:27633. Exact model (FLUX 3 extend). Input MP4 <50MB, <15 s. fal extra: safety_tolerance 0-4 (default 2). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "flux-3-video-upscaler",
+    "key": "flux-3-video-upscaler",
+    "name": "FLUX Video Upscale",
+    "list": "v2vModels",
+    "fal_endpoint": "blackforestlabs/flux-video-upscale",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "prompt": "prompt",
+      "upscale_factor": "upscale_factor",
+      "creativity": "creativity"
+    },
+    "value_transforms": {
+      "upscale_factor": "Legacy 1-4 step 0.5 -> clamp to fal 1.5-3",
+      "creativity": "0|1 pass through (fal default 1, Legacy default 0 -> always send)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-video-upscale/api",
+    "notes": "models.js:27714. Exact model (FLUX video upscale). Input MP4 <=20 s, <=50MB. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "flux-3-video-extend-draft",
+    "key": "flux-3-video-extend-draft",
+    "name": "FLUX 3 Video Extend Draft",
+    "list": "v2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/extend-video/draft",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 5-20 pass through (or 'auto')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/extend-video/draft/api",
+    "notes": "models.js:27771. Exact model (FLUX 3 extend draft). Output also includes draft_cache file (for draft-enhance: blackforestlabs/flux-3/draft-enhance). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "gemini-omni-flash-1-1-edit",
+    "key": "gemini-omni-flash-1-1-edit",
+    "name": "Gemini Omni 1.1 Flash Edit",
+    "list": "v2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/v1.1/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_url",
+      "resolution": "resolution"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/v1.1/edit/api",
+    "notes": "models.js:27840. Exact model; resolution enum identical (360p|720p|1080p|4k, default 720p). Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "depth-anything",
+    "key": "depth-anything",
+    "name": "Depth Anything V2",
+    "list": "v2vModels",
+    "fal_endpoint": "fal-ai/depth-anything-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "image_url": "(route) fal-ai/image-preprocessors/depth-anything/v2 image_url"
+    },
+    "value_transforms": {
+      "image_url": "when only image_url is supplied call fal-ai/image-preprocessors/depth-anything/v2 {image_url} -> image.url"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/depth-anything-video/api",
+    "notes": "models.js:27888. fal video endpoint is Video-Depth-Anything (VDA-Small/Base/Large, default Large) built on Depth Anything V2; Legacy says 'Depth Anything V2' per frame. Options: colormap (default grayscale), resolution, side_by_side, include_raw_depths. Image path verified: fal-ai/image-preprocessors/depth-anything/v2 -> image.url. Payload built by studio client:214-235 processV2V -> videoToolCapabilities.js:660-679 buildVideoToolPayload (video_url + image_url->imageField + prompt when hasPrompt + configurable tool options from videoToolCapabilities.js:274-421)."
+  },
+  {
+    "model_id": "infinitetalk-image-to-video",
+    "key": "infinitetalk-image-to-video",
+    "name": "Infinite Talk",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/infinitalk",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "prompt": "required on fal; default 'A person is talking' when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/infinitalk/api",
+    "notes": "models.js:27930. Exact model (InfiniteTalk image+audio). fal extras: num_frames 41-721 (default 145), acceleration, seed. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "wan2.2-speech-to-video",
+    "key": "wan2.2-speech-to-video",
+    "name": "Wan 2.2 Speech to Video",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-14b/speech-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "prompt": "required on fal; default neutral prompt when empty",
+      "resolution": "'480p'|'720p' pass through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/speech-to-video/api",
+    "notes": "models.js:27948. Exact model (Wan-S2V 14B). Note fal num_frames 40-120 (default 80 @16fps = 5 s): long audio is truncated unless num_frames raised. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "ltx-2.3-lipsync",
+    "key": "ltx-2.3-lipsync",
+    "name": "LTX 2.3 Lipsync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/ltx-2.3/audio-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3-22b/audio-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "resolution",
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3/audio-to-video/api",
+    "notes": "models.js:27966. Same model family+mode (LTX 2.3 audio-to-video with first-frame image). fal Pro endpoint has no resolution or seed (aspect_ratio auto|16:9|9:16 only) and audio must be 2-20 s ('pro models support a maximum of 10 seconds'). Fallback 22B open-weights endpoint adds seed + video_size ('auto' matches the input image) + match_audio_length. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "ltx-2-19b-lipsync",
+    "key": "ltx-2-19b-lipsync",
+    "name": "LTX 2 19B Lipsync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/ltx-2-19b/audio-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "video_size"
+    },
+    "value_transforms": {
+      "video_size": "resolution has no direct field: send 'auto' (match input image) or {width,height} with short side 480|720|1080 at the image aspect",
+      "prompt": "required on fal"
+    },
+    "fixed_params": {
+      "match_audio_length": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2-19b/audio-to-video/api",
+    "notes": "models.js:27985. Exact model (LTX-2 19B audio-to-video). Endpoint exists with OpenAPI but has no listing metadata (api.fal.ai returned endpoint_id only) - verify availability before GA. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "sync-lipsync",
+    "key": "sync-lipsync",
+    "name": "Sync Lipsync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/sync-lipsync/v2",
+    "fallback_endpoint": "fal-ai/sync-lipsync",
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "model": "lipsync-2"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sync-lipsync/v2/api",
+    "notes": "models.js:28004. Same vendor (sync.so). Legacy docs (legacy.ai/playground/sync-lipsync/api: audio_url+video_url, $0.04) do not state the sync model version; lipsync-2 is sync.so's current general model (lipsync-2-pro ~1.67x cost; sync-3 at fal-ai/sync-lipsync/v3; legacy 1.9.0-beta at fal-ai/sync-lipsync). Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "latent-sync",
+    "key": "latentsync-video",
+    "name": "LatentSync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/latentsync",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/latentsync/api",
+    "notes": "models.js:28013. Exact model (LatentSync). Legacy endpoint latentsync-video. fal extras: guidance_scale 1-2, seed, loop_mode pingpong|loop. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "creatify-lipsync",
+    "key": "creatify-lipsync",
+    "name": "Creatify Lipsync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "creatify/lipsync",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "loop": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/creatify/lipsync/api",
+    "notes": "models.js:28022. Same vendor model. OpenAPI verified (x-fal-metadata endpointId 'Creatify/lipsync', category video-to-video; inputs audio_url, video_url, loop default true) but the endpoint is absent from the active video-to-video listing (possibly unlisted) -> medium. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "veed-lipsync",
+    "key": "veed-lipsync",
+    "name": "Veed Lipsync",
+    "list": "lipsyncModels",
+    "fal_endpoint": "veed/lipsync",
+    "fallback_endpoint": "veed/lipsync/v2",
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/veed/lipsync/api",
+    "notes": "models.js:28031. Same vendor (VEED). Both veed/lipsync and veed/lipsync/v2 take only video_url+audio_url; Legacy calls it 'VEED's latest model', so switching to /v2 is a one-line change. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "infinitetalk-video-to-video",
+    "key": "infinitetalk-video-to-video",
+    "name": "Infinite Talk V2V",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/infinitalk/video-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "prompt": "required on fal; default neutral prompt when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/infinitalk/video-to-video/api",
+    "notes": "models.js:28040. Exact model (same entry as v2vModels infinitetalk-video-to-video). Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "volcengine-video-to-video-lip-sync",
+    "key": "volcengine-video-to-video-lip-sync",
+    "name": "Volcengine Video to Video Lip Sync",
+    "list": "lipsyncModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/sync-lipsync/v2",
+    "confidence": "none",
+    "param_map": {
+      "video_url": "video_url",
+      "audio_url": "audio_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "model": "lipsync-2"
+    },
+    "drop_params": [
+      "mode"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sync-lipsync/v2/api",
+    "notes": "models.js:28059. Volcengine lip-sync not on fal; see v2vModels entry. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "kling-v1-avatar-standard",
+    "key": "kling-v1-avatar-standard",
+    "name": "Kling v1 Avatar Standard",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/kling-video/v1/standard/ai-avatar",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "prompt": "optional; fal default '.'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v1/standard/ai-avatar/api",
+    "notes": "models.js:28081. Exact model+tier (Kling AI Avatar v1 standard). Output also has duration (s). Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "kling-v1-avatar-pro",
+    "key": "kling-v1-avatar-pro",
+    "name": "Kling v1 Avatar Pro",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/kling-video/v1/pro/ai-avatar",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "prompt": "optional; fal default '.'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v1/pro/ai-avatar/api",
+    "notes": "models.js:28090. Exact model+tier. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "kling-v2-avatar-standard",
+    "key": "kling-v2-avatar-standard",
+    "name": "Kling v2 Avatar Standard",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/kling-video/ai-avatar/v2/standard",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "prompt": "optional; fal default '.'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/standard/api",
+    "notes": "models.js:28099. Exact model+tier (Kling AI Avatar v2 standard). Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "kling-v2-avatar-pro",
+    "key": "kling-v2-avatar-pro",
+    "name": "Kling v2 Avatar Pro",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/kling-video/ai-avatar/v2/pro",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "prompt": "optional; fal default '.'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/pro/api",
+    "notes": "models.js:28108. Exact model+tier. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "omnihuman-1-5",
+    "key": "omnihuman-1-5",
+    "name": "Omnihuman 1 5",
+    "list": "lipsyncModels",
+    "fal_endpoint": "fal-ai/bytedance/omnihuman/v1.5",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "output_resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "'720' -> '720p', '1080' -> '1080p' (both default 1080)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/omnihuman/v1.5/api",
+    "notes": "models.js:28117. Exact model (OmniHuman 1.5). The app never sends output_resolution (LipSyncStudio only sends 'resolution' and getResolutionsForLipSyncModel reads inputs.resolution, models.js:28142-28145), so fal default 1080p applies. Audio <=30 s at 1080p, <=60 s at 720p. fal extras: turbo_mode, mask_url. Payload built by studio client:344-355 processLipSync (audio_url, image_url|video_url, prompt if hasPrompt, resolution, seed) from LipSyncStudio.jsx:735-744."
+  },
+  {
+    "model_id": "kling-v3.0-pro-recast",
+    "key": "kling-v3.0-pro-motion-control",
+    "name": "Kling 3.0 Pro Motion Control",
+    "list": "recastModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/pro/motion-control",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "video_url": "video_url",
+      "character_orientation": "character_orientation",
+      "keep_original_sound": "keep_original_sound"
+    },
+    "value_transforms": {
+      "character_orientation": "required on fal; pass Legacy value ('image'|'video', Legacy default 'image'); default to 'image' when absent"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/motion-control/api",
+    "notes": "models.js:28157. Same Legacy endpoint as v2v kling-v3.0-pro-motion-control -> same fal endpoint. fal has no aspect_ratio (follows image/video per character_orientation). Payload built by studio client:277-295 processRecast from RecastStudio.jsx:824-833 (video_url, image_url, aspect_ratio when shown, prompt when hasPrompt, character_orientation only for kling-v3.0-pro-recast)."
+  },
+  {
+    "model_id": "runway-act-two-recast",
+    "key": "runway-act-two-i2v",
+    "name": "Runway Act Two",
+    "list": "recastModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/wan/v2.2-14b/animate/move",
+    "confidence": "none",
+    "param_map": {
+      "image_url": "image_url",
+      "video_url": "video_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/move/api",
+    "notes": "models.js:28167. Runway Act-Two is not on fal (q=runway -> 0 models). Fallback Wan 2.2 Animate Move drives the character image with the performance video (consistent with map-i2v-a runway-act-two-i2v). Alternatives: fal-ai/bytedance/dreamactor/v2 (image+driving video, face/lip motion) or Kling v3 motion-control. Payload built by studio client:277-295 processRecast from RecastStudio.jsx:824-833 (video_url, image_url, aspect_ratio when shown, prompt when hasPrompt, character_orientation only for kling-v3.0-pro-recast)."
+  },
+  {
+    "model_id": "wan2.2-animate-recast",
+    "key": "wan2.2-animate",
+    "name": "Wan2.2 Animate",
+    "list": "recastModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-14b/animate/move",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "video_url": "video_url"
+    },
+    "value_transforms": {
+      "(mode)": "processRecast sends no mode -> Legacy default 'animate' -> /animate/move; use /animate/replace to swap the character into the source video"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "prompt"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/move/api",
+    "notes": "models.js:28187. Exact model. fal has no prompt input. Payload built by studio client:277-295 processRecast from RecastStudio.jsx:824-833 (video_url, image_url, aspect_ratio when shown, prompt when hasPrompt, character_orientation only for kling-v3.0-pro-recast)."
+  },
+  {
+    "model_id": "seedance-2.5-motion-control",
+    "key": "seedance-2.5-motion-control",
+    "name": "Seedance 2.5 Motion Control",
+    "list": "motionControlModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "high_bitrate": "bitrate_mode",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url]",
+      "image_urls": "images_list <=30",
+      "prompt": "rewrite Legacy internal prefix with fal tokens, e.g. 'Extract motion from @Video1 and rebuild the scene with the characters in @Image1..@ImageN ...' (fal refers to inputs as @VideoN/@ImageN)",
+      "duration": "int 4-30 -> string",
+      "aspect_ratio": "'adaptive'->'auto', '9:21'->'auto'",
+      "bitrate_mode": "true->'high', false->'standard'",
+      "seed": "-1 -> omit"
+    },
+    "fixed_params": {
+      "task": "reference",
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "models.js:28208. Legacy motion control = Seedance 2.5 omni-reference with a motion-transfer prompt (studio client:298-305), so the fal equivalent is the same model in reference mode with the video as motion reference. Quality depends on prompt wording (not a dedicated motion-transfer endpoint) -> medium. Payload built by studio client:297-342 processMotionControl (internal prompt prefix by mode motion_transfer|objects_swap, video_url, images_list, aspect_ratio, duration, generate_audio, seed; 2.5: high_bitrate, <=30 images, 4-30 s; 2.0: quality basic|high, <=9 images, 4-15 s) from MotionControlStudio.jsx:857-871."
+  },
+  {
+    "model_id": "seedance-2-motion-control",
+    "key": "seedance-2-motion-control",
+    "name": "Seedance 2.0 Motion Control",
+    "list": "motionControlModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "video_url": "video_urls",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "seed": "seed",
+      "quality": "(endpoint selector)"
+    },
+    "value_transforms": {
+      "video_urls": "video_url -> [video_url] (max 3 videos, combined 2-15 s, <50MB)",
+      "image_urls": "images_list <=9",
+      "duration": "int 4-15 -> string",
+      "quality": "'high' -> bytedance/seedance-2.0/reference-to-video ; 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (inferred tier equivalence)",
+      "prompt": "rewrite with @Video1/@Image1.. tokens",
+      "seed": "fal 2.0 reference schema has no seed -> drop"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "models.js:28224. Same model (Seedance 2.0) in reference mode with the video as motion reference; see 2.5 note. fal Seedance 2.0 reference has no seed field. Payload built by studio client:297-342 processMotionControl (internal prompt prefix by mode motion_transfer|objects_swap, video_url, images_list, aspect_ratio, duration, generate_audio, seed; 2.5: high_bitrate, <=30 images, 4-30 s; 2.0: quality basic|high, <=9 images, 4-15 s) from MotionControlStudio.jsx:857-871."
+  },
+  {
+    "model_id": "suno-create-music",
+    "key": "suno-create-music",
+    "name": "Suno Create Music",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/minimax-music/v2.6",
+    "confidence": "none",
+    "param_map": {
+      "style": "prompt",
+      "prompt": "lyrics",
+      "instrumental": "is_instrumental"
+    },
+    "value_transforms": {
+      "lyrics": "custom_mode && !instrumental -> prompt text as lyrics (max 3500 chars); non-custom mode -> lyrics \"\" + lyrics_optimizer=true",
+      "prompt": "style (+ negative_tags as \"avoid: ...\") -> prompt 10-2000 chars"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "model",
+      "custom_mode",
+      "title",
+      "persona_id",
+      "persona_model",
+      "negative_tags",
+      "vocal_gender",
+      "style_weight",
+      "weirdness_constraint",
+      "audio_weight"
+    ],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax-music/v2.6/api",
+    "notes": "models.js:28252. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). Fallback MiniMax Music 2.6 (style prompt + lyrics + is_instrumental). Other options: fal-ai/elevenlabs/music (prompt or composition_plan, force_instrumental, music_length_ms), google/lyria-3.5, minimax/music-3. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-remix-music",
+    "key": "suno-remix-music",
+    "name": "Suno Remix Music",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/ace-step/audio-to-audio",
+    "confidence": "none",
+    "param_map": {
+      "audio_url": "audio_url",
+      "style": "tags",
+      "prompt": "lyrics"
+    },
+    "value_transforms": {
+      "original_tags": "required by fal: send a best-effort description of the source (e.g. from user or 'original song')",
+      "lyrics": "instrumental=true -> '[instrumental]'"
+    },
+    "fixed_params": {
+      "edit_mode": "remix"
+    },
+    "drop_params": [
+      "model",
+      "custom_mode",
+      "title",
+      "persona_id",
+      "persona_model",
+      "negative_tags",
+      "vocal_gender",
+      "style_weight",
+      "weirdness_constraint",
+      "audio_weight",
+      "instrumental"
+    ],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ace-step/audio-to-audio/api",
+    "notes": "models.js:28389. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). Fallback ACE-Step audio-to-audio remix keeps melody/structure while restyling (tags). Alternative: fal-ai/stable-audio-25/audio-to-audio (prompt + strength). Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-extend-music",
+    "key": "suno-extend-music",
+    "name": "Suno Extend Music",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/ace-step/audio-outpaint",
+    "confidence": "none",
+    "param_map": {
+      "audio_url": "audio_url",
+      "style": "tags",
+      "prompt": "lyrics"
+    },
+    "value_transforms": {
+      "continue_at": "no field: trim input to continue_at seconds first (ffmpeg locally or fal-ai/workflow-utilities/trim-video is video-only) then outpaint",
+      "extend_after_duration": "default 30 s (max 107)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "model",
+      "custom_mode",
+      "title",
+      "persona_id",
+      "persona_model",
+      "negative_tags",
+      "vocal_gender",
+      "style_weight",
+      "weirdness_constraint",
+      "audio_weight",
+      "instrumental",
+      "continue_at"
+    ],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ace-step/audio-outpaint/api",
+    "notes": "models.js:28537. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). Fallback ACE-Step outpaint extends the end (extend_after_duration) or start. Alternative: fal-ai/stable-audio-3/medium/audio-outpainting. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-generate-sounds",
+    "key": "suno-generate-sounds",
+    "name": "Suno Generate Sounds",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/elevenlabs/sound-effects/v2",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "text",
+      "sound_loop": "loop"
+    },
+    "value_transforms": {
+      "text": "max 450 chars (Suno allowed 500) -> truncate"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "model",
+      "sound_tempo",
+      "sound_key",
+      "grab_lyrics"
+    ],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/elevenlabs/sound-effects/v2/api",
+    "notes": "models.js:28696. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). Fallback ElevenLabs SFX v2 (loop, duration_seconds 0.5-22, prompt_influence). No tempo/key control on fal SFX models. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-add-vocals",
+    "key": "suno-add-vocals",
+    "name": "Suno Add Vocals",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:28785. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). No fal model adds sung vocals to a supplied instrumental (ACE-Step audio-to-audio edit_mode=lyrics only re-sings existing vocals). Remove or keep behind a disabled flag. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-generate-mashup",
+    "key": "suno-generate-mashup",
+    "name": "Suno Geneate Mashup",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:28892. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). No AI mashup on fal; fal-ai/ffmpeg-api/merge-audios only concatenates tracks. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-add-instrumental",
+    "key": "suno-add-instrumental",
+    "name": "Suno Add Instrumental",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:28995. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). No fal model generates backing for an a-cappella input. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-voice-clone",
+    "key": "suno-voice-clone",
+    "name": "Suno Voice Cloning",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:29092. Suno is not available on fal (api.fal.ai/v1/models?q=suno returns 0 models, 2026-09-24). Suno singing-persona clone (voice_id for Suno music) has no fal counterpart; speech voice cloning exists (fal-ai/minimax/voice-clone, fal-ai/qwen-3-tts/clone-voice/1.7b) but cannot drive music models. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "minimax-voice-clone",
+    "key": "minimax-voice-clone",
+    "name": "Minimax Voice Clone",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/minimax/voice-clone",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "audio_url": "audio_url",
+      "model": "model",
+      "need_noise_reduction": "noise_reduction",
+      "need_volume_normalization": "need_volume_normalization",
+      "accuracy": "accuracy",
+      "prompt": "text"
+    },
+    "value_transforms": {
+      "model": "fal enum speech-02-hd|speech-02-turbo|speech-01-hd|speech-01-turbo: 'speech-2.5-hd-preview'|'speech-2.6-hd'->'speech-02-hd', 'speech-2.5-turbo-preview'|'speech-2.6-turbo'->'speech-02-turbo'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "custom_voice_id"
+    ],
+    "output_path": "custom_voice_id (+ audio.url preview)",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/voice-clone/api",
+    "notes": "models.js:29174. Same vendor/feature. fal generates and RETURNS custom_voice_id (cannot be chosen by caller) -> store it per user. Clone must be used with a TTS call within 7 days to persist (fal docs). Clone preview only on speech-02/01 models. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "minimax-speech-2.6-hd",
+    "key": "minimax-speech-2.6-hd",
+    "name": "Minimax Speech HD",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/minimax/speech-2.6-hd",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "voice_id": "voice_setting.voice_id",
+      "speed": "voice_setting.speed",
+      "volume": "voice_setting.vol",
+      "pitch": "voice_setting.pitch",
+      "emotion": "voice_setting.emotion",
+      "english_normalization": "voice_setting.english_normalization",
+      "sample_rate": "audio_setting.sample_rate",
+      "bitrate": "audio_setting.bitrate",
+      "channel": "audio_setting.channel",
+      "format": "audio_setting.format",
+      "language_boost": "language_boost"
+    },
+    "value_transforms": {
+      "audio_setting.format": "'mp3'|'pcm'|'flac' pass through; 'wav' not supported by fal -> 'flac' (or mp3 + local transcode)",
+      "voice_setting.vol": "volume 0.1-10 -> vol (fal min 0.01)",
+      "voice_setting.voice_id": "preset or custom_voice_id from voice clone"
+    },
+    "fixed_params": {
+      "output_format": "url"
+    },
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/speech-2.6-hd/api",
+    "notes": "models.js:29256. Exact model. fal nests voice/audio params (voice_setting{}, audio_setting{}). IMPORTANT: fal output_format defaults to 'hex' -> must send output_format='url' to get audio.url. Output also duration_ms. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "minimax-speech-2.6-turbo",
+    "key": "minimax-speech-2.6-turbo",
+    "name": "Minimax Speech Turbo",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/minimax/speech-2.6-turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "voice_id": "voice_setting.voice_id",
+      "speed": "voice_setting.speed",
+      "volume": "voice_setting.vol",
+      "pitch": "voice_setting.pitch",
+      "emotion": "voice_setting.emotion",
+      "english_normalization": "voice_setting.english_normalization",
+      "sample_rate": "audio_setting.sample_rate",
+      "bitrate": "audio_setting.bitrate",
+      "channel": "audio_setting.channel",
+      "format": "audio_setting.format",
+      "language_boost": "language_boost"
+    },
+    "value_transforms": {
+      "audio_setting.format": "'mp3'|'pcm'|'flac' pass through; 'wav' not supported by fal -> 'flac' (or mp3 + local transcode)",
+      "voice_setting.vol": "volume 0.1-10 -> vol (fal min 0.01)",
+      "voice_setting.voice_id": "preset or custom_voice_id from voice clone"
+    },
+    "fixed_params": {
+      "output_format": "url"
+    },
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/speech-2.6-turbo/api",
+    "notes": "models.js:29915. Exact model; same schema as 2.6-hd. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "mmaudio-v2-text-to-audio",
+    "key": "mmaudio-v2/text-to-audio",
+    "name": "MM Audio V2",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/mmaudio-v2/text-to-audio",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/mmaudio-v2/text-to-audio/api",
+    "notes": "models.js:30573. Exact model; duration 1-30 identical. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "elevenlabs-text-to-dialogue-v3",
+    "key": "elevenlabs-text-to-dialogue-v3",
+    "name": "ElevenLabs Text to Dialogue V3",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/elevenlabs/text-to-dialogue/eleven-v3",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "dialogue": "inputs",
+      "stability": "stability",
+      "language_code": "language_code"
+    },
+    "value_transforms": {
+      "inputs": "dialogue[{text, voice_id}] -> inputs[{text, voice: voice_id}] (fal voice = \"name or the ID of the voice\")"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/elevenlabs/text-to-dialogue/eleven-v3/api",
+    "notes": "models.js:30605. Exact model (Eleven v3 dialogue). fal extras: use_speaker_boost, seed, pronunciation_dictionary_locators. Legacy item schema models.js:30614-30700. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "suno-convert-to-wav",
+    "key": "suno-convert-to-wav",
+    "name": "Suno Convert to WAV",
+    "list": "audioModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "models.js:30836. Legacy/Suno utility re-exporting a prior Suno task as WAV (task_id + audio_id). No provider call needed after migration: transcode the stored audio to WAV locally (ffmpeg) or request wav/pcm at generation time. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "gemini-3-1-flash-tts",
+    "key": "gemini-3-1-flash-tts",
+    "name": "Gemini 3.1 Flash TTS",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/gemini-3.1-flash-tts",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "dialogue_turns": "prompt",
+      "speakers": "speakers",
+      "scene": "style_instructions",
+      "sample_context": "style_instructions",
+      "temperature": "temperature"
+    },
+    "value_transforms": {
+      "prompt": "join dialogue_turns as lines '<alias>: <text>' where alias = speaker_id without spaces ('Speaker 1' -> 'Speaker1'); tone tags [whispers] etc. kept inline",
+      "speakers": "[{speaker_id:'Speaker 1', voice_name:'Fenrir', ...}] -> [{speaker_id:'Speaker1', voice:'Fenrir'}] (alias must match ^\\w+$); single speaker -> use top-level voice instead",
+      "style_instructions": "concatenate scene + sample_context + per-speaker audio_profile/accent/style/pace sentences"
+    },
+    "fixed_params": {
+      "output_format": "mp3"
+    },
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/gemini-3.1-flash-tts/api",
+    "notes": "models.js:30867. Exact model, but fal takes one prompt string with alias prefixes + speakers[{speaker_id, voice}] instead of Legacy structured turns and per-speaker accent/style/pace fields (models.js:30867-31060) -> gateway must compose the prompt. Same 30-voice enum. Optional language_code (e.g. \"English (US)\"). Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "gemini-2-5-pro-tts",
+    "key": "gemini-2-5-pro-tts",
+    "name": "Gemini 2.5 Pro TTS",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/gemini-tts",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "dialogue_turns": "prompt",
+      "speakers": "speakers",
+      "scene": "style_instructions",
+      "sample_context": "style_instructions",
+      "temperature": "temperature"
+    },
+    "value_transforms": {
+      "prompt": "join dialogue_turns as lines '<alias>: <text>' where alias = speaker_id without spaces ('Speaker 1' -> 'Speaker1'); tone tags [whispers] etc. kept inline",
+      "speakers": "[{speaker_id:'Speaker 1', voice_name:'Fenrir', ...}] -> [{speaker_id:'Speaker1', voice:'Fenrir'}] (alias must match ^\\w+$); single speaker -> use top-level voice instead",
+      "style_instructions": "concatenate scene + sample_context + per-speaker audio_profile/accent/style/pace sentences"
+    },
+    "fixed_params": {
+      "model": "gemini-2.5-pro-tts",
+      "output_format": "mp3"
+    },
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/gemini-tts/api",
+    "notes": "models.js:31075. Exact model via fal's Gemini TTS endpoint with model='gemini-2.5-pro-tts' (default is flash). Same prompt-composition transform as gemini-3-1-flash-tts. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "elevenlabs-tts-turbo-2-5",
+    "key": "elevenlabs-tts-turbo-2-5",
+    "name": "ElevenLabs TTS Turbo 2.5",
+    "list": "audioModels",
+    "fal_endpoint": "fal-ai/elevenlabs/tts/turbo-v2.5",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "text",
+      "voice_id": "voice",
+      "stability": "stability",
+      "similarity_boost": "similarity_boost",
+      "speed": "speed",
+      "language_code": "language_code"
+    },
+    "value_transforms": {
+      "voice": "Legacy sends ElevenLabs voice IDs (e.g. ZQe5CZNOzWyzPSCn5a3c); fal field is a free string (default \"Rachel\") - IDs accepted per the sibling ElevenLabs dialogue schema wording (inferred for TTS)",
+      "speed": "clamp to fal 0.7-1.2"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/fal-ai/elevenlabs/tts/turbo-v2.5/api",
+    "notes": "models.js:31283. Exact model. fal extras: style, timestamps, previous_text/next_text, apply_text_normalization. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  },
+  {
+    "model_id": "minimax-music-3.0",
+    "key": "minimax-music-3.0",
+    "name": "MiniMax Music 3.0",
+    "list": "audioModels",
+    "fal_endpoint": "minimax/music-3",
+    "fallback_endpoint": "fal-ai/minimax-music/v2.6",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "lyrics": "lyrics"
+    },
+    "value_transforms": {
+      "lyrics": "is_instrumental=true -> lyrics '[instrumental]' (fal minimax/music-3 lyrics support [instrumental] tag; inferred)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "bitrate",
+      "sample_rate",
+      "is_instrumental"
+    ],
+    "output_path": "audio.url",
+    "doc_url": "https://fal.ai/models/minimax/music-3/api",
+    "notes": "models.js:31357. fal 'MiniMax Music 3' (up to 5 min; prompt+lyrics required; duration, seed, num_inference_steps, guidance_scale). It exposes no bitrate/sample_rate/is_instrumental; fallback MiniMax Music 2.6 supports is_instrumental + audio_setting{bitrate,sample_rate,format} if those are needed. Payload = all UI params passed through by studio client:357-369 generateAudio."
+  }
+]

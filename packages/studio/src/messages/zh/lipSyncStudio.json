@@ -49,6 +49,7 @@
     "needAudio": "请先上传音频文件。",
     "needImage": "请先上传人像图片。",
     "needVideo": "请先上传源视频。",
-    "generationFailed": "唇形同步生成失败"
+    "generationFailed": "唇形同步生成失败",
+    "modelUnavailable": "Aquora 暂不支持该模型，请换一个模型。"
   }
 }

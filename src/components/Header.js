@@ -1,5 +1,36 @@
 import { SettingsModal } from './SettingsModal.js';
-import { t, getLang, setLang } from '../lib/i18n.js';
+import { describeBudget, getSessionSnapshot, subscribeSession } from '../lib/gateway.js';
+import { t, tf, getLang, setLang } from '../lib/i18n.js';
+
+// "Today: $1.20 of $10.00" — the signed-in workspace's estimated AI spend.
+// Hidden while signed out or when the server sets no daily cap.
+function BudgetPill() {
+    const pill = document.createElement('span');
+    pill.className = 'hidden items-center gap-2 px-3 py-1.5 rounded-md border border-brand/20 bg-brand/5 text-[12px] font-bold text-white/80 tabular-nums';
+    pill.title = t('budget.pillTitle');
+    const dot = document.createElement('span');
+    dot.className = 'w-1.5 h-1.5 rounded-full bg-brand';
+    dot.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    pill.appendChild(dot);
+    pill.appendChild(label);
+
+    const render = ({ session } = {}) => {
+        const budget = session?.authenticated ? describeBudget(session.budget) : null;
+        if (!budget) {
+            pill.classList.add('hidden');
+            pill.classList.remove('flex');
+            return;
+        }
+        label.textContent = tf('budget.pill', budget.spent, budget.cap);
+        dot.className = `w-1.5 h-1.5 rounded-full ${budget.fraction >= 1 ? 'bg-red-400' : budget.fraction >= 0.8 ? 'bg-amber-400' : 'bg-brand'}`;
+        pill.classList.remove('hidden');
+        pill.classList.add('flex');
+    };
+    render(getSessionSnapshot());
+    subscribeSession(render);
+    return pill;
+}
 
 export function Header(navigate) {
     const header = document.createElement('header');
@@ -35,12 +66,13 @@ export function Header(navigate) {
         { label: t('nav.cinema'),  page: 'cinema' },
         { label: t('nav.workflows'), page: 'workflows' },
         { label: t('nav.agents'),  page: 'agents' },
-        { label: t('nav.mcpcli'),  page: 'mcp-cli' },
     ];
 
     items.forEach(({ label, page }, idx) => {
-        const link = document.createElement('a');
+        const link = document.createElement('button');
+        link.type = 'button';
         link.textContent = label;
+        if (idx === 0) link.setAttribute('aria-current', 'page');
         link.className = `hover:text-white transition-all cursor-pointer relative group ${idx === 0 ? 'text-white' : ''}`;
 
         if (idx === 0) {
@@ -50,8 +82,12 @@ export function Header(navigate) {
         }
 
         link.onclick = () => {
-            Array.from(menu.children).forEach(child => child.classList.remove('text-white'));
+            Array.from(menu.children).forEach(child => {
+                child.classList.remove('text-white');
+                child.removeAttribute('aria-current');
+            });
             link.classList.add('text-white');
+            link.setAttribute('aria-current', 'page');
             navigate(page);
         };
 
@@ -68,12 +104,13 @@ export function Header(navigate) {
     settingsBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-[13px] font-bold text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 transition-colors';
     settingsBtn.title = t('web.settingsTitle');
     settingsBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
         <span>${t('nav.settings')}</span>
     `;
+    settingsBtn.type = 'button';
     settingsBtn.onclick = () => {
         document.body.appendChild(SettingsModal());
     };
@@ -86,6 +123,8 @@ export function Header(navigate) {
     langBtn.textContent = currentLang === 'zh-CN' ? 'EN' : '中文';
     langBtn.onclick = () => setLang(currentLang === 'zh-CN' ? 'en' : 'zh-CN');
 
+    langBtn.type = 'button';
+    rightPart.appendChild(BudgetPill());
     rightPart.appendChild(langBtn);
     rightPart.appendChild(settingsBtn);
 

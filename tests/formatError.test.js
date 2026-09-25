@@ -10,11 +10,24 @@ test('a JSON.parse error payload from the proxy becomes the friendly unreachable
     assert.equal(formatErrorMessage(new Error(raw)), UNREACHABLE);
 });
 
-test('a string `error` with a 401 maps to the auth copy (overridable per locale)', async () => {
+test('a 401 without a message maps to the session copy (overridable per locale)', async () => {
     const { formatErrorMessage } = await load();
-    const raw = 'API Request Failed: 401 Unauthorized - {"error":"Unauthorized: Missing API key"}';
-    assert.match(formatErrorMessage(new Error(raw)), /Authentication failed/);
-    assert.equal(formatErrorMessage(new Error(raw), 'x', { auth: 'bad key' }), 'bad key');
+    const raw = 'API Request Failed: 401 Unauthorized - {"error":"session_required"}';
+    assert.match(formatErrorMessage(new Error(raw)), /access code/);
+    assert.equal(formatErrorMessage(new Error(raw), 'x', { auth: 'sign in again' }), 'sign in again');
+});
+
+test('a 402 budget_exceeded without a message maps to the budget copy (overridable)', async () => {
+    const { formatErrorMessage } = await load();
+    const raw = 'API Request Failed: 402 Payment Required - {"error":"budget_exceeded"}';
+    assert.match(formatErrorMessage(new Error(raw)), /budget/i);
+    assert.equal(formatErrorMessage(new Error(raw), 'x', { credits: 'cap reached' }), 'cap reached');
+});
+
+test("the gateway's friendly message is surfaced as-is", async () => {
+    const { formatErrorMessage } = await load();
+    const raw = 'API Request Failed: 422 Unprocessable Entity - {"error":"content_policy","message":"That prompt was blocked by the model\'s safety filter"}';
+    assert.equal(formatErrorMessage(new Error(raw)), "That prompt was blocked by the model's safety filter");
 });
 
 test('a detail message is surfaced as-is', async () => {
@@ -32,4 +45,29 @@ test('a proxy envelope for a non-JSON 403 (block page) is "unreachable", not a b
     const { formatErrorMessage } = await load();
     const raw = 'API Request Failed: 403 Forbidden - The AI service returned an unexpected response. Try again in a moment.';
     assert.equal(formatErrorMessage(new Error(raw)), UNREACHABLE);
+});
+
+test('logStudioError skips the 401/402 cases the shell already handles, logs the rest', async () => {
+    const { isHandledGatewayError, logStudioError } = await load();
+    const session = Object.assign(new Error('API Request Failed: 401'), { status: 401 });
+    const budget = Object.assign(new Error('Budget used up'), { status: 402, code: 'budget_exceeded' });
+    const broken = Object.assign(new Error('API Request Failed: 500'), { status: 500 });
+    assert.equal(isHandledGatewayError(session), true);
+    assert.equal(isHandledGatewayError(budget), true);
+    assert.equal(isHandledGatewayError(broken), false);
+    assert.equal(isHandledGatewayError(new Error('plain')), false);
+    assert.equal(isHandledGatewayError(null), false);
+
+    const original = console.error;
+    const logged = [];
+    console.error = (...args) => logged.push(args);
+    try {
+        logStudioError('[ImageStudio] Generation failed:', session);
+        logStudioError('[ImageStudio] Generation failed:', budget);
+        logStudioError('[ImageStudio] Generation failed:', broken);
+    } finally {
+        console.error = original;
+    }
+    assert.equal(logged.length, 1);
+    assert.equal(logged[0][1], broken);
 });

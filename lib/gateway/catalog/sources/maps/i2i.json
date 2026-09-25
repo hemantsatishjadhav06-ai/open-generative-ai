@@ -1,0 +1,1814 @@
+[
+  {
+    "model_id": "ai-image-upscaler",
+    "key": "ai-image-upscale",
+    "name": "AI Image Upscaler",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/esrgan",
+    "fallback_endpoint": "fal-ai/clarity-upscaler",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "scale": 2
+    },
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/esrgan/api",
+    "notes": "Legacy tool takes only image_url (studio client:1019-1029 upscaleImage). fal esrgan: scale 1-8 (default 2), model RealESRGAN_x4plus. Which fal upscaler Legacy wrapped is unknown (models.js marks provider_name 'Fal'); pick esrgan (cheap/fast) or clarity-upscaler (generative, upscale_factor 1-4) - product decision.",
+    "source": "packages/studio/src/models.js:9404"
+  },
+  {
+    "model_id": "ai-image-face-swap",
+    "key": "ai-image-face-swap",
+    "name": "AI Image Face Swap",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/face-swap",
+    "fallback_endpoint": "easel-ai/advanced-face-swap",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "base_image_url",
+      "swap_url": "swap_image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "target_index"
+    ],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/face-swap/api",
+    "notes": "Legacy: image_url + swap_url (ImageStudio.jsx:1462) + target_index. fal-ai/face-swap schema verified (base_image_url, swap_image_url -> image) but it is NOT in the active image-to-image catalog listing (api.fal.ai/v1/models?category=image-to-image) - confirm it still serves with a live call. No per-face index on fal; target_index dropped. Fallback easel-ai/advanced-face-swap: face_image_0 {url} (required), gender_0 (required: male|female|non-binary), target_image {url}, workflow_type (required: user_hair|target_hair) -> image.url.",
+    "source": "packages/studio/src/models.js:9415"
+  },
+  {
+    "model_id": "ai-dress-change",
+    "key": "ai-dress-change",
+    "name": "AI Dress Change",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/fashn/tryon/v1.6",
+    "fallback_endpoint": "fal-ai/image-apps-v2/virtual-try-on",
+    "confidence": "medium",
+    "param_map": {
+      "model_image_url": "model_image",
+      "garment_image_url": "garment_image"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "category": "auto",
+      "mode": "balanced"
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/fashn/tryon/v1.6/api",
+    "notes": "Legacy contract: model_image_url (primary) + garment_image_url (imageInputContracts.js 'i2i:ai-dress-change'). FASHN v1.6 fields are plain URL strings named model_image/garment_image. Fallback image-apps-v2/virtual-try-on uses person_image_url/clothing_image_url.",
+    "source": "packages/studio/src/models.js:9438"
+  },
+  {
+    "model_id": "ai-background-remover",
+    "key": "ai-background-remover",
+    "name": "AI Background Remover",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/birefnet/v2",
+    "fallback_endpoint": "fal-ai/bria/background/remove",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "output_format": "png"
+    },
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/birefnet/v2/api",
+    "notes": "Legacy cost 0.01. birefnet/v2 returns transparent PNG in image.url (mask_image optional). Bria RMBG 2.0 (fal-ai/bria/background/remove) is the commercial-safe alternative, same output path.",
+    "source": "packages/studio/src/models.js:9449"
+  },
+  {
+    "model_id": "ai-image-extension",
+    "key": "ai-image-extension",
+    "name": "AI Image Extension",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/image-apps-v2/outpaint",
+    "fallback_endpoint": "fal-ai/bria/expand",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "zoom_out_percentage": 20
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/image-apps-v2/outpaint/api",
+    "notes": "Legacy tool is image_url only (studio client:1038 expandImage). image-apps-v2/outpaint needs only image_url (defaults zoom_out 20%). bria/expand requires canvas_size [w,h] (compute from input dims) and returns image.url.",
+    "source": "packages/studio/src/models.js:9461"
+  },
+  {
+    "model_id": "ai-product-shot",
+    "key": "ai-product-shot",
+    "name": "AI Product Shot",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bria/product-shot",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "scene_description": "scene_description"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "placement_type": "automatic"
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bria/product-shot/api",
+    "notes": "Exact field-name match (image_url + scene_description; imageInputContracts.js 'i2i:ai-product-shot'). placement_type default on fal is manual_placement; 'automatic' recommended when no placement UI. num_results 1-4.",
+    "source": "packages/studio/src/models.js:9474"
+  },
+  {
+    "model_id": "ai-skin-enhancer",
+    "key": "ai-skin-enhancer",
+    "name": "AI Skin Enhancer",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/retoucher",
+    "fallback_endpoint": "fal-ai/image-apps-v2/portrait-enhance",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/retoucher/api",
+    "notes": "fal retoucher: 'smooths skin and removes blemishes', image_url only -> image.url. portrait-enhance returns images[].url.",
+    "source": "packages/studio/src/models.js:9495"
+  },
+  {
+    "model_id": "ai-color-photo",
+    "key": "ai-color-photo",
+    "name": "AI Color Photo",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/ddcolor",
+    "fallback_endpoint": "bria/fibo-edit/colorize",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ddcolor/api",
+    "notes": "B&W photo colorization. ddcolor: image_url (+seed) -> image.url. Fallback bria/fibo-edit/colorize is in the active listing but its schema was not fetched.",
+    "source": "packages/studio/src/models.js:9506"
+  },
+  {
+    "model_id": "flux-kontext-dev-i2i",
+    "key": "flux-kontext-dev-i2i",
+    "name": "Flux Kontext Dev I2I",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-kontext/dev",
+    "fallback_endpoint": "fal-ai/flux-pro/kontext/multi",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "resolution_mode",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] (fal kontext dev accepts ONE image)",
+      "resolution_mode": "aspect_ratio passes through (all Legacy values 16:9,9:16,1:1,4:3,3:4,3:2,2:3,21:9,9:21 are in fal enum); missing -> 'match_input'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-kontext/dev/api",
+    "notes": "Legacy maxImages 10 but fal dev endpoint is single-image; for >1 image route to fal-ai/flux-pro/kontext/multi (different tier) or drop extras. num_images 1-4 on both.",
+    "source": "packages/studio/src/models.js:9517"
+  },
+  {
+    "model_id": "ai-product-photography",
+    "key": "ai-product-photography",
+    "name": "AI Product Photography",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/image-apps-v2/product-photography",
+    "fallback_endpoint": "fal-ai/image-apps-v2/product-holding",
+    "confidence": "low",
+    "param_map": {
+      "person_image_url": "product_image_url"
+    },
+    "value_transforms": {
+      "aspect_ratio": "object {ratio: '1:1'|'16:9'|'9:16'|'4:3'|'3:4'} (default 1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "prompt"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/image-apps-v2/product-photography/api",
+    "notes": "Legacy def (models.js:9567) uses imageField person_image_url + prompt, which matches neither fal app exactly: product-photography takes product_image_url only (no prompt); product-holding needs person_image_url AND product_image_url. Alternative: fal-ai/bria/product-shot with prompt -> scene_description. Needs a product decision.",
+    "source": "packages/studio/src/models.js:9567"
+  },
+  {
+    "model_id": "ai-ghibli-style",
+    "key": "ai-ghibli-style",
+    "name": "AI Ghibli Style",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/ghiblify",
+    "fallback_endpoint": "fal-ai/image-apps-v2/style-transfer",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ghiblify/api",
+    "notes": "fal ghiblify: image_url -> image.url. Fallback style-transfer with target_style preset.",
+    "source": "packages/studio/src/models.js:9588"
+  },
+  {
+    "model_id": "ai-object-eraser",
+    "key": "ai-object-eraser",
+    "name": "AI Object Eraser",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bria/eraser",
+    "fallback_endpoint": "fal-ai/object-removal/mask",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "mask_image_url": "mask_url"
+    },
+    "value_transforms": {},
+    "fixed_params": {
+      "mask_type": "manual"
+    },
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bria/eraser/api",
+    "notes": "Legacy contract requires mask_image_url (imageInputContracts.js 'i2i:ai-object-eraser'). bria/eraser requires image_url + mask_url. Fallback object-removal/mask (image_url, mask_url, model) returns images[].url.",
+    "source": "packages/studio/src/models.js:9599"
+  },
+  {
+    "model_id": "flux-kontext-pro-i2i",
+    "key": "flux-kontext-pro-i2i",
+    "name": "Flux Kontext Pro I2I",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/kontext",
+    "fallback_endpoint": "fal-ai/flux-pro/kontext/multi",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> fal-ai/flux-pro/kontext {image_url: images_list[0]}; 2 images -> fal-ai/flux-pro/kontext/multi {image_urls: images_list}",
+      "aspect_ratio": "pass-through; Legacy-only '16:21' -> '3:4' (nearest; fal enum 21:9,16:9,4:3,3:2,1:1,2:3,3:4,9:16,9:21)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/kontext/api",
+    "notes": "Multi-image variant fal-ai/flux-pro/kontext/multi verified (image_urls, same params).",
+    "source": "packages/studio/src/models.js:9610"
+  },
+  {
+    "model_id": "flux-kontext-max-i2i",
+    "key": "flux-kontext-max-i2i",
+    "name": "Flux Kontext Max I2I",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/kontext/max",
+    "fallback_endpoint": "fal-ai/flux-pro/kontext/max/multi",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> fal-ai/flux-pro/kontext/max {image_url}; 2 images -> fal-ai/flux-pro/kontext/max/multi {image_urls}",
+      "aspect_ratio": "pass-through; '16:21' -> '3:4'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/kontext/max/api",
+    "notes": "Multi variant verified.",
+    "source": "packages/studio/src/models.js:9648"
+  },
+  {
+    "model_id": "gpt4o-image-to-image",
+    "key": "gpt4o-image-to-image",
+    "name": "GPT-4o Image To Image",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/gpt-image-1/edit-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'1024x1024', '3:2'->'1536x1024', '2:3'->'1024x1536'; missing -> 'auto'",
+      "num_images": "1|2|4 pass-through (fal max 4)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/gpt-image-1/edit-image/api",
+    "notes": "GPT-4o image generation == gpt-image-1. fal gpt-image-1/edit-image has NO mask field.",
+    "source": "packages/studio/src/models.js:9686"
+  },
+  {
+    "model_id": "gpt4o-edit",
+    "key": "gpt4o-edit",
+    "name": "GPT-4o Mask Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/gpt-image-1.5/edit",
+    "fallback_endpoint": "fal-ai/gpt-image-1/edit-image",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_urls",
+      "mask_image_url": "mask_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_urls": "image_url (string) -> image_urls: [image_url]",
+      "image_size": "aspect_ratio -> image_size: '1:1'->'1024x1024', '3:2'->'1536x1024', '2:3'->'1024x1536'; missing -> 'auto'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/gpt-image-1.5/edit/api",
+    "notes": "'GPT-4o Mask Edit' requires mask_image_url (imageInputContracts.js 'i2i:gpt4o-edit'). Same-model endpoint fal-ai/gpt-image-1/edit-image lacks a mask param, so the mask-capable fal endpoint is gpt-image-1.5/edit (mask_image_url) - newer model version. openai/gpt-image-2/edit also has mask_url.",
+    "source": "packages/studio/src/models.js:9732"
+  },
+  {
+    "model_id": "bytedance-seededit-v3",
+    "key": "bytedance-seededit-image",
+    "name": "SeedEdit 3.0",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seededit/v3/edit-image",
+    "fallback_endpoint": "fal-ai/bytedance/seedream/v4/edit",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seededit/v3/edit-image/api",
+    "notes": "Schema verified via OpenAPI (image_url, prompt, guidance_scale 0-1 -> single image.url) but endpoint is absent from the active image-to-image listing (likely deprecated/hidden) - verify with a live call; fallback Seedream 4 edit (images[].url).",
+    "source": "packages/studio/src/models.js:9778"
+  },
+  {
+    "model_id": "minimax-image-01-subject-reference",
+    "key": "minimax-01-subject-reference",
+    "name": "MiniMax Image 01 Subject Reference",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/minimax/image-01/subject-reference",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "aspect_ratio": "pass-through (all Legacy values in fal enum)",
+      "num_images": "1-4 (fal 1-9)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/image-01/subject-reference/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:9801"
+  },
+  {
+    "model_id": "ideogram-character",
+    "key": "ideogram-character",
+    "name": "Ideogram 3.0 Character Reference",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/ideogram/character",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "reference_image_urls",
+      "prompt": "prompt",
+      "render_speed": "rendering_speed",
+      "style": "style",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "reference_image_urls": "image_url (string) -> reference_image_urls: [image_url]",
+      "rendering_speed": "Turbo|Balanced|Quality -> TURBO|BALANCED|QUALITY",
+      "style": "Auto|Realistic|Fiction -> AUTO|REALISTIC|FICTION",
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/ideogram/character/api",
+    "notes": "num_images fal max 8.",
+    "source": "packages/studio/src/models.js:9849"
+  },
+  {
+    "model_id": "flux-pulid",
+    "key": "flux-pulid",
+    "name": "Flux Pulid",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-pulid",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "reference_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pulid/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:9918"
+  },
+  {
+    "model_id": "qwen-image-edit",
+    "key": "qwen-image-edit",
+    "name": "Qwen Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:9953"
+  },
+  {
+    "model_id": "image-effects",
+    "key": "image-effects",
+    "name": "Image Effects",
+    "list": "i2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/nano-banana/edit",
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "name"
+    ],
+    "output_path": null,
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana/edit/api",
+    "notes": "Legacy-proprietary effect catalog (provider legacy; 18 presets like 'Felt Keychain', 'Glass Ball', 'Plastic Bubble Figure'). No fal equivalent; emulate with nano-banana/edit (image_urls:[image_url]) + our own preset prompt table.",
+    "source": "packages/studio/src/models.js:9992"
+  },
+  {
+    "model_id": "nano-banana-edit",
+    "key": "nano-banana-edit",
+    "name": "Nano Banana",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/nano-banana/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "aspect_ratio: 'Auto' -> 'auto'; others pass-through (all in fal enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana/edit/api",
+    "notes": "Also aliased as fal-ai/gemini-25-flash-image/edit.",
+    "source": "packages/studio/src/models.js:10031"
+  },
+  {
+    "model_id": "ideogram-v3-reframe",
+    "key": "ideogram-v3-reframe",
+    "name": "Ideogram 3.0 Reframe",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/ideogram/v3/reframe",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "aspect_ratio": "image_size",
+      "render_speed": "rendering_speed",
+      "style": "style",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3' (REQUIRED by fal)",
+      "rendering_speed": "uppercase",
+      "style": "Auto|General|Realistic|Design -> AUTO|GENERAL|REALISTIC|DESIGN"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/ideogram/v3/reframe/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10073"
+  },
+  {
+    "model_id": "bytedance-seedream-edit-v4",
+    "key": "bytedance-seedream-edit-v4",
+    "name": "Bytedance Seedream Edit v4",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v4/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1K|2K|4K) -> image_size {width,height}: long edge 1K=1024, 2K=2048, 4K=4096 scaled by aspect (e.g. 16:9@4K -> {4096,2304}); no aspect -> 'auto_2K'/'auto_4K'",
+      "num_images": "1-4 pass-through (fal 1-6)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4/edit/api",
+    "notes": "Up to 10 refs (Legacy maxImages 10). fal image_size enum also has auto/auto_2K/auto_4K.",
+    "source": "packages/studio/src/models.js:10134"
+  },
+  {
+    "model_id": "nano-banana-effects",
+    "key": "nano-banana-effects",
+    "name": "Nano Banana Effects",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/nano-banana/edit",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_urls",
+      "name": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_urls": "image_url (string) -> image_urls: [image_url]",
+      "prompt": "name -> server-side preset prompt table WE must author (Legacy's hidden prompts for '3D Figurine', '1920s Decade', 'Mona Lisa Art', ... are not public)",
+      "aspect_ratio": "aspect_ratio: 'Auto' -> 'auto'; others pass-through (all in fal enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "name"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana/edit/api",
+    "notes": "Legacy preset wrapper over Nano Banana (models.js:10195). Same model on fal, but the 17 effect prompts are proprietary; output parity depends on our prompt table.",
+    "source": "packages/studio/src/models.js:10195"
+  },
+  {
+    "model_id": "flux-kontext-effects",
+    "key": "flux-kontext-effects",
+    "name": "Flux Kontext Effects",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/image-editing/{effect_slug}",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "endpoint": "name -> fal-ai/image-editing/<slug>: 'Age Progression'->age-progression, 'Background Change'->background-change, 'Cartoonify'->cartoonify, 'Color Correction'->color-correction, 'Expression Change'->expression-change, 'Face Enhancement'->face-enhancement, 'Hair Change'->hair-change, 'Object Removal'->object-removal, 'Professional Photo'->professional-photo, 'Scene Composition'->scene-composition, 'Style Transfer'->style-transfer, 'Time of Day'->time-of-day, 'Weather Effect'->weather-effect",
+      "prompt": "only sent to slugs whose schema has prompt (age-progression, background-change, expression-change, hair-change, object-removal, scene-composition, style-transfer, time-of-day, weather-effect); cartoonify/color-correction/face-enhancement/professional-photo take image_url only"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "name"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/image-editing/age-progression/api",
+    "notes": "All 13 Legacy effect names match fal's Kontext-based 'Image Editing' app family 1:1 (schemas verified for all 13 via OpenAPI). Endpoint is chosen per 'name'.",
+    "source": "packages/studio/src/models.js:10253"
+  },
+  {
+    "model_id": "flux-redux",
+    "key": "flux-redux",
+    "name": "Flux Redux",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/v1.1-ultra/redux",
+    "fallback_endpoint": "fal-ai/flux/dev/redux",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "aspect_ratio": "pass-through (Legacy enum == fal ultra-redux enum: 21:9,16:9,4:3,3:2,1:1,2:3,3:4,9:16,9:21)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/v1.1-ultra/redux/api",
+    "notes": "Legacy flux-redux requires a prompt and an aspect_ratio; of fal's redux endpoints only flux-pro/v1.1-ultra/redux takes both (flux/dev/redux has no prompt; flux-pro/v1.1/redux uses image_size). Exact tier Legacy used is inferred.",
+    "source": "packages/studio/src/models.js:10296"
+  },
+  {
+    "model_id": "qwen-image-edit-plus",
+    "key": "qwen-image-edit-plus",
+    "name": "Qwen Image Edit Plus",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-plus",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-plus/api",
+    "notes": "Legacy maxImages 3.",
+    "source": "packages/studio/src/models.js:10345"
+  },
+  {
+    "model_id": "wan2.5-image-edit",
+    "key": "wan2.5-image-edit",
+    "name": "Wan2.5 Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/image-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended); Legacy allows up to 5000px - clamp to fal limits (not stated in schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/image-to-image/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10387"
+  },
+  {
+    "model_id": "reve-image-edit",
+    "key": "reve-image-edit",
+    "name": "Reve Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/reve/edit",
+    "fallback_endpoint": "reve/2.1/edit",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/reve/edit/api",
+    "notes": "fal-ai/reve/edit schema verified (prompt, image_url, num_images, output_format) but Reve endpoints are absent from the category listing - verify live. reve/2.1/edit (newer) adds aspect_ratio.",
+    "source": "packages/studio/src/models.js:10429"
+  },
+  {
+    "model_id": "topaz-image-upscale",
+    "key": "topaz-image-upscale",
+    "name": "Topaz Image Upscale",
+    "list": "i2iModels",
+    "fal_endpoint": "topaz/upscale/image/precision",
+    "fallback_endpoint": "fal-ai/topaz/upscale/image",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "upscale_factor": "upscale_factor"
+    },
+    "value_transforms": {
+      "upscale_factor": "string/number -> number; fal max 4: 8 -> 4 (or run twice)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/topaz/upscale/image/precision/api",
+    "notes": "Both endpoints take upscale_factor 1-4 (default 2, model 'Standard V2'). fal-ai/topaz/upscale/image is not in the active listing; topaz/upscale/image/precision is active.",
+    "source": "packages/studio/src/models.js:10450"
+  },
+  {
+    "model_id": "seedvr2-image-upscale",
+    "key": "seedvr2-image-upscale",
+    "name": "Seedvr2 Image Upscale",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/seedvr/upscale/image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "resolution": "target_resolution"
+    },
+    "value_transforms": {
+      "target_resolution": "'2k' -> '1440p', '4k' -> '2160p', '8k' -> not supported in target mode: use upscale_mode 'factor' with upscale_factor 4 (max 10) or clamp to '2160p'"
+    },
+    "fixed_params": {
+      "upscale_mode": "target"
+    },
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/seedvr/upscale/image/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10475"
+  },
+  {
+    "model_id": "qwen-image-edit-plus-lora",
+    "key": "qwen-image-edit-plus-lora",
+    "name": "Qwen Image Edit Plus Lora",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-plus-lora-gallery/multiple-angles",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "rotate_right_left": "rotate_right_left",
+      "move_forward": "move_forward",
+      "vertical_angle": "vertical_angle",
+      "wide_angle_lens": "wide_angle_lens",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-plus-lora-gallery/multiple-angles/api",
+    "notes": "Identical camera-control param names and ranges (rotate -90..90, move_forward 0..10, vertical -1..1, wide_angle_lens bool). No prompt.",
+    "source": "packages/studio/src/models.js:10499"
+  },
+  {
+    "model_id": "nano-banana-pro-edit",
+    "key": "nano-banana-pro-edit",
+    "name": "Nano Banana Pro",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/nano-banana-pro/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "1k|2k|4k -> 1K|2K|4K"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana-pro/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10569"
+  },
+  {
+    "model_id": "image-passthrough",
+    "key": "image-passthrough",
+    "name": "Image Passthrough",
+    "list": "i2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "make_input"
+    ],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "Legacy workflow utility (returns the input image). Implement locally in our gateway: respond with the (re-hosted) input URL; no fal call needed.",
+    "source": "packages/studio/src/models.js:10622"
+  },
+  {
+    "model_id": "kling-o1-edit-image",
+    "key": "kling-o1-edit-image",
+    "name": "Kling O1 Edit Image",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/kling-image/o1",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "1k|2k -> 1K|2K",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-image/o1/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10640"
+  },
+  {
+    "model_id": "flux-2-dev-edit",
+    "key": "flux-2-dev-edit",
+    "name": "Flux 2 Dev Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10691"
+  },
+  {
+    "model_id": "flux-2-flex-edit",
+    "key": "flux-2-flex-edit",
+    "name": "Flux 2 Flex Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2-flex/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1k|2k) -> image_size: 'auto' -> 'auto'; else {width,height} with long edge 1024 (1k) / 2048 (2k) scaled by aspect, multiples of 16"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-flex/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10733"
+  },
+  {
+    "model_id": "flux-2-pro-edit",
+    "key": "flux-2-pro-edit",
+    "name": "Flux 2 Pro Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2-pro/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1k|2k) -> image_size: 'auto' -> 'auto'; else {width,height} with long edge 1024 (1k) / 2048 (2k) scaled by aspect, multiples of 16"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-pro/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10783"
+  },
+  {
+    "model_id": "vidu-q2-reference-to-image",
+    "key": "vidu-q2-reference-to-image",
+    "name": "Vidu Q2 Reference",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/vidu/q2/reference-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "reference_image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "fal enum only 16:9|9:16|1:1: 'auto'->omit, 4:3/3:2/21:9->'16:9', 3:4/2:3->'9:16'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/reference-to-image/api",
+    "notes": "fal endpoint has no resolution control; single image output.",
+    "source": "packages/studio/src/models.js:10833"
+  },
+  {
+    "model_id": "bytedance-seedream-v4.5-edit",
+    "key": "bytedance-seedream-v4.5-edit",
+    "name": "Bytedance Seedream v4.5 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v4.5/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + quality -> image_size: quality 'basic' -> 2K-class, 'high' -> 4K-class (inferred: fal v4.5/v5-lite enums expose auto_2K/auto_4K); aspect -> {width,height} at that long edge (2048 or 4096); no aspect -> 'auto_2K'|'auto_4K'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "quality"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit/api",
+    "notes": "quality->resolution meaning is inferred (Legacy does not document basic/high).",
+    "source": "packages/studio/src/models.js:10885"
+  },
+  {
+    "model_id": "qwen-image-edit-2511",
+    "key": "qwen-image-edit-2511",
+    "name": "Qwen Image Edit 2511",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-2511",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-2511/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:10935"
+  },
+  {
+    "model_id": "wan2.6-image-edit",
+    "key": "wan2.6-image-edit",
+    "name": "Wan2.6 Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "wan/v2.6/image-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/wan/v2.6/image-to-image/api",
+    "notes": "Optional image_size, negative_prompt, enable_prompt_expansion.",
+    "source": "packages/studio/src/models.js:10977"
+  },
+  {
+    "model_id": "qwen-text-to-image-2512",
+    "key": "qwen-text-to-image-2512",
+    "name": "Qwen Text To Image 2512",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2512",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size",
+      "height": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "width,height -> image_size: {width:<int>, height:<int>} (fal accepts object form; multiples of 16 recommended)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2512/api",
+    "notes": "This is a TEXT-to-image model listed in i2iModels (no imageField). fal category text-to-image.",
+    "source": "packages/studio/src/models.js:10999"
+  },
+  {
+    "model_id": "gpt-image-2-edit",
+    "key": "gpt-image-2-image-to-image",
+    "name": "GPT Image 2 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "openai/gpt-image-2/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect 'auto' -> 'auto'; else {width,height} from resolution long edge (1K=1024, 2K=2048, 4K=3840) x aspect, multiples of 16 (size limits inferred from OpenAI gpt-image-2 docs, not stated in fal schema); preset strings square_hd/landscape_16_9/... also accepted"
+    },
+    "fixed_params": {
+      "quality": "high"
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/openai/gpt-image-2/edit/api",
+    "notes": "openai/gpt-image-2/edit is an alias; OpenAPI POST path is /fal-ai/gpt-image-2/edit. image_urls maxItems 16 (matches Legacy maxImages 16). Optional mask_url, quality auto|low|medium|high.",
+    "source": "packages/studio/src/models.js:11039"
+  },
+  {
+    "model_id": "gpt-image-1.5-edit",
+    "key": "gpt-image-1.5-edit",
+    "name": "GPT Image 1.5 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/gpt-image-1.5/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "quality"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'1024x1024', '3:2'->'1536x1024', '2:3'->'1024x1536'; missing -> 'auto'",
+      "quality": "low|medium|high pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/gpt-image-1.5/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:11088"
+  },
+  {
+    "model_id": "grok-imagine-image-to-image",
+    "key": "grok-imagine-image-to-image",
+    "name": "Grok Imagine Image To Image",
+    "list": "i2iModels",
+    "fal_endpoint": "xai/grok-imagine-image/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_urls",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "image_urls": "image_url (string) -> image_urls: [image_url]"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-image/edit/api",
+    "notes": "Optional aspect_ratio/resolution(1k|2k)/num_images on fal.",
+    "source": "packages/studio/src/models.js:11134"
+  },
+  {
+    "model_id": "Api Node",
+    "key": "Api Node",
+    "name": "Api Node",
+    "list": "i2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "model_url",
+      "api_key"
+    ],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "Legacy/WaveSpeed generic third-party API node (user-supplied model_url + api_key). No fal equivalent; drop, or re-implement as a generic 'fal endpoint id' node that uses our server-side FAL_KEY (never accept user api_key into logs).",
+    "source": "packages/studio/src/models.js:11155"
+  },
+  {
+    "model_id": "flux-2-klein-4b-edit",
+    "key": "flux-2-klein-4b-edit",
+    "name": "Flux 2 Klein 4b Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/edit/api",
+    "notes": "Legacy maxImages 4.",
+    "source": "packages/studio/src/models.js:11185"
+  },
+  {
+    "model_id": "flux-2-klein-9b-edit",
+    "key": "flux-2-klein-9b-edit",
+    "name": "Flux 2 Klein 9b Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/edit/api",
+    "notes": "Legacy maxImages 4.",
+    "source": "packages/studio/src/models.js:11223"
+  },
+  {
+    "model_id": "add-image-watermark",
+    "key": "add-image-watermark",
+    "name": "Add Image Watermark",
+    "list": "i2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": null,
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "position",
+      "opacity",
+      "scale"
+    ],
+    "output_path": null,
+    "doc_url": null,
+    "notes": "Legacy utility compositing watermark_image_url onto image_url (imageInputContracts.js 'i2i:add-image-watermark'). Implement locally (e.g. sharp composite with position/opacity/scale), upload result to our storage. fal-ai/invisible-watermark is a different (steganographic) capability.",
+    "source": "packages/studio/src/models.js:11261"
+  },
+  {
+    "model_id": "nano-banana-2-edit",
+    "key": "nano-banana-2-edit",
+    "name": "Nano Banana 2",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/nano-banana-2/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "google_search": "enable_web_search",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "resolution": "1k|2k|4k -> 1K|2K|4K",
+      "output_format": "'jpg' -> 'jpeg'",
+      "aspect_ratio": "pass-through (fal enum includes 1:4,1:8,4:1,8:1,auto)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana-2/edit/api",
+    "notes": "Legacy maxImages 14.",
+    "source": "packages/studio/src/models.js:11301"
+  },
+  {
+    "model_id": "seedream-5.0-edit",
+    "key": "seedream-5.0-edit",
+    "name": "Seedream 5.0 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/lite/edit",
+    "fallback_endpoint": "bytedance/seedream/v5/flash/edit",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + quality -> image_size: quality 'basic' -> 2K-class, 'high' -> 4K-class (inferred: fal v4.5/v5-lite enums expose auto_2K/auto_4K); aspect -> {width,height} at that long edge (2048 or 4096); no aspect -> 'auto_2K'|'auto_4K'; v5 lite also accepts auto_3K"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "quality"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/lite/edit/api",
+    "notes": "fal has Seedream 5.0 lite/flash/pro edit; Legacy 'Seedream 5.0' (separate from 'Seedream 5.0 Pro') assumed = 5.0 Lite (inferred). Flash edit uses auto_1K/auto_2K.",
+    "source": "packages/studio/src/models.js:11377"
+  },
+  {
+    "model_id": "bytedance-seedream-v4-edit",
+    "key": "bytedance-seedream-edit-v4",
+    "name": "Seedream 4 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v4/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1K|2K|4K) -> image_size {width,height}: long edge 1K=1024, 2K=2048, 4K=4096 scaled by aspect (e.g. 16:9@4K -> {4096,2304}); no aspect -> 'auto_2K'/'auto_4K'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4/edit/api",
+    "notes": "Duplicate catalog entry of bytedance-seedream-edit-v4 (same Legacy endpoint 'bytedance-seedream-edit-v4').",
+    "source": "packages/studio/src/models.js:11427"
+  },
+  {
+    "model_id": "bytedance-seedream-v5.0-edit",
+    "key": "seedream-5.0-edit",
+    "name": "Seedream 5.0 Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/lite/edit",
+    "fallback_endpoint": "bytedance/seedream/v5/flash/edit",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + quality -> image_size: quality 'basic' -> 2K-class, 'high' -> 4K-class (inferred: fal v4.5/v5-lite enums expose auto_2K/auto_4K); aspect -> {width,height} at that long edge (2048 or 4096); no aspect -> 'auto_2K'|'auto_4K'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "quality"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/lite/edit/api",
+    "notes": "Duplicate catalog entry of seedream-5.0-edit (same Legacy endpoint). Legacy maxItems 14; fal schema has no maxItems stated.",
+    "source": "packages/studio/src/models.js:11499"
+  },
+  {
+    "model_id": "qwen-image-2.0-edit",
+    "key": "qwen-image-2.0-edit",
+    "name": "Qwen Image 2.0",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2/edit",
+    "fallback_endpoint": "alibaba/qwen-image-3/edit",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2/edit/api",
+    "notes": "fal marks fal-ai/qwen-image-2/edit status=deprecated (listing page 5) - schema still served; plan to migrate to alibaba/qwen-image-3/edit.",
+    "source": "packages/studio/src/models.js:11560"
+  },
+  {
+    "model_id": "qwen-image-2.0-pro-edit",
+    "key": "qwen-image-2.0-pro-edit",
+    "name": "Qwen Image 2.0 Pro",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2/pro/edit",
+    "fallback_endpoint": "fal-ai/qwen-image-max/edit",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2/pro/edit/api",
+    "notes": "fal status=deprecated. Legacy maxItems 6.",
+    "source": "packages/studio/src/models.js:11609"
+  },
+  {
+    "model_id": "flux-2-klein-4b-turbo-edit",
+    "key": "flux-2-klein-4b-turbo-edit",
+    "name": "Flux 2 Klein 4B Turbo Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b/edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {
+      "num_inference_steps": 4
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/edit/api",
+    "notes": "fal has no separate 'klein turbo' endpoint; klein edit is already step-distilled (num_inference_steps 4-8), so pin 4 steps. fal-ai/flux-2/turbo/edit is a different (non-klein) FLUX.2 turbo.",
+    "source": "packages/studio/src/models.js:11658"
+  },
+  {
+    "model_id": "flux-2-klein-9b-turbo-edit",
+    "key": "flux-2-klein-9b-turbo-edit",
+    "name": "Flux 2 Klein 9B Turbo Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b/edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {
+      "num_inference_steps": 4
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/edit/api",
+    "notes": "fal has no separate 'klein turbo' endpoint; klein edit is already step-distilled (num_inference_steps 4-8), so pin 4 steps. fal-ai/flux-2/turbo/edit is a different (non-klein) FLUX.2 turbo.",
+    "source": "packages/studio/src/models.js:11707"
+  },
+  {
+    "model_id": "portrait-stylist",
+    "key": "portrait-stylist",
+    "name": "AI Portrait Stylist",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/kontext",
+    "fallback_endpoint": "fal-ai/image-apps-v2/hair-change",
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "name": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "prompt": "name -> server-side preset prompt table we author (e.g. 'Platinum Blonde Hair' -> 'Change the hair to platinum blonde, keep face and identity unchanged')",
+      "aspect_ratio": "'auto' -> omit; others pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "name"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/kontext/api",
+    "notes": "Legacy preset wrapper (provider blackforest, models.js:11756; 20 presets). No fal equivalent of the preset list. Subsets map to fal apps: hair presets -> image-apps-v2/hair-change (hair_color/target_hairstyle enums), makeup presets -> image-apps-v2/makeup-application (makeup_style), lighting presets -> fal-ai/image-apps-v2/relighting.",
+    "source": "packages/studio/src/models.js:11756"
+  },
+  {
+    "model_id": "seedance-2-character",
+    "key": "seedance-2-character",
+    "name": "Seedance 2 Character",
+    "list": "i2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/nano-banana-pro/edit",
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "prompt",
+      "images_list",
+      "character_name"
+    ],
+    "output_path": null,
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana-pro/edit/api",
+    "notes": "Legacy-proprietary 'character sheet' builder for Seedance 2 (1-3 reference photos + outfit description + name, models.js:11819). No fal endpoint. Fallback: nano-banana-pro/edit with a server-side 'character reference sheet, <outfit>' prompt template; store character_name in our own DB.",
+    "source": "packages/studio/src/models.js:11819"
+  },
+  {
+    "model_id": "wan2.7-image-edit",
+    "key": "wan2.7-image-edit",
+    "name": "Wan 2.7 Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:11862"
+  },
+  {
+    "model_id": "wan2.7-image-edit-pro",
+    "key": "wan2.7-image-edit-pro",
+    "name": "Wan 2.7 Image Edit Pro",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/pro/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/pro/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:11913"
+  },
+  {
+    "model_id": "flux-2-klein-4b-edit-lora",
+    "key": "flux-2-klein-4b-edit-lora",
+    "name": "Flux 2 Klein 4B Edit LoRA",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b/edit/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "lora_list": "loras",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit",
+      "loras": "lora_list [{path,scale}] -> loras [{path,scale}] (identical item shape)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/edit/lora/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:11964"
+  },
+  {
+    "model_id": "flux-2-klein-9b-edit-lora",
+    "key": "flux-2-klein-9b-edit-lora",
+    "name": "Flux 2 Klein 9B Edit LoRA",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b/edit/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "lora_list": "loras",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit",
+      "loras": "lora_list [{path,scale}] -> loras [{path,scale}] (identical item shape)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/edit/lora/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:12048"
+  },
+  {
+    "model_id": "kling-o3-image-edit",
+    "key": "kling-o3-image-edit",
+    "name": "Kling O3 Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/kling-image/o3/image-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "resolution": "1K|2K|4K pass-through",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-image/o3/image-to-image/api",
+    "notes": "num_images 1-9 both sides.",
+    "source": "packages/studio/src/models.js:12132"
+  },
+  {
+    "model_id": "nano-banana-2-lite-edit",
+    "key": "nano-banana-2-lite-edit",
+    "name": "Nano Banana 2 Lite",
+    "list": "i2iModels",
+    "fal_endpoint": "google/nano-banana-lite/edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/google/nano-banana-lite/edit/api",
+    "notes": "fal name is 'Nano Banana Lite Edit' (no '2'); its schema (thinking_level, 1:4/8:1 ratios) matches the Nano Banana 2 generation, so treated as the same model - inferred.",
+    "source": "packages/studio/src/models.js:12205"
+  },
+  {
+    "model_id": "bytedance-seedream-5.0-pro-edit",
+    "key": "seedream-5.0-pro-edit",
+    "name": "Seedream 5.0 Pro",
+    "list": "i2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/pro/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect + resolution(1K|2K) -> {width,height} (long edge 1024|2048); no aspect -> 'auto_1K'|'auto_2K' (fal enum auto_1K, auto_2K)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/pro/edit/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:12257"
+  },
+  {
+    "model_id": "qwen3-image-to-image",
+    "key": "qwen3-image-to-image",
+    "name": "Qwen 3 Image to Image",
+    "list": "i2iModels",
+    "fal_endpoint": "alibaba/qwen-image-3/edit",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "prompt_extend": "enable_prompt_expansion",
+      "negative_prompt": "negative_prompt",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1k|2k) -> image_size {width,height} (long edge 1024|2048)",
+      "output_format": "png|jpeg pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/alibaba/qwen-image-3/edit/api",
+    "notes": "Assumes Legacy 'Qwen 3' == Qwen-Image-3 (fal display 'Qwen Image 3 Image Editing').",
+    "source": "packages/studio/src/models.js:12317"
+  },
+  {
+    "model_id": "qwen3-pro-image-to-image",
+    "key": "qwen3-pro-image-to-image",
+    "name": "Qwen 3 Pro Image to Image",
+    "list": "i2iModels",
+    "fal_endpoint": "alibaba/qwen-image-3/edit",
+    "fallback_endpoint": "fal-ai/qwen-image-max/edit",
+    "confidence": "low",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "prompt_extend": "enable_prompt_expansion",
+      "negative_prompt": "negative_prompt",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio + resolution(1k|2k) -> image_size {width,height} (long edge 1024|2048)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/alibaba/qwen-image-3/edit/api",
+    "notes": "fal lists no 'Pro' tier of Qwen-Image-3 edit; mapped to the only Qwen-Image-3 edit endpoint (quality tier differs). qwen-image-max/edit (max 3 images) is the premium Qwen alternative.",
+    "source": "packages/studio/src/models.js:12375"
+  },
+  {
+    "model_id": "z-image-turbo-image-to-image-lora",
+    "key": "z-image-turbo-image-to-image-lora",
+    "name": "Z-Image Turbo Image to Image LoRA",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/z-image/turbo/image-to-image/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "loras": "loras",
+      "aspect_ratio": "image_size",
+      "strength": "strength",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit (fal default 'auto')",
+      "loras": "[{path,scale}] identical"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/turbo/image-to-image/lora/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:12433"
+  },
+  {
+    "model_id": "qwen-image-edit-2511-lora",
+    "key": "qwen-image-edit-2511-lora",
+    "name": "Qwen Image Edit 2511 LoRA",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-2511/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "loras": "loras",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit",
+      "loras": "[{path,scale}] identical shape"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-2511/lora/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:12528"
+  },
+  {
+    "model_id": "qwen-image-edit-lora",
+    "key": "qwen-image-edit-lora",
+    "name": "Qwen Image Edit LoRA",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "loras": "loras",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit",
+      "output_format": "jpeg|png only on fal ('webp' -> 'png')",
+      "loras": "[{path,scale}] identical"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-lora/api",
+    "notes": "",
+    "source": "packages/studio/src/models.js:12633"
+  },
+  {
+    "model_id": "face-expression-change",
+    "key": "face-expression-change",
+    "name": "Face Expression Change",
+    "list": "i2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-edit-plus-lora-gallery/multiple-angles",
+    "fallback_endpoint": "fal-ai/image-apps-v2/expression-change",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "rotate_right_left": "rotate_right_left",
+      "move_forward": "move_forward",
+      "vertical_angle": "vertical_angle",
+      "wide_angle_lens": "wide_angle_lens",
+      "aspect_ratio": "image_size",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size: '1:1'->'square_hd', '16:9'->'landscape_16_9', '9:16'->'portrait_16_9', '4:3'->'landscape_4_3', '3:4'->'portrait_4_3'; any other ratio (3:2, 2:3, 21:9, 9:21, 5:4, 4:5) -> {width,height} object at ~1MP (e.g. 3:2->{1248,832}, 2:3->{832,1248}, 21:9->{1568,672}, 9:21->{672,1568}), dims rounded to multiples of 16; 'auto'/missing -> omit",
+      "output_format": "jpeg|png|webp pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-edit-plus-lora-gallery/multiple-angles/api",
+    "notes": "Despite the name, Legacy's inputs (models.js:12737) are exactly the Qwen multiple-angles LoRA controls, so the parameter-faithful mapping is multiple-angles. For a true expression edit use image-apps-v2/expression-change (target_expression enum) or fal-ai/image-editing/expression-change (prompt).",
+    "source": "packages/studio/src/models.js:12737"
+  },
+  {
+    "model_id": "muse-image-edit",
+    "key": "muse-image-edit",
+    "name": "Muse Image Edit",
+    "list": "i2iModels",
+    "fal_endpoint": "meta/muse-image/edit",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "aspect_ratio": "pass-through string"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/meta/muse-image/edit/api",
+    "notes": "image_urls 1-10.",
+    "source": "packages/studio/src/models.js:12831"
+  }
+]

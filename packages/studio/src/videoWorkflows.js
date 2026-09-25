@@ -1,5 +1,6 @@
 import { getModelMediaCapabilities } from "./modelCapabilities.js";
 import {
+  isVariantAvailable,
   videoModelCatalog,
   videoModelPickerEntryByVariantId,
 } from "./modelFamilies.js";
@@ -257,16 +258,28 @@ function variantForCompatibleId(group, variantId) {
   return bestScore > 0 ? best : null;
 }
 
+// True when the gateway can run at least one variant of a workflow group.
+export function hasAvailableWorkflowVariant(group) {
+  return Boolean(group?.variants?.some(isVariantAvailable));
+}
+
+// The resolved variant when the gateway can run it, else the group's first
+// runnable variant (null when there is none).
+function runnableVariant(group, variant) {
+  if (variant && isVariantAvailable(variant)) return variant;
+  return group?.variants.find(isVariantAvailable) || null;
+}
+
 function resolveVariantFromGroup(group, currentVariantId, preferredVariantId) {
   if (!group || group.variants.length === 0) return null;
-  return (
+  return runnableVariant(group,
     variantForId(group, preferredVariantId) ||
     variantForId(group, currentVariantId) ||
     variantForPickerEntry(group, preferredVariantId) ||
     variantForPickerEntry(group, currentVariantId) ||
     variantForCompatibleId(group, preferredVariantId) ||
     variantForCompatibleId(group, currentVariantId) ||
-    group.variants[0]
+    group.variants[0],
   );
 }
 
@@ -296,7 +309,7 @@ function resolveGroupedWorkflowVariant(
   ));
   if (canRestorePreferred) {
     const remembered = variantForId(group, preferredVariantId);
-    if (remembered) return remembered;
+    if (remembered && isVariantAvailable(remembered)) return remembered;
   }
   const variantId = resolveGroupedVideoVariant({
     familyId,
@@ -305,7 +318,8 @@ function resolveGroupedWorkflowVariant(
       ? currentVariantId
       : hasPreferred ? preferredVariantId : null,
   });
-  return variantForId(group, variantId);
+  const resolved = variantForId(group, variantId);
+  return resolved ? runnableVariant(group, resolved) : null;
 }
 
 export function resolveVideoWorkflowVariant(

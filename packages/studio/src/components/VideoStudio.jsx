@@ -3,9 +3,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { generateVideo, generateI2V, processV2V, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { generateVideo, generateI2V, processV2V, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
+import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
+import ProviderChip, { getProviderStyle } from "./ProviderChip.jsx";
 import DrawModal from "./DrawModal.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import { VideoOptionControl, VideoSettingsControl } from "./VideoModelControls.jsx";
@@ -27,14 +30,17 @@ import {
   getDefaultEffectForI2VModel,
 } from "../models.js";
 import {
+  getAvailableEntryVariant,
   getFamilyVariant,
+  isPickerEntryAvailable,
+  isVariantAvailable,
   videoModelCatalog,
   videoModelMenuEntries as videoModelPickerEntries,
   videoModelMenuEntryByVariantId as videoModelPickerEntryByVariantId,
 } from "../modelFamilies.js";
 import { getSeedanceEndpointResolution, getSeedanceToolConfiguration } from "../seedanceModels.js";
 import { getVeoToolConfiguration } from "../veoModels.js";
-import { getGroupedVideoConfiguration, getGroupedVideoCopyKey, getGroupedVideoVariantOptions } from "../groupedVideoModels.js";
+import { getGroupedVideoConfiguration, getGroupedVideoCopyKey, getGroupedVideoVariantOptions, hasAvailableGroupedVariant } from "../groupedVideoModels.js";
 import {
   getVideoCommonOptions,
   getVideoCommonValues,
@@ -71,6 +77,7 @@ import {
   getVideoWorkflowMediaSlots,
   migrateVideoWorkflowMediaDrafts,
   getVideoWorkflowSlotRemaining,
+  hasAvailableWorkflowVariant,
   inferVideoWorkflowId,
   legacyVideoMediaToWorkflowDraft,
   projectVideoWorkflowMedia,
@@ -408,35 +415,16 @@ const VideoReadySvg = () => (
 
 // ── Dropdown components ───────────────────────────────────────────────────────
 
-const PROVIDER_LOGOS = {
-  openai: "https://cdn.muapi.ai/models/openai.png",
-  google: "https://cdn.muapi.ai/models/gemini.png",
-  kling: "https://cdn.muapi.ai/models/kling.png",
-  alibaba: "https://cdn.muapi.ai/models/alibaba.png",
-  bytedance: "https://cdn.muapi.ai/models/bytedance.png",
-  blackforest: "https://cdn.muapi.ai/models/bfl.png",
-  minimax: "https://cdn.muapi.ai/models/minimax.png",
-  suno: "https://cdn.muapi.ai/models/suno.png",
-  anthropic: "https://cdn.muapi.ai/models/claude.png",
-  meshy: "https://cdn.muapi.ai/models/meshy-3.png",
-  tripo3d: "https://cdn.muapi.ai/models/tripo3d.png",
-  grok: "https://cdn.muapi.ai/models/xai.png",
-  muapi: "https://cdn.muapi.ai/models/muapi.png",
-  midjourney: "https://cdn.muapi.ai/models/midjourney.png",
-  vidu: "https://cdn.muapi.ai/models/vidu.png",
-  runway: "https://cdn.muapi.ai/models/runway.png",
-  luma: "https://cdn.muapi.ai/models/luma.png",
-  ideogram: "https://cdn.muapi.ai/models/ideogram.png",
-  leonardoai: "https://cdn.muapi.ai/models/leonardoai.png",
-  hunyuan: "https://cdn.muapi.ai/models/hunyuan.png",
-  hidream: "https://cdn.muapi.ai/models/hidream.png",
-  lightricks: "https://cdn.muapi.ai/models/lightricks.png",
-  pixverse: "https://cdn.muapi.ai/models/pixverse.png",
-  reve: "https://cdn.muapi.ai/models/reve.png",
-  stability: "https://cdn.muapi.ai/models/stability.png"
-};
+// Entries with no variant the gateway can run are left out.
+function getVisibleVideoEntries() {
+  return videoModelPickerEntries.filter((entry) => !isHiddenEntry(entry) && isPickerEntryAvailable(entry));
+}
 
-const invertLogos = ['openai', 'blackforest', 'runway', 'ideogram', 'lightricks', 'grok'];
+// Grouped entries (Seedance, Veo, Kling…) list every family variant in
+// variantIds, so this also covers variants picked per workflow.
+function entryHasMode(entry, mode) {
+  return Boolean(entry.variantsByMode[mode] && getAvailableEntryVariant(videoModelCatalog, entry, mode));
+}
 
 function seedanceToolLabel(tool, copy, includeAction = false) {
   return [
@@ -451,7 +439,8 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
   const selectedEntry = videoModelPickerEntryByVariantId.get(selectedModel);
   const selectedModelProvider = selectedEntry?.family.provider || "all";
   const md = copy.modelDropdown || {};
-  const visibleEntries = videoModelPickerEntries.filter((entry) => !isHiddenEntry(entry));
+  useModelAvailability();
+  const visibleEntries = getVisibleVideoEntries();
   const nonToolEntries = visibleEntries.filter((entry) => !isToolEntry(entry));
   const modelCategories = [
     {
@@ -462,17 +451,17 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
     {
       id: "t2v",
       label: copy.categories.t2v,
-      entries: nonToolEntries.filter((entry) => entry.variantsByMode.t2v && !getVeoToolConfiguration(entry.defaultVariant.model.id)),
+      entries: nonToolEntries.filter((entry) => entryHasMode(entry, "t2v") && !getVeoToolConfiguration(entry.defaultVariant.model.id)),
     },
     {
       id: "i2v",
       label: copy.categories.i2v,
-      entries: nonToolEntries.filter((entry) => entry.variantsByMode.i2v),
+      entries: nonToolEntries.filter((entry) => entryHasMode(entry, "i2v")),
     },
     {
       id: "v2v",
       label: copy.categories.v2v,
-      entries: nonToolEntries.filter((entry) => entry.variantsByMode.v2v || getVeoToolConfiguration(entry.defaultVariant.model.id)),
+      entries: nonToolEntries.filter((entry) => entryHasMode(entry, "v2v") || getVeoToolConfiguration(entry.defaultVariant.model.id)),
     },
     {
       id: "tools",
@@ -502,49 +491,13 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
     }
   }, []);
 
-  const getProviderStyle = (provider) => {
-    switch (provider) {
-      case "grok":
-        return { text: "xI", bg: "bg-orange-500/10 text-orange-400 border-orange-500/25" };
-      case "openai":
-        return { text: "O", bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" };
-      case "google":
-        return { text: "G", bg: "bg-blue-500/10 text-blue-400 border-blue-500/25" };
-      case "blackforest":
-        return { text: "BF", bg: "bg-amber-500/10 text-amber-400 border-amber-500/25" };
-      case "bytedance":
-        return { text: "BD", bg: "bg-pop-500/10 text-pop-400 border-pop-500/25" };
-      case "midjourney":
-        return { text: "MJ", bg: "bg-pop-500/10 text-pop-400 border-pop-500/25" };
-      case "kling":
-        return { text: "KL", bg: "bg-rose-500/10 text-rose-400 border-rose-500/25" };
-      case "vidu":
-        return { text: "VD", bg: "bg-brand-500/10 text-brand-400 border-brand-500/25" };
-      case "minimax":
-        return { text: "MX", bg: "bg-pink-500/10 text-pink-400 border-pink-500/25" };
-      case "ideogram":
-        return { text: "ID", bg: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25" };
-      case "luma":
-        return { text: "LM", bg: "bg-teal-500/10 text-teal-400 border-teal-500/25" };
-      case "alibaba":
-        return { text: "AL", bg: "bg-sky-500/10 text-sky-400 border-sky-500/25" };
-      case "leonardoai":
-        return { text: "LE", bg: "bg-violet-500/10 text-violet-400 border-violet-500/25" };
-      case "stability":
-        return { text: "SD", bg: "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/25" };
-      default:
-        const name = provider ? provider.toUpperCase() : "AI";
-        return { text: name.substring(0, 2), bg: "bg-primary/10 text-primary border-primary/25" };
-    }
-  };
-
   // Dynamically compute list of providers from the input models lists
   const availableProviders = [];
   const seenProviders = new Set();
   
   modelEntries.forEach(({ family }) => {
-    const pId = family.provider || 'muapi';
-    const pName = family.provider_name || 'MuAPI';
+    const pId = family.provider || 'aquora';
+    const pName = family.provider_name || 'Aquora';
     if (!seenProviders.has(pId)) {
       seenProviders.add(pId);
       availableProviders.push({ id: pId, name: pName });
@@ -557,7 +510,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
     const { family } = entry;
     // 1. Filter by provider tab
     if (selectedProvider !== "all") {
-      const pId = family.provider || 'muapi';
+      const pId = family.provider || 'aquora';
       if (pId !== selectedProvider) return false;
     }
     // 2. Filter by search query (with task-word synonyms: "reel", "tiktok"…)
@@ -576,13 +529,6 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
     else mainEntries.push(entry);
   }
 
-  const getIconColor = (family) => {
-    if (family.id.includes("kling")) return "bg-blue-500/10 text-blue-400 border-blue-500/10";
-    if (family.id.includes("veo")) return "bg-pop-500/10 text-pop-400 border-pop-500/10";
-    if (family.id.includes("sora")) return "bg-rose-500/10 text-rose-400 border-rose-500/10";
-    return "bg-primary/10 text-primary border-primary/10";
-  };
-
   const renderItem = (entry, label = entry.name, { keyPrefix = "", hint = null, pick = false } = {}) => {
     const { family } = entry;
     const isSelected = selectedEntry === entry;
@@ -600,21 +546,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
       }}
     >
       <div className="flex items-center gap-3.5">
-        {PROVIDER_LOGOS[family.provider] ? (
-          <div className="w-8 h-8 rounded-xl border border-white/5 overflow-hidden shrink-0 flex items-center justify-center bg-white/[0.02]">
-            <img
-              src={PROVIDER_LOGOS[family.provider]}
-              alt={family.provider_name}
-              className={`w-full h-full object-contain p-1 ${invertLogos.includes(family.provider) ? "invert" : ""}`}
-            />
-          </div>
-        ) : (
-          <div
-            className={`w-9 h-9 ${getIconColor(family)} border rounded-xl flex items-center justify-center font-black text-xs shadow-inner uppercase`}
-          >
-            {entry.name.charAt(0)}
-          </div>
-        )}
+        <ProviderChip provider={family.provider} />
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs font-bold text-white tracking-tight truncate">
             {label}
@@ -662,6 +594,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
               type="button"
               onClick={() => setSelectedProvider(p.id)}
               aria-pressed={isSelected}
+              aria-label={p.name}
               className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-all cursor-pointer ${
                 isSelected
                   ? `${style.bg} scale-105 shadow-md shadow-black/10`
@@ -669,15 +602,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
               }`}
               title={p.name}
             >
-              {PROVIDER_LOGOS[p.id] ? (
-                <img
-                  src={PROVIDER_LOGOS[p.id]}
-                  alt={p.name}
-                  className={`w-full h-full rounded-full object-contain ${invertLogos.includes(p.id) ? "invert" : ""}`}
-                />
-              ) : (
-                style.text
-              )}
+              <span aria-hidden="true">{style.text}</span>
             </button>
           );
         })}
@@ -814,11 +739,8 @@ export default function VideoStudio({
   locale = "en",
 }) {
   const copy = useMemo(() => resolveCopy(en, zh, locale), [locale]);
-  const LEGACY_PERSIST_KEY = "hg_video_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_video_studio_persistent");
+  const availability = useModelAvailability();
 
   // ── generation state ──
   const [imageMode, setImageMode] = useState(false); // i2v
@@ -826,7 +748,7 @@ export default function VideoStudio({
   const [selectedWorkflowId, setSelectedWorkflowId] = useState(null);
 
   // ── model / params ──
-  const defaultModel = t2vModels[0];
+  const [defaultModel] = useState(() => firstAvailableModel(t2vModels));
   const defaultFamily = videoModelCatalog.familyByVariantId.get(defaultModel.id);
   const [selectedModel, setSelectedModel] = useState(defaultModel.id);
   const [selectedFamilyId, setSelectedFamilyId] = useState(defaultFamily.id);
@@ -1199,7 +1121,9 @@ export default function VideoStudio({
   );
   const aspectRatioHelp = groupCopy[selectedVariant?.model.inputs?.aspect_ratio?.descriptionKey];
   const groupedModes = useMemo(() => groupedConfiguration && workflowFamily
-    ? [...(workflowFamily.hasBase ? [{ id: null }] : []), ...workflowFamily.workflows].map((workflow) => {
+    ? [...(workflowFamily.hasBase ? [{ id: null }] : []), ...workflowFamily.workflows]
+      .filter((workflow) => hasAvailableGroupedVariant(selectedFamilyId, workflow.id))
+      .map((workflow) => {
         const plan = getSelectionPlan({ workflowId: workflow.id });
         return {
           id: workflow.id,
@@ -1212,7 +1136,7 @@ export default function VideoStudio({
           disabled: !plan,
         };
       })
-    : [], [groupedConfiguration, workflowFamily, getSelectionPlan, describeSelectionAdjustments, groupCopy]);
+    : [], [groupedConfiguration, workflowFamily, selectedFamilyId, getSelectionPlan, describeSelectionAdjustments, groupCopy]);
   const promptDisabled = Boolean(selectedVeoTool && !selectedVariant?.model.inputs?.prompt) || shouldDisableVideoPrompt(
     selectedVariant?.model,
     currentFamilyMode,
@@ -1331,7 +1255,9 @@ export default function VideoStudio({
   );
 
   // ── Persistence: Load ────────────────────────────────────────────────────
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -1440,10 +1366,11 @@ export default function VideoStudio({
     } finally {
       hasRestored.current = true;
     }
-  }, [applyControlsForModel, defaultModel.id]);
+  }, [PERSIST_KEY, applyControlsForModel, defaultModel, defaultFamily.id]);
 
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -1493,6 +1420,7 @@ export default function VideoStudio({
     workflowMediaDrafts,
     prompt,
     localHistory,
+    PERSIST_KEY,
   ]);
 
   // ── Derived UI values ────────────────────────────────────────────────────
@@ -1651,7 +1579,7 @@ export default function VideoStudio({
           result.status === "fulfilled" ? [result.value] : [],
         );
       } catch (err) {
-        console.error(`[VideoStudio] ${label} upload failed:`, err);
+        logStudioError(`[VideoStudio] ${label} upload failed:`, err);
         notifyError(copy.errors.labelUploadFailed.replace('{label}', label).replace('{message}', friendlyError(err)));
         return [];
       } finally {
@@ -2021,10 +1949,13 @@ export default function VideoStudio({
         handleGroupedSelection(plan, family, workflowId);
         return;
       }
+      const variantFor = (mode) => getAvailableEntryVariant(videoModelCatalog, pickerEntry, mode);
       const target = category !== "all"
         ? category === "v2v" && getVeoToolConfiguration(defaultVariant.model.id)
-          ? defaultVariant : variantsByMode[category]
-        : variantsByMode[currentFamilyMode] || defaultVariant;
+          ? defaultVariant : variantFor(category)
+        : variantFor(currentFamilyMode) ||
+          (isVariantAvailable(defaultVariant) ? defaultVariant : null) ||
+          variantFor("t2v") || variantFor("i2v") || variantFor("v2v");
       if (!target) return;
 
       const targetWorkflowFamily = getVideoWorkflowFamily(family.id);
@@ -2129,6 +2060,10 @@ export default function VideoStudio({
       return;
     }
     const currentModel = getCurrentModel();
+    if (!isModelAvailable(currentModel)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
     const grouped = getGroupedVideoConfiguration(selectedModel);
     const activeParameterValues = createModelParameterValues(currentModel, modelParameterValues);
     const generationParameterValues = grouped && currentModel.inputs?.omni_reference_task_type
@@ -2359,7 +2294,7 @@ export default function VideoStudio({
           });
       }
     } catch (e) {
-      console.error("[VideoStudio]", e);
+      logStudioError("[VideoStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.videoGenerationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
@@ -2417,12 +2352,25 @@ export default function VideoStudio({
     setUploadedAudioUrls([]);
     workflowDraftSessionRef.current += 1;
     setWorkflowMediaDrafts({});
-    const first = t2vModels[0];
+    const first = firstAvailableModel(t2vModels);
     const family = videoModelCatalog.familyByVariantId.get(first.id);
     const variant = videoModelCatalog.variantById.get(first.id);
     applyUserSelectedVariant(variant, "t2v", family);
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, [applyUserSelectedVariant, resetToPromptBar]);
+
+  // When the gateway's model list arrives (or a restored draft names a model
+  // it has since disabled), switch to the first model that can run.
+  useEffect(() => {
+    if (!availability || isModelAvailable(selectedModel)) return;
+    const first = firstAvailableModel(t2vModels);
+    const family = videoModelCatalog.familyByVariantId.get(first.id);
+    const variant = videoModelCatalog.variantById.get(first.id);
+    if (!family || !variant || first.id === selectedModel) return;
+    applyUserSelectedVariant(variant, "t2v", family);
+  }, [availability, selectedModel, applyUserSelectedVariant]);
+
+  const canExtendSeedance = isModelAvailable("seedance-2-extend");
 
   const handleExtend = useCallback((requestId, sourceModelId) => {
     if (!requestId) return;
@@ -2537,7 +2485,7 @@ export default function VideoStudio({
         {history.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
             {history.map((entry, idx) => {
-              const isSeedance2 = isContinuationSourceModel("seedance-2-extend", entry.model);
+              const isSeedance2 = canExtendSeedance && isContinuationSourceModel("seedance-2-extend", entry.model);
               return (
                 <div
                   key={entry.id || idx}
@@ -2677,10 +2625,10 @@ export default function VideoStudio({
                         })()}
                         <div className="flex gap-2">
                           {entry.resolution && (
-                            <span className="text-[10px] text-white/40">{entry.resolution}</span>
+                            <span className="text-[10px] text-white/60">{entry.resolution}</span>
                           )}
                           {entry.duration && (
-                            <span className="text-[10px] text-white/40">{entry.duration}s</span>
+                            <span className="text-[10px] text-white/60">{entry.duration}s</span>
                           )}
                         </div>
                       </div>
@@ -2971,13 +2919,13 @@ export default function VideoStudio({
           )}
 
           {groupedConfiguration && selectedVariant.model.aspectRatioMode === "inherited" && (
-            <p className="px-2 text-[10px] text-white/40">{groupCopy.inheritedFormat}</p>
+            <p className="px-2 text-[10px] text-white/60">{groupCopy.inheritedFormat}</p>
           )}
           {groupedConfiguration && selectedWorkflowId === "extend_uploaded_video" && groupedResolution.options.length === 0 && (
-            <p className="px-2 text-[10px] text-white/40">{groupCopy.inheritedVideoResolution}</p>
+            <p className="px-2 text-[10px] text-white/60">{groupCopy.inheritedVideoResolution}</p>
           )}
           {groupedResolution?.label && (
-            <p className="px-2 text-[10px] text-white/40">{groupCopy.resolutionUnknown}</p>
+            <p className="px-2 text-[10px] text-white/60">{groupCopy.resolutionUnknown}</p>
           )}
 
           {/* Bottom row: controls + generate */}
@@ -2992,20 +2940,7 @@ export default function VideoStudio({
                     active: openDropdown === "model",
                   })}
                 >
-                  <div className="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
-                    {(() => {
-                      const selectedModelProvider = selectedFamily.provider || 'muapi';
-                      return PROVIDER_LOGOS[selectedModelProvider] ? (
-                        <img 
-                          src={PROVIDER_LOGOS[selectedModelProvider]} 
-                          alt="" 
-                          className={`w-full h-full object-contain ${invertLogos.includes(selectedModelProvider) ? "invert" : ""}`} 
-                        />
-                      ) : (
-                        <span className="text-[9px] font-bold text-black uppercase">V</span>
-                      );
-                    })()}
-                </div>
+                  <ProviderChip provider={selectedFamily.provider || "aquora"} size="xs" />
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedPickerLabel}
                   </span>
@@ -3103,7 +3038,7 @@ export default function VideoStudio({
                         onKeyDown={handleWorkflowMenuKeyDown}
                         className="flex flex-col gap-1"
                       >
-                        {(groupedConfiguration ? groupedModes : workflowFamily.workflows).map((workflow) => (
+                        {(groupedConfiguration ? groupedModes : workflowFamily.workflows.filter(hasAvailableWorkflowVariant)).map((workflow) => (
                           <PromptMenuItem
                             key={workflow.id || "text"}
                             selected={selectedWorkflowId === workflow.id}

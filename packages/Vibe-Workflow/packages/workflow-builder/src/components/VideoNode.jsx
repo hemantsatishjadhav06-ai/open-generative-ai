@@ -1,10 +1,11 @@
-import { downloadFile, videoModels } from "./utility";
+import { downloadFile } from "./utility";
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { BsArrowUpCircleFill } from "react-icons/bs";
 import { IoTimeOutline, IoVideocamOutline, IoTrashOutline, IoPlay, IoPause, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
 import { Handle, Position, useReactFlow, useStore, useUpdateNodeInternals } from "reactflow";
 import { getRunId, getWorkflowId } from "./WorkflowStore";
-import axios from "axios";
+import { api, errorMessage } from "./gatewayClient";
+import { t } from "./i18n";
 import { toast } from "react-hot-toast";
 import UploadNode from "./UploadNode";
 import { SlOptions } from "react-icons/sl";
@@ -210,7 +211,7 @@ const VideoGeneration = ({ id, data, selected }) => {
   
   const pollNodeStatus = (run_id) => {
     const interval = setInterval(() => {
-      axios.get(`/api/workflow/run/${run_id}/status`)
+      api.get(`/api/workflow/run/${run_id}/status`)
       .then((response) => {
         const nodesInRes = response.data.nodes || {};
         const nodeData = nodesInRes[id] || Object.entries(nodesInRes).find(([key]) => 
@@ -236,33 +237,28 @@ const VideoGeneration = ({ id, data, selected }) => {
           clearInterval(interval);
         }
 
-        if (latest.status === "failed") {
+        if (latest.status === "failed" || latest.status === "skipped" || latest.status === "cancelled") {
           const outputs = latest?.result?.outputs;
-          let errorMsg = "Generation failed";
+          let errorMsg = latest.status === "failed" ? (latest.error || t("generationFailed")) : null;
 
-          if (outputs && outputs[0]?.value?.error) {
-            errorMsg = outputs[0].value.error; 
+          if (latest.status === "failed" && outputs && outputs[0]?.value?.error) {
+            errorMsg = outputs[0].value.error;
           }
-          toast.error(`Node ${id} failed`);
+          if (latest.status === "failed") toast.error(t("stepFailed", { id }));
           const currentHistory = data.outputHistory || [];
           data.onDataChange(id, { isLoading: false, errorMsg, outputHistory: currentHistory });
           clearInterval(interval);
         }
       })
       .catch((error) => {
-        console.log(error);
         clearInterval(interval);
         data.onDataChange(id, { isLoading: false });
-        toast.error(`Failed to get workflow status Video ${id.replace(/^\D+/g, "")}`);
+        toast.error(errorMessage(error, t("statusFailed")));
       });
     }, 3000);
   };
 
   const handleRunSingleNode = async () => {
-    if (!runId) {
-      toast.error("No run_id available!. Click 'Run All' button");
-      return;
-    }
     try {
       data.onDataChange(id, { isLoading: true });
       const workflow_id = await data.handleSaveWorkFlow();
@@ -290,8 +286,8 @@ const VideoGeneration = ({ id, data, selected }) => {
         }
       }
 
-      const response = await axios.post(`/api/workflow/${workflow_id}/node/${id}/run`, {
-        run_id: runId,
+      const response = await api.post(`/api/workflow/${workflow_id}/node/${id}/run`, {
+        run_id: runId || null,
         model: selectedModel.id,
         params: params,
         cost: generationCost,
@@ -300,8 +296,7 @@ const VideoGeneration = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || "Error running node");
-      console.error(error);
+      toast.error(errorMessage(error, t("runFailed")));
     };
   };
 
@@ -403,7 +398,7 @@ const VideoGeneration = ({ id, data, selected }) => {
 
     if (window.confirm("Are you sure you want to delete this history entry?")) {
       try {
-        await axios.delete(`/api/workflow/node-run/${currentHistory.node_run_id}`);
+        await api.delete(`/api/workflow/node-run/${currentHistory.node_run_id}`);
         const newHistory = outputHistory.filter((_, i) => i !== currentHistoryIndex);
         
         data?.onDataChange?.(id, { 
@@ -418,8 +413,7 @@ const VideoGeneration = ({ id, data, selected }) => {
         }
         toast.success("History entry deleted");
       } catch (error) {
-        toast.error(error.response?.data?.detail || "Failed to delete history entry");
-        console.error(error);
+        toast.error(errorMessage(error, t("historyDeleteFailed")));
       }
     }
   };

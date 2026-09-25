@@ -2,7 +2,7 @@ export default function manifest() {
   return {
     name: 'Aquora',
     short_name: 'Aquora',
-    description: 'Make images, video, audio, avatars and edits with 400+ AI models in one studio.',
+    description: 'Make images, video, audio, avatars and edits with 300+ AI models in one studio.',
     start_url: '/studio',
     scope: '/',
     display: 'standalone',

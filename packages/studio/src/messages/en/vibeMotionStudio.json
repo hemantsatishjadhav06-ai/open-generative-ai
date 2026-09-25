@@ -2,7 +2,7 @@
   "loading": {
     "remixing": "Remixing motion graphics…",
     "generating": "Generating motion graphics…",
-    "backend": "React/Remotion rendering on Modal"
+    "backend": "Rendering your animation"
   },
   "card": {
     "modeEdit": "✏ Edit",
@@ -48,7 +48,8 @@
   },
   "errors": {
     "staleEditUnavailable": "This generation can't be remixed — the animation code wasn't saved server-side. Generate a new motion graphic first, then remix that result.",
-    "generationFailed": "Vibe Motion generation failed"
+    "generationFailed": "Vibe Motion generation failed",
+    "unavailable": "Vibe Motion isn't available on Aquora yet."
   },
   "generateButton": {
     "remixing": "Remixing...",

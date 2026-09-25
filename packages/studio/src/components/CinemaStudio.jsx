@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { generateImage, uploadFile } from "../muapi.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { generateImage, uploadFile } from "../gateway.js";
+import { usePersistKey } from "../persistKey.js";
+import { isModelAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { friendlyError, notifyError } from "../utils/notify.js";
 import MobileGenerationActions, {
   CopyContentIcon,
 } from "./MobileGenerationActions.jsx";
@@ -550,11 +554,8 @@ export default function CinemaStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_cinema_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_cinema_studio_persistent");
+  useModelAvailability();
 
   // ── Settings state ──
   const [settings, setSettings] = useState({
@@ -608,7 +609,8 @@ export default function CinemaStudio({
       });
       if (url) setUploadedImage(url);
     } catch (err) {
-      console.error("Image upload failed:", err);
+      logStudioError("Image upload failed:", err);
+      notifyError(copy.errors.uploadFailed.replace("{message}", friendlyError(err)));
     } finally {
       setIsUploadingImage(false);
       setImageUploadProgress(0);
@@ -665,7 +667,9 @@ export default function CinemaStudio({
   };
 
   // ── Persistence: Load ────────────────────────────────────────────────────
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -678,11 +682,12 @@ export default function CinemaStudio({
     } catch (err) {
       console.warn("Failed to load CinemaStudio persistence:", err);
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Adjust height on load ────────────────────────────────────────────────
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -697,7 +702,7 @@ export default function CinemaStudio({
       }
     }, 500); // 500ms debounce
     return () => clearTimeout(timer);
-  }, [settings, resolution, internalHistory, uploadedImage]);
+  }, [settings, resolution, internalHistory, uploadedImage, PERSIST_KEY]);
 
   // Derive effective history (prop wins over internal)
   const history = historyItems != null ? historyItems : internalHistory;
@@ -715,6 +720,11 @@ export default function CinemaStudio({
   const handleGenerate = useCallback(async () => {
     const basePrompt = settings.prompt.trim();
     if (!basePrompt || isGenerating) return;
+    const model = uploadedImage ? "nano-banana-pro-edit" : "nano-banana-pro";
+    if (!isModelAvailable(model)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
 
     onGenerationStart?.();
     setIsGenerating(true);
@@ -729,7 +739,7 @@ export default function CinemaStudio({
 
     try {
       const res = await generateImage(apiKey, {
-        model: uploadedImage ? "nano-banana-pro-edit" : "nano-banana-pro",
+        model,
         prompt: finalPrompt,
         aspect_ratio: settings.aspect_ratio,
         resolution: resolution.toLowerCase(),
@@ -762,7 +772,7 @@ export default function CinemaStudio({
         if (onGenerationComplete) {
           onGenerationComplete({
             url: res.url,
-            model: "nano-banana-pro",
+            model,
             prompt: basePrompt,
             type: "cinema",
           });
@@ -771,8 +781,10 @@ export default function CinemaStudio({
         throw new Error("No data returned");
       }
     } catch (e) {
-      console.error(e);
-      onGenerationError?.(e.message?.slice(0, 120) || "Cinema generation failed");
+      logStudioError(e);
+      const message = formatErrorMessage(e, copy.errors.generationFailed);
+      if (onGenerationError) onGenerationError(message);
+      else notifyError(message);
     } finally {
       setIsGenerating(false);
       onGenerationEnd?.();
@@ -781,6 +793,8 @@ export default function CinemaStudio({
     settings,
     resolution,
     apiKey,
+    uploadedImage,
+    copy,
     isGenerating,
     onGenerationComplete,
     onGenerationEnd,
@@ -1047,7 +1061,7 @@ export default function CinemaStudio({
                         {copy.card.badge}
                       </span>
                       {entry.settings?.camera && (
-                        <span className="text-[10px] text-white/40">{entry.settings.camera}</span>
+                        <span className="text-[10px] text-white/60">{entry.settings.camera}</span>
                       )}
                     </div>
                   </div>
@@ -1066,7 +1080,7 @@ export default function CinemaStudio({
                 {copy.empty.title}
               </span>
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/65 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.empty.description}
             </p>
           </div>

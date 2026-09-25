@@ -1,21 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { IoSend, IoChevronBack, IoColorPalette, IoAdd, IoHeart, IoHeartOutline, IoChatbubbleEllipsesSharp } from "react-icons/io5";
+import { IoSend, IoChevronBack, IoColorPalette, IoAdd } from "react-icons/io5";
 import { HiLightBulb } from "react-icons/hi2";
-import { MdTerminal, MdPerson, MdClose, MdEdit, MdContentCopy, MdCheck, MdFullscreen, MdFileDownload, MdImage } from "react-icons/md";
+import { MdTerminal, MdPerson, MdClose, MdEdit, MdContentCopy, MdCheck, MdFullscreen, MdFileDownload } from "react-icons/md";
 import { RiRobot2Fill } from "react-icons/ri";
 import { HiOutlinePencilAlt } from "react-icons/hi";
 import { BiLoaderAlt } from "react-icons/bi";
-import { VscDebugAlt } from "react-icons/vsc";
 import { themes } from "./components/themes";
 import { FaAngleRight } from "react-icons/fa6";
+import { getAgentCopy } from "./i18n";
+import { AGENTS_API as BASE_URL, errorMessage, isSessionError, newConversationId, uploadImage } from "./utils/api";
 
-const BASE_URL = "/api/agents"; // "https://api.muapi.ai/agents";
+const POLL_INTERVAL_MS = 1000;
+const MAX_POLL_NETWORK_ERRORS = 5;
+
+const noUser = () => ({});
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Generated media arrives as message.media [{type:'image'|'video'|'audio', url}].
+const mediaOf = (msg) => (Array.isArray(msg?.media) ? msg.media.filter((item) => item && typeof item.url === "string") : []);
 
 const formatMessageTime = (date) => {
   if (!date) return "";
@@ -118,16 +128,15 @@ const CopyButton = ({ text }) => {
   );
 };
 
-const ChatPage = ({ 
-  initialAgentDetails, 
-  useUser, 
-  usedIn = "muapiapp",
-  useSidebar,
-  searchQuery = "",
-  setSearchQuery = () => {},
-  getSearchItems = () => {},
+const ChatPage = ({
+  initialAgentDetails,
+  useUser,
   initialHistory = null,
+  // true when the host passed the server-loaded history (even if null)
+  historyPreloaded = false,
+  locale = "en",
 }) => {
+  const copy = getAgentCopy(locale);
   const { id: routeAgentId, agent_id, agent_name, conversation_id: routeConversationId } = useParams();
   const effectiveAgentId = agent_id || agent_name || routeAgentId;
   const lowerAgentSlug = effectiveAgentId?.toLowerCase();
@@ -135,20 +144,10 @@ const ChatPage = ({
   const effectiveConversationId = routeConversationId;
   const router = useRouter();
   
-  const userContext = useUser ? useUser() : {};
-  let userName = "User";
-  let userProfile = null;
-
-  if (usedIn === "vadoo") {
-    const { serverDetails } = userContext;
-    userName = serverDetails?.user_details?.name || "User";
-    userProfile = serverDetails?.user_details?.profile;
-  } else if (usedIn === "muapiapp") {
-    // muapiapp
-    const { user } = userContext;
-    userName = user?.username || user?.name || "User";
-    userProfile = user?.profile_photo;
-  }
+  // Optional host hook → {user:{username|name, profile_photo}}.
+  const userContext = (useUser || noUser)();
+  const userName = userContext?.user?.username || userContext?.user?.name || copy.you;
+  const userProfile = userContext?.user?.profile_photo || null;
 
   const [messages, setMessages] = useState(() => {
     if (initialHistory && initialHistory.history) {
@@ -175,8 +174,7 @@ const ChatPage = ({
   });
   const [agentDetails, setAgentDetails] = useState(initialAgentDetails || null);
   const [error, setError] = useState(null);
-  const [debugLogs, setDebugLogs] = useState([]);
-  const [showDebug, setShowDebug] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
   const conversationIdRef = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
@@ -204,11 +202,10 @@ const ChatPage = ({
     thoughts: "",
     status: [],
     suggestions: [],
+    media: [],
   });
   const [showCustomColorPanel, setShowCustomColorPanel] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [liked, setLiked] = useState(agentDetails ? agentDetails?.has_liked : false);
-  const [likeCount, setLikeCount] = useState(agentDetails ? agentDetails?.like_count : 0);
 
   useEffect(() => {
     setIsMounted(true);
@@ -216,7 +213,9 @@ const ChatPage = ({
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (messages.length > 0) {
+      // The host already loaded this chat's history on the server (null for
+      // a chat that doesn't exist yet), so there is nothing to fetch.
+      if (messages.length > 0 || historyPreloaded) {
         conversationIdRef.current = effectiveConversationId;
         return;
       }
@@ -248,13 +247,17 @@ const ChatPage = ({
               };
             });
 
+            // Never replace messages sent while this request was in flight.
             if (hydratedMessages.length > 0) {
-              setMessages(hydratedMessages);
+              setMessages((prev) => (prev.length ? prev : hydratedMessages));
             }
             conversationIdRef.current = effectiveConversationId;
           }
         } catch (err) {
-          console.error("Failed to fetch conversation history:", err);
+          if (isSessionError(err)) {
+            setSessionEnded(true);
+            setError(copy.errors.sessionEnded);
+          }
         }
       }
     };
@@ -278,7 +281,8 @@ const ChatPage = ({
     try {
       await axios.put(`${BASE_URL}/by-slug/${lowerAgentSlug}`, { theme: theme });
     } catch (err) {
-      console.error("Failed to save theme:", err);
+      setError(errorMessage(err, copy));
+      if (isSessionError(err)) setSessionEnded(true);
     }
     setShowCustomColorPanel(false);
   };
@@ -300,40 +304,30 @@ const ChatPage = ({
       "--input-bg": c.inputBg,
       "--accent": c.accent,
       "--accent-text": c.accentText,
-      "--font-family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      // Inter is self-hosted by the host app (next/font → --font-inter).
+      "--font-family": "var(--font-inter, 'Inter'), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     };
   };
 
+  // Saves a generated file. Media hosts that don't allow cross-origin reads
+  // get the file opened in a new tab instead (the browser can save it there).
   const handleDownloadFile = async (file_url, filename = "download") => {
-    if (!file_url) {
-      toast.error("File URL not found");
-      return;
-    }
-
+    if (!file_url) return;
     setDownloadingUrl(file_url);
     try {
-      const response = await axios.post("/api/workflow/cloudfront-signed-url",
-        {
-          url: file_url
-        }
-      );
-
-      const signed_url = response.data.signed_url;
-      const fetchResponse = await fetch(signed_url, { mode: "cors" });
+      const fetchResponse = await fetch(file_url, { mode: "cors", credentials: "omit" });
+      if (!fetchResponse.ok) throw new Error(`HTTP ${fetchResponse.status}`);
       const blob = await fetchResponse.blob();
       const url = window.URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
       window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download failed:", err);
-      toast.error(`Download failed: ${err.message}`);
+    } catch {
+      window.open(file_url, "_blank", "noopener,noreferrer");
     } finally {
       setDownloadingUrl(null);
     }
@@ -346,11 +340,7 @@ const ChatPage = ({
   }, [agentDetails]);
 
   useEffect(() => {
-    if (initialAgentDetails) {
-      setAgentDetails(initialAgentDetails);
-    } else {
-      // fetchAgentDetails();
-    }
+    if (initialAgentDetails) setAgentDetails(initialAgentDetails);
   }, [lowerAgentSlug, initialAgentDetails]);
 
   useEffect(() => {
@@ -391,55 +381,16 @@ const ChatPage = ({
     }
   }, [messages]);
 
-  const fetchAgentDetails = async () => {
-    try {
-      const endpoint = `${BASE_URL}/by-slug/${lowerAgentSlug}`;
-      const response = await axios.get(endpoint);
-      setAgentDetails(response.data);
-    } catch (err) {
-      setAgentDetails({
-        name: "Autonomous Agent",
-        description: "MuAPI Powered Intelligence.",
-      });
-    }
-  };
-
   const uploadFile = async (file) => {
     if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File size too large (max 10MB)");
-      return;
-    }
-
     try {
       setUploadProgress(0);
       setIsUploading(true);
-
-      const response = await axios.get("/api/app/get_file_upload_url", {
-        params: { filename: file.name }
-      });
-      const { url, fields } = response.data;
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
-
-      await axios.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percent);
-        }
-      });
-      const prefix = "https://cdn.muapi.ai/";
-      const uploadedUrl = prefix + fields.key;
-      setAttachments(prev => [...prev, uploadedUrl]);
+      setError(null);
+      const uploadedUrl = await uploadImage(file, { copy, onProgress: setUploadProgress });
+      setAttachments(prev => (prev.includes(uploadedUrl) ? prev : [...prev, uploadedUrl].slice(-4)));
     } catch (err) {
-      console.error("Upload failed", err);
-      setError("Failed to upload image.");
+      setError(err?.message || copy.errors.uploadFailed);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -470,7 +421,7 @@ const ChatPage = ({
     if (file && file.type.startsWith("image/")) {
       uploadFile(file);
     } else if (file) {
-      setError("Please only upload image files.");
+      setError(copy.errors.imagesOnly);
     }
   };
 
@@ -483,41 +434,67 @@ const ChatPage = ({
     handleThemeSync(theme);
   };
 
-  const handleLike = async () => {
-    const newLiked = !liked;
-    const prevLikeCount = likeCount;
-    
-    // Optimistic update
-    setLiked(newLiked);
-    setLikeCount(prev => newLiked ? prev + 1 : prev - 1);
-
-    try {
-      const res = await axios.post(`/api/agents/by-slug/${lowerAgentSlug}/like?is_like=${newLiked}`);
-      setLiked(res.data.has_liked);
-      setLikeCount(res.data.like_count);
-    } catch (err) {
-      console.error("Failed to sync like:", err);
-      // Rollback
-      setLiked(!newLiked);
-      setLikeCount(prevLikeCount);
-    }
-  };
-
   const handleNewChat = () => {
     if (lowerAgentSlug) {
       router.push(`/agents/${lowerAgentSlug}`);
     }
   };
 
+  // Applies one poll answer ({messages, suggestions}) to the pending reply.
+  const applyTurnUpdate = (assistantMsgId, data) => {
+    let content = "";
+    let thoughts = "";
+    let media = [];
+    const status = [];
+    for (const msg of Array.isArray(data?.messages) ? data.messages : []) {
+      if (msg?.role === "assistant") {
+        if (msg.content) content = msg.content;
+        if (msg.thoughts) thoughts = msg.thoughts;
+        if (mediaOf(msg).length) media = mediaOf(msg);
+      }
+      if (msg?.type === "pulse" && msg.content) status.push(msg.content);
+    }
+    const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+    currentAssistantMsgRef.current = { ...currentAssistantMsgRef.current, content, thoughts, status, suggestions, media };
+    setMessages((prev) => prev.map((m) => (m.id === assistantMsgId ? { ...m, content, thoughts, status, suggestions, media } : m)));
+  };
+
+  // Polls the turn until it is complete. A failed turn is HTTP 400
+  // {detail:{error}} (or status:'failed'); 401/402/404 end polling at once.
+  const pollTurn = async (requestId, assistantMsgId) => {
+    let networkErrors = 0;
+    for (;;) {
+      await sleep(POLL_INTERVAL_MS);
+      let data;
+      try {
+        const res = await axios.get(`/api/v1/predictions/${encodeURIComponent(requestId)}/result`);
+        data = res.data;
+        networkErrors = 0;
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 400 || status === 401 || status === 402 || status === 403 || status === 404) throw err;
+        networkErrors += 1;
+        if (networkErrors >= MAX_POLL_NETWORK_ERRORS) throw new Error(copy.errors.lostConnection);
+        await sleep(POLL_INTERVAL_MS * 2);
+        continue;
+      }
+      if (data?.conversation_id) conversationIdRef.current = data.conversation_id;
+      applyTurnUpdate(assistantMsgId, data);
+      if (data?.status === "failed" || data?.status === "cancelled") throw new Error(data.error || copy.errors.turnFailed);
+      if (data?.is_complete || data?.status === "completed") return data;
+    }
+  };
+
   const handleSendMessage = async (e, overrideText = null, overrideAttachments = null) => {
     if (e) e.preventDefault();
-    
+
     const userText = overrideText || input;
     const currentAttachments = overrideAttachments || (overrideText ? [] : attachments);
 
     if (!userText.trim()) return;
     if (isStreaming && !overrideText) return;
-    
+    if (isUploading) return;
+
     if (overrideText) setIsStreaming(false);
 
     const userMessage = {
@@ -527,15 +504,14 @@ const ChatPage = ({
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
-    
+
     if (!overrideText) {
       setAttachments([]);
       setInput("");
     }
-    
+
     setIsStreaming(true);
     setError(null);
-    setDebugLogs([]);
 
     const assistantMsgId = `asst_${Date.now()}`;
     currentAssistantMsgRef.current = {
@@ -545,137 +521,103 @@ const ChatPage = ({
       thoughts: "",
       status: [],
       suggestions: [],
+      media: [],
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, { ...currentAssistantMsgRef.current }]);
 
     try {
-      let currentConvId = conversationIdRef.current || effectiveConversationId;
-      
+      const currentConvId = conversationIdRef.current || effectiveConversationId;
+
+      // First message of a new chat: move to the chat's own URL, which sends
+      // the pending message once it mounts.
       if (!currentConvId && !overrideText) {
-        const newConvId = crypto.randomUUID();
+        const newConvId = newConversationId();
         conversationIdRef.current = newConvId;
-        
         sessionStorage.setItem('pending_first_msg', JSON.stringify({
           convId: newConvId,
           text: userText,
           attachments: currentAttachments,
           timestamp: new Date().toISOString()
         }));
-
         if (lowerAgentSlug) {
-           router.replace(`/agents/${lowerAgentSlug}/${newConvId}`);
+          router.replace(`/agents/${lowerAgentSlug}/${newConvId}`);
         }
-        
         return;
       }
 
-      const initialRes = await axios.post(
-        `${BASE_URL}/by-slug/${lowerAgentSlug}/chat`,
-        {
-          message: userText,
-          stream: false,
-          conversation_id: currentConvId,
-          attachments: userMessage.attachments,
-        }
-      );
+      const initialRes = await axios.post(`${BASE_URL}/by-slug/${lowerAgentSlug}/chat`, {
+        message: userText,
+        stream: false,
+        conversation_id: currentConvId,
+        attachments: userMessage.attachments,
+      });
 
-      const { request_id } = initialRes.data;
-      if (!request_id) throw new Error("No Request ID returned from agent");
-
-      const pollInterval = 1000;
-      let isComplete = false;
-      let errors = 0;
-
-      while (!isComplete && errors < 5) {
-        try {
-          const pollRes = await axios.get(`/api/api/v1/predictions/${request_id}/result`);
-          const data = pollRes.data;
-
-          // data format from backend execute_agent_chat_background:
-          // { 
-          //   conversation_id, 
-          //   messages: [{role, content...}, {type:'pulse'...}],
-          //   status_text, 
-          //   is_complete, 
-          //   suggestions,
-          //   error
-          // }
-
-          if (data.conversation_id) conversationIdRef.current = data.conversation_id;
-
-          const incomingMessages = data.messages || [];
-
-          let newContent = "";
-          let newThoughts = "";
-          let newStatus = [];
-
-          incomingMessages.forEach(msg => {
-            if (msg.role === "assistant" && msg.content) {
-              newContent = msg.content;
-            }
-            if (msg.type === "pulse" && msg.content) {
-              newStatus.push(msg.content);
-            }
-            if (msg.role === "assistant" && msg.thoughts) {
-              newThoughts = msg.thoughts;
-            }
-          });
-
-          currentAssistantMsgRef.current.content = newContent;
-          currentAssistantMsgRef.current.status = newStatus;
-          currentAssistantMsgRef.current.suggestions = data.suggestions || [];
-          setMessages((prev) => {
-            const index = prev.findIndex((m) => m.id === assistantMsgId);
-            if (index !== -1) {
-              const newMessages = [...prev];
-              newMessages[index] = {
-                ...newMessages[index],
-                content: newContent,
-                status: newStatus,
-                suggestions: data.suggestions || [],
-              };
-              return newMessages;
-            }
-            return prev;
-          });
-
-          if (data.status === "failed") {
-            throw new Error(data.error || "Agent execution failed");
-          }
-
-          if (data.status === "completed" || data.status === "succeeded" || data.is_complete) {
-            isComplete = true;
-          } else {
-            await new Promise(r => setTimeout(r, pollInterval));
-          }
-
-        } catch (pollErr) {
-          console.error("Polling error", pollErr);
-          errors++;
-          await new Promise(r => setTimeout(r, 2000));
-        }
-      }
-
-      if (errors >= 5) throw new Error("Lost connection to agent process");
-
+      const { request_id } = initialRes.data || {};
+      if (!request_id) throw new Error(copy.errors.turnFailed);
+      if (initialRes.data.conversation_id) conversationIdRef.current = initialRes.data.conversation_id;
+      await pollTurn(request_id, assistantMsgId);
     } catch (err) {
-      console.log("Agent error:", err);
-      let errorMessage = err.message || "Something went wrong. Check browser console";
-      if (err.response) {
-        const { status, data } = err.response;
-        errorMessage = data?.error || "Not enough credits";
-      } else {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-      if (!currentAssistantMsgRef.current.content) {
+      if (isSessionError(err)) setSessionEnded(true);
+      setError(err?.response ? errorMessage(err, copy, copy.errors.turnFailed) : (err?.message || copy.errors.turnFailed));
+      const pending = currentAssistantMsgRef.current;
+      if (!pending.content && !mediaOf(pending).length) {
         setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
       }
     } finally {
       setIsStreaming(false);
     }
+  };
+
+  const mediaLabel = (type) => (type === "video" ? copy.generatedVideo : type === "audio" ? copy.generatedAudio : copy.generatedImage);
+
+  // One generated file (image / video / audio) with full-screen + download.
+  const renderMedia = (item) => {
+    const { type, url } = item;
+    const ext = type === "video" ? "mp4" : type === "audio" ? "mp3" : "png";
+    const actionClass = "p-2 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white";
+    const downloadButton = (
+      <button
+        type="button"
+        onClick={() => handleDownloadFile(url, `${type}-${Date.now()}.${ext}`)}
+        className={actionClass}
+        title={copy.download}
+        aria-label={`${copy.download}: ${mediaLabel(type)}`}
+        disabled={downloadingUrl === url}
+      >
+        {downloadingUrl === url ? <BiLoaderAlt aria-hidden="true" className="w-5 h-5 animate-spin" /> : <MdFileDownload aria-hidden="true" className="w-5 h-5" />}
+      </button>
+    );
+    if (type === "audio") {
+      return (
+        <div className="my-3 flex items-center gap-3 p-3 rounded-xl border backdrop-blur-sm bg-[var(--component-bg)] border-[var(--border-color)] min-w-[260px]">
+          <audio src={url} controls preload="metadata" aria-label={mediaLabel(type)} className="w-full h-8" />
+          {downloadButton}
+        </div>
+      );
+    }
+    return (
+      <div className="my-3 rounded-xl overflow-hidden border shadow-lg relative w-fit max-w-full group/media bg-[var(--component-bg)] border-[var(--border-color)]">
+        {type === "video" ? (
+          <video src={url} controls playsInline preload="metadata" aria-label={mediaLabel(type)} className="w-full h-auto max-h-[320px]" />
+        ) : (
+          <img src={url} alt={mediaLabel(type)} loading="lazy" className="w-full h-auto max-h-[320px] object-contain" />
+        )}
+        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover/media:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-10">
+          <button
+            type="button"
+            onClick={() => setSelectedMedia({ type, url })}
+            className={actionClass}
+            title={copy.viewFullScreen}
+            aria-label={`${copy.viewFullScreen}: ${mediaLabel(type)}`}
+          >
+            <MdFullscreen aria-hidden="true" className="w-5 h-5" />
+          </button>
+          {downloadButton}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -690,8 +632,6 @@ const ChatPage = ({
     >
       {isMounted && (
         <style dangerouslySetInnerHTML={{ __html: `
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-          
           main {
             font-family: var(--font-family) !important;
           }
@@ -705,7 +645,10 @@ const ChatPage = ({
         <div className="flex items-center justify-between gap-4 w-full lg:max-w-[80%]">
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={() => window.history.back()}
+              aria-label={copy.back}
+              title={copy.back}
               className="flex items-center justify-center transition-all group"
             >
               <IoChevronBack className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors" />
@@ -714,7 +657,7 @@ const ChatPage = ({
               {agentDetails?.icon_url ? (
                 <img
                   src={agentDetails.icon_url}
-                  alt={agentDetails.name}
+                  alt=""
                   className="w-9 h-9 rounded-lg object-cover border border-[var(--border-color)]"
                 />
               ) : (
@@ -722,54 +665,54 @@ const ChatPage = ({
                   <RiRobot2Fill className="w-5 h-5" />
                 </div>
               )}
-              <div className="relative">
-                <button
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-[var(--component-hover)]"
-                >
-                  <div className="flex flex-col items-start leading-tight">
-                    <h1 className="text-base font-semibold text-[var(--text-primary)] truncate">
-                      {agentDetails?.name || "Loading..."}
+              <div className="relative min-w-0">
+                {!agentDetails?.is_owner ? (
+                  <div className="px-2 py-1 min-w-0">
+                    <h1 className="font-display text-base font-semibold text-[var(--text-primary)] truncate">
+                      {agentDetails?.name || copy.agentFallbackName}
                     </h1>
-                    {agentDetails && !agentDetails.is_owner && (agentDetails.owner_username || agentDetails.owner_email) && (
-                      <span className="text-[10px] text-[var(--text-secondary)] font-medium">
-                        by {agentDetails.owner_username || agentDetails.owner_email?.split('@')[0]}
-                      </span>
-                    )}
+                  </div>
+                ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  aria-haspopup="menu"
+                  aria-expanded={showDropdown}
+                  aria-label={`${agentDetails?.name || copy.agentFallbackName} — ${copy.agentMenu}`}
+                  className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-[var(--component-hover)] min-w-0"
+                >
+                  <div className="flex flex-col items-start leading-tight min-w-0">
+                    <h1 className="font-display text-base font-semibold text-[var(--text-primary)] truncate">
+                      {agentDetails?.name || copy.agentFallbackName}
+                    </h1>
                   </div>
                   <IoChevronBack
+                    aria-hidden="true"
                     className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${showDropdown ? "rotate-90" : "-rotate-180"
                       }`}
                   />
                 </button>
-                {showDropdown && (
-                  <div className="absolute top-10 left-0 border rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[200px] bg-[var(--header-bg)] border-[var(--border-color)]">
-                    <button
-                      onClick={() => {
-                        setShowDropdown(false);
-                        router.push(`/agents/${lowerAgentSlug}/profile`);
-                      }}
-                      type="button"
-                      className="w-full flex items-center gap-3 px-3 py-2 transition-all hover:bg-[var(--component-hover)] rounded-t-lg"
-                    >
-                      <RiRobot2Fill size={16} className="text-[var(--text-secondary)]" />
-                      <span className="text-sm text-[var(--text-primary)]">View Profile</span>
-                    </button>
-                    {agentDetails?.is_owner && (
+                )}
+                {showDropdown && agentDetails?.is_owner && (
+                  <div role="menu" className="absolute top-10 left-0 border rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[200px] bg-[var(--header-bg)] border-[var(--border-color)]">
                       <>
                         <button
+                          role="menuitem"
                           onClick={() => {
                             setShowDropdown(false);
                             router.push(`/agents/edit/${agent_id}`);
                           }}
                           type="button"
-                          className="w-full flex items-center gap-3 px-3 py-2 transition-all hover:bg-[var(--component-hover)] border-t border-[var(--border-color)]"
+                          className="w-full flex items-center gap-3 px-3 py-2 transition-all hover:bg-[var(--component-hover)] rounded-t-lg"
                         >
                           <MdEdit size={16} className="text-[var(--text-secondary)]" />
                           <span className="text-sm text-[var(--text-primary)]">Edit agent</span>
                         </button>
                         <div className="relative group/submenu">
                           <button
+                            role="menuitem"
+                            aria-haspopup="menu"
+                            aria-expanded={showThemeDropdown}
                             onMouseEnter={() => setShowThemeDropdown(true)}
                             onClick={() => setShowThemeDropdown(!showThemeDropdown)}
                             type="button"
@@ -828,36 +771,22 @@ const ChatPage = ({
                           )}
                         </div>
                       </>
-                    )}
                   </div>
                 )}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleLike}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--component-hover)]"
-              title={liked ? "Unlike agent" : "Like agent"}
-            >
-              {liked ? (
-                <IoHeart className="w-4 h-4 text-red-500" />
-              ) : (
-                <IoHeartOutline className="w-4 h-4" />
-              )}
-              <span className="text-xs font-semibold">{likeCount || 0}</span>
-            </button>
-
             {effectiveConversationId && (
               <button
                 type="button"
                 onClick={handleNewChat}
+                aria-label={copy.newChat}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--component-hover)]"
-                title="Start new chat"
+                title={copy.newChat}
               >
-                <HiOutlinePencilAlt className="w-4 h-4" />
-                <span className="text-xs hidden md:flex font-semibold">New Chat</span>
+                <HiOutlinePencilAlt aria-hidden="true" className="w-4 h-4" />
+                <span className="text-xs hidden md:flex font-semibold">{copy.newChat}</span>
               </button>
             )}
           </div>
@@ -998,12 +927,18 @@ const ChatPage = ({
                                   <div className="mb-3 flex flex-wrap justify-end gap-2">
                                     {msg.attachments.map((url, i) => (
                                       <div key={i} className="relative group/user-att">
-                                        <img
-                                          src={url}
-                                          alt="Uploaded Attachment"
-                                          className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border border-white/20 shadow-md cursor-pointer hover:scale-[1.02] transition-transform"
+                                        <button
+                                          type="button"
                                           onClick={() => setSelectedMedia({ type: "image", url })}
-                                        />
+                                          aria-label={`${copy.attachmentPreview} — ${copy.viewFullScreen}`}
+                                          className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                                        >
+                                          <img
+                                            src={url}
+                                            alt={copy.attachmentPreview}
+                                            className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border border-white/20 shadow-md cursor-pointer hover:scale-[1.02] transition-transform"
+                                          />
+                                        </button>
                                       </div>
                                     ))}
                                   </div>
@@ -1103,92 +1038,7 @@ const ChatPage = ({
                                             {part.content}
                                           </ReactMarkdown>
                                         )}
-                                        {part.type === "image" && (
-                                          <div className="my-3 rounded-xl overflow-hidden border shadow-lg relative w-fit group/media bg-[var(--component-bg)] border-[var(--border-color)]">
-                                            <img
-                                              src={part.url}
-                                              alt="Generated Media"
-                                              className="w-full h-auto max-h-[300px] object-contain transition-transform duration-500 group-hover/media:scale-[1.02]"
-                                              loading="lazy"
-                                            />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-                                              <button
-                                                onClick={() => setSelectedMedia({ type: "image", url: part.url })}
-                                                type="button"
-                                                className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110"
-                                                title="View Full Screen"
-                                              >
-                                                <MdFullscreen className="w-6 h-6" />
-                                              </button>
-                                              <button
-                                                onClick={() => handleDownloadFile(part.url, `image-${Date.now()}.png`)}
-                                                type="button"
-                                                className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110 disabled:opacity-50"
-                                                title="Download"
-                                                disabled={downloadingUrl === part.url}
-                                              >
-                                                {downloadingUrl === part.url ? (
-                                                  <BiLoaderAlt className="w-6 h-6 animate-spin" />
-                                                ) : (
-                                                  <MdFileDownload className="w-6 h-6" />
-                                                )}
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {part.type === "video" && (
-                                          <div className="my-3 rounded-xl overflow-hidden border shadow-lg relative w-fit group/media bg-[var(--component-bg)] border-[var(--border-color)]">
-                                            <video
-                                              src={part.url}
-                                              className="w-full h-auto max-h-[300px] transition-transform duration-500 group-hover/media:scale-[1.02]"
-                                            />
-                                            <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-10">
-                                              <button
-                                                onClick={() => setSelectedMedia({ type: "video", url: part.url })}
-                                                className="p-2 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105"
-                                                title="View Full Screen"
-                                              >
-                                                <MdFullscreen className="w-5 h-5" />
-                                              </button>
-                                              <button
-                                                onClick={() => handleDownloadFile(part.url, `video-${Date.now()}.mp4`)}
-                                                className="p-2 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 disabled:opacity-50"
-                                                title="Download"
-                                                disabled={downloadingUrl === part.url}
-                                              >
-                                                {downloadingUrl === part.url ? (
-                                                  <BiLoaderAlt className="w-5 h-5 animate-spin" />
-                                                ) : (
-                                                  <MdFileDownload className="w-5 h-5" />
-                                                )}
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {part.type === "audio" && (
-                                          <div className="my-3 flex items-center gap-3 p-3 rounded-xl border backdrop-blur-sm bg-[var(--component-bg)] border-[var(--border-color)]">
-                                            <div
-                                              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                                              style={{ background: 'var(--component-hover)', color: 'var(--accent)' }}
-                                            >
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-5 h-5"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z"
-                                                />
-                                              </svg>
-                                            </div>
-                                            <audio src={part.url} controls className="w-full h-8" />
-                                          </div>
-                                        )}
+                                        {part.type !== "text" && renderMedia(part)}
                                       </div>
                                     ))}
                                   </div>
@@ -1215,12 +1065,26 @@ const ChatPage = ({
                               </div>
                             )}
 
+                            {mediaOf(msg).length > 0 && (
+                              <div className="flex flex-wrap gap-3">
+                                {mediaOf(msg).map((item) => (
+                                  <div key={item.url} className="max-w-full">
+                                    {renderMedia(item)}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
                             {msg.suggestions?.length > 0 && (
                               <div className="flex flex-wrap gap-2">
                                 {msg.suggestions.map((sug, i) => (
                                   <button
                                     key={i}
-                                    onClick={() => setInput(sug.prompt)}
+                                    type="button"
+                                    onClick={() => {
+                                      setInput(sug.prompt);
+                                      textareaRef.current?.focus();
+                                    }}
                                     className="flex items-center gap-2 text-xs font-medium border px-3 py-2 rounded-lg transition-all hover:opacity-80"
                                     style={{
                                       background: 'var(--component-bg)',
@@ -1244,58 +1108,30 @@ const ChatPage = ({
             })}
           </div>
         </div>
-        {/* {showDebug && (
-          <div className="w-80 border-l backdrop-blur-xl overflow-y-auto p-4 custom-scrollbar animate-in slide-in-from-right duration-300 bg-[var(--header-bg)] border-[var(--border-color)]">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border-color)]">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-                Debug Logs
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowDebug(false)}
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              >
-                <MdClose className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {debugLogs.length === 0 && (
-                <p className="text-xs italic text-[var(--text-secondary)]">
-                  No logs yet...
-                </p>
-              )}
-              {debugLogs.map((log, i) => (
-                <div
-                  key={i}
-                  className={`p-2 rounded-lg border text-xs font-mono ${log.type === "error"
-                      ? "bg-red-500/10 border-red-500/20 text-red-400"
-                      : log.type === "warn"
-                        ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
-                        : "bg-[var(--component-bg)] border-[var(--border-color)] text-[var(--text-secondary)]"
-                    }`}
-                >
-                  <span className="text-[10px] opacity-50 mr-2">
-                    [{log.time}]
-                  </span>
-                  {log.msg}
-                </div>
-              ))}
-            </div>
-          </div>
-        )} */}
       </div>
       <footer className="flex-shrink-0 p-4">
         <div className="max-w-3xl mx-auto">
           {error && (
-            <div className="mb-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between">
+            <div role="alert" className="mb-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between gap-3">
               <span className="text-xs text-red-400 font-medium">
-                Error: {error}
+                {error}
+                {sessionEnded && (
+                  <>
+                    {" "}
+                    <Link href="/studio/agents" className="underline font-semibold text-red-300 hover:text-red-200">
+                      {copy.openStudio}
+                    </Link>
+                  </>
+                )}
               </span>
               <button
+                type="button"
                 onClick={() => setError(null)}
-                className="text-red-400 hover:text-red-300"
+                aria-label={copy.dismiss}
+                title={copy.dismiss}
+                className="text-red-400 hover:text-red-300 flex-shrink-0"
               >
-                <MdClose className="w-4 h-4" />
+                <MdClose aria-hidden="true" className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -1327,14 +1163,16 @@ const ChatPage = ({
                     <img
                       src={url}
                       className="w-16 h-16 rounded-xl object-cover border-2 border-[var(--border-color)] shadow-lg"
-                      alt="Attachment Preview"
+                      alt={copy.attachmentPreview}
                     />
                     <button
                       onClick={() => removeAttachment(url)}
                       type="button"
-                      className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover/att:opacity-100 transition-opacity"
+                      aria-label={copy.removeAttachment}
+                      title={copy.removeAttachment}
+                      className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover/att:opacity-100 focus:opacity-100 transition-opacity"
                     >
-                      <MdClose className="w-3 h-3" />
+                      <MdClose aria-hidden="true" className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
@@ -1345,14 +1183,17 @@ const ChatPage = ({
               ref={fileInputRef}
               onChange={handleFileUpload}
               className="hidden"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              tabIndex={-1}
+              aria-hidden="true"
             />
             <button
               onClick={() => fileInputRef.current?.click()}
               type="button"
-              disabled={isUploading || isStreaming}
+              disabled={isUploading || isStreaming || attachments.length >= 4}
               className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-[var(--component-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50 shadow-sm relative overflow-hidden"
-              title="Upload Image"
+              title={copy.attachImage}
+              aria-label={copy.attachImage}
             >
               {isUploading ? (
                 <>
@@ -1376,13 +1217,16 @@ const ChatPage = ({
                 }
               }}
               disabled={isStreaming}
+              aria-label={copy.messageInput}
               placeholder={isStreaming ? "Agent is thinking..." : "Type here or drop an image..."}
               className="flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none resize-none max-h-32 placeholder:text-gray-500 custom-scrollbar text-[var(--text-primary)]"
               rows={1}
             />
             <button
               type="submit"
-              disabled={!input.trim() || isStreaming}
+              disabled={!input.trim() || isStreaming || isUploading}
+              aria-label={copy.sendMessage}
+              title={copy.sendMessage}
               className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               style={{
                 background: 'var(--accent)',
@@ -1407,8 +1251,10 @@ const ChatPage = ({
             type="button"
             className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10 z-[110]"
             onClick={() => setSelectedMedia(null)}
+            aria-label={copy.close}
+            title={copy.close}
           >
-            <MdClose className="w-6 h-6" />
+            <MdClose aria-hidden="true" className="w-6 h-6" />
           </button>
           <div
             className="max-w-[90vw] max-h-[90vh] relative animate-in zoom-in-95 duration-300"
@@ -1417,7 +1263,7 @@ const ChatPage = ({
             {selectedMedia.type === "image" ? (
               <img
                 src={selectedMedia.url}
-                alt="Full Screen"
+                alt={mediaLabel(selectedMedia.type)}
                 className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10"
               />
             ) : (
@@ -1443,13 +1289,13 @@ const ChatPage = ({
               >
                 {downloadingUrl === selectedMedia.url ? (
                   <>
-                    <BiLoaderAlt className="w-5 h-5 animate-spin" />
-                    Preparing...
+                    <BiLoaderAlt aria-hidden="true" className="w-5 h-5 animate-spin" />
+                    {copy.preparing}
                   </>
                 ) : (
                   <>
-                    <MdFileDownload className="w-5 h-5" />
-                    Download
+                    <MdFileDownload aria-hidden="true" className="w-5 h-5" />
+                    {copy.download}
                   </>
                 )}
               </button>

@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FaRegCirclePause, FaRegCopy, FaRobot } from "react-icons/fa6";
 import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+import { t } from "./i18n";
 
 const preprocessContent = (content) => {
   if (!content) return "";
@@ -335,6 +336,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                 type="button"
                 suppressHydrationWarning={true}
                 onClick={toggleChat}
+                aria-label={t("closeAssistant")}
+                title={t("closeAssistant")}
                 className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/5"
               >
                 <IoMdClose size={20} />
@@ -401,7 +404,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                             h1: ({node, ...props}) => <h1 className="text-xl font-bold text-white" {...props} />,
                             h2: ({node, ...props}) => <h2 className="text-lg font-bold text-white" {...props} />,
                             h3: ({node, ...props}) => <h3 className="text-base font-bold text-blue-400" {...props} />,
-                            p: ({node, ...props}) => <div className="leading-relaxed text-gray-300 whitespace-pre-wrap" {...props} />,
+                            p: ({node, ...props}) => <div className="leading-relaxed whitespace-pre-wrap" {...props} />,
                             ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1.5 text-gray-300" {...props} />,
                             ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-1.5 text-gray-300" {...props} />,
                             li: ({node, ...props}) => <li className="pl-1" {...props} />,
@@ -520,6 +523,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
               <button
                 type="submit"
                 suppressHydrationWarning={true}
+                aria-label={t("send")}
                 disabled={!inputValue.trim()}
                 className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 shrink-0"
               >
@@ -534,6 +538,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
           type="button"
           suppressHydrationWarning={true}
           onClick={toggleChat}
+          aria-label={t("assistant")}
+          title={t("assistant")}
           className={`group relative right-6 md:right-0 flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-110 transition-all duration-300 ${isLoading ? 'ring-2 ring-blue-200 ring-offset-2' : ''}`}
         >
           {isLoading ? (

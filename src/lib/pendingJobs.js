@@ -1,4 +1,6 @@
-const PENDING_KEY = 'muapi_pending_jobs';
+// Cloud jobs submitted to the Aquora gateway that haven't finished yet, so a
+// studio can resume polling after the app restarts.
+const PENDING_KEY = 'aquora_pending_jobs';
 
 export function savePendingJob(job) {
     try {

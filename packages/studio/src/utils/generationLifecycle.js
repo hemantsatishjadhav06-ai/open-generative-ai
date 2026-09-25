@@ -35,27 +35,28 @@ function createGenerationError(result, requestId) {
   return error;
 }
 
+// The gateway returns a failed job's estimated cost to today's budget and
+// says so with `refunded: true` (top level, or under `cost`).
 export function appendGenerationRefundNotice(message, error) {
-  const cost = error?.generationResult?.cost;
-  if (cost?.refunded !== true) return message;
-
-  const credits = cost.amount_credits;
-  const notice = Number.isFinite(credits)
-    ? `Refunded ${credits} credit${credits === 1 ? "" : "s"}.`
-    : "The generation cost was refunded.";
-  return `${message} ${notice}`;
+  const result = error?.generationResult;
+  if (result?.refunded !== true && result?.cost?.refunded !== true) return message;
+  return `${message} It wasn't counted against today's budget.`;
 }
 
+// Polls the gateway's GET {baseUrl}/api/v1/predictions/<token>/result until
+// the job completes or fails. The gateway answers 200 {status:'processing'}
+// while a job is queued or running. Auth is the same-origin session cookie;
+// `credentials` is only for a caller on another origin (the desktop app).
 export async function pollForGenerationResult({
-  baseUrl,
+  baseUrl = "",
   requestId,
-  apiKey,
   maxAttempts = 900,
   interval = 2000,
   onAuthRequired,
+  credentials = "same-origin",
   fetchImpl = fetch,
 }) {
-  const pollUrl = `${baseUrl}/api/v1/predictions/${requestId}/result`;
+  const pollUrl = `${baseUrl}/api/v1/predictions/${encodeURIComponent(requestId)}/result`;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await wait(interval);
@@ -63,7 +64,9 @@ export async function pollForGenerationResult({
     let response;
     try {
       response = await fetchImpl(pollUrl, {
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        headers: { Accept: "application/json" },
+        credentials,
+        cache: "no-store",
       });
     } catch (error) {
       if (attempt === maxAttempts) throw error;
@@ -74,8 +77,10 @@ export async function pollForGenerationResult({
       const detail = await response.text();
       const error = new Error(`Poll Failed: ${response.status} - ${describeApiError(detail)}`);
       error.requestId = requestId;
+      error.status = response.status;
 
-      if (response.status >= 500 && attempt < maxAttempts) continue;
+      // 5xx and 429 (poll throttle) are transient: keep polling.
+      if ((response.status >= 500 || response.status === 429) && attempt < maxAttempts) continue;
       onAuthRequired?.(response.status, detail);
       throw error;
     }

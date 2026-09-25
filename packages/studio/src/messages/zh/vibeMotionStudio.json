@@ -2,7 +2,7 @@
   "loading": {
     "remixing": "正在混剪动态图形…",
     "generating": "正在生成动态图形…",
-    "backend": "基于 Modal 的 React/Remotion 渲染"
+    "backend": "正在渲染动画"
   },
   "card": {
     "modeEdit": "✏ 编辑",
@@ -48,7 +48,8 @@
   },
   "errors": {
     "staleEditUnavailable": "此生成结果无法混剪 — 服务器未保存动画代码。请先生成一个新的动态图形，然后再对该结果进行混剪。",
-    "generationFailed": "动感运镜生成失败"
+    "generationFailed": "动感运镜生成失败",
+    "unavailable": "Aquora 暂未开放 Vibe Motion。"
   },
   "generateButton": {
     "remixing": "混剪中...",

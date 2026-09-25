@@ -49,5 +49,10 @@
   "media": {
     "addReference": "Add a reference image",
     "removeReference": "Remove reference image"
+  },
+  "errors": {
+    "uploadFailed": "Image upload failed: {message}",
+    "modelUnavailable": "Cinema shots aren't available on Aquora right now. Try again later.",
+    "generationFailed": "Cinema generation failed"
   }
 }

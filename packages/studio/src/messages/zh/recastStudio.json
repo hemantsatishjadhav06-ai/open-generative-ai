@@ -58,7 +58,8 @@
     "missingImage": "请先上传角色图片。",
     "videoUploadFailed": "视频上传失败：{message}",
     "imageUploadFailed": "图片上传失败：{message}",
-    "generationFailed": "换体生成失败"
+    "generationFailed": "换体生成失败",
+    "modelUnavailable": "Aquora 暂不支持该模型，请换一个模型。"
   },
   "defaults": {
     "selectedVideo": "已选视频",

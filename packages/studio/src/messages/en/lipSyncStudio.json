@@ -49,6 +49,7 @@
     "needAudio": "Please upload an audio file first.",
     "needImage": "Please upload a portrait image first.",
     "needVideo": "Please upload a source video first.",
-    "generationFailed": "Lip sync generation failed"
+    "generationFailed": "Lip sync generation failed",
+    "modelUnavailable": "This model isn't available on Aquora yet. Pick another model."
   }
 }

@@ -5,4 +5,12 @@ node_modules
 release
 dist
 *.log
+# Local env files anywhere in the tree (secrets are runtime variables, never
+# baked into an image layer). The example file carries no values.
 .env*
+**/.env
+**/.env.*
+!.env.example
+# Local gateway data (sessions' workspaces, jobs, budget ledger)
+.aquora-data
+**/.aquora-data

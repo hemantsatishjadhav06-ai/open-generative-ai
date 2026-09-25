@@ -4,6 +4,24 @@ services:
     container_name: aquora
     ports:
       - "3001:3000"
+    # Server-only variables (FAL_KEY, OPENROUTER_API_KEY, AQUORA_ACCESS_CODES,
+    # AQUORA_SESSION_SECRET, …) come from a local, untracked .env file; see
+    # .env.example. They are read at runtime, never baked into the image.
+    env_file:
+      - path: .env
+        required: false
     environment:
       - NODE_ENV=production
+      - AQUORA_DATA_DIR=/data
+      # The port is published directly (no reverse proxy), so no forwarding
+      # header can be trusted for the client IP. Behind a proxy that appends
+      # to X-Forwarded-For, set this to the number of proxies instead.
+      - AQUORA_TRUSTED_PROXY_HOPS=${AQUORA_TRUSTED_PROXY_HOPS:-0}
+    volumes:
+      # Agents, workflows, design sessions and the budget ledger survive
+      # container rebuilds.
+      - aquora-data:/data
     restart: unless-stopped
+
+volumes:
+  aquora-data:

@@ -105,7 +105,8 @@
     "noVideoUrlReturned": "API 未返回视频链接",
     "videoGenerationFailed": "视频生成失败",
     "deleteItemFailed": "删除项目失败",
-    "noContinuationSource": "请选择兼容的 {family} 结果继续生成。"
+    "noContinuationSource": "请选择兼容的 {family} 结果继续生成。",
+    "modelUnavailable": "Aquora 暂不支持该模型或选项，请换一个模型或设置。"
   },
   "modelControls": {
     "modes": {

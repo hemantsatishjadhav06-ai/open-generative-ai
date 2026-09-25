@@ -32,7 +32,7 @@ export default function OpengraphImage() {
           <div style={{ fontWeight: 700 }}>Aquora</div>
         </div>
         <div style={{ fontSize: 36, color: '#2ee6d6', marginTop: 24 }}>Make anything. Ship everything.</div>
-        <div style={{ fontSize: 28, color: '#9fb3c8', marginTop: 12 }}>AI studio for creators. Images, video, audio, avatars — 400+ models.</div>
+        <div style={{ fontSize: 28, color: '#9fb3c8', marginTop: 12 }}>AI studio for creators. Images, video, audio, avatars — 300+ models.</div>
       </div>
     ),
     size,

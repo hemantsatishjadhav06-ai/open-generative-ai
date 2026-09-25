@@ -1,6 +1,6 @@
-import { muapi } from '../lib/muapi.js';
+import { gateway, defaultModel as defaultCloudModel, hasSession, pickableModels, isCloudModelAvailable, onModelAvailability } from '../lib/gateway.js';
 import { lipsyncModels, imageLipSyncModels, videoLipSyncModels, getLipSyncModelById, getResolutionsForLipSyncModel } from '../lib/models.js';
-import { AuthModal } from './AuthModal.js';
+import { requireSession } from './AccessCodeModal.js';
 import { t } from '../lib/i18n.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
@@ -13,8 +13,9 @@ export function LipSyncStudio() {
     // 'image' mode: portrait image + audio → video
     // 'video' mode: existing video + audio → lipsync video
     let inputMode = 'image';
-    let selectedModel = imageLipSyncModels[0].id;
-    let selectedResolution = imageLipSyncModels[0].inputs?.resolution?.default || '480p';
+    const initialModel = defaultCloudModel(imageLipSyncModels);
+    let selectedModel = initialModel.id;
+    let selectedResolution = initialModel.inputs?.resolution?.default || '480p';
     let uploadedImageUrl = null;
     let uploadedVideoUrl = null;
     let uploadedAudioUrl = null;
@@ -169,11 +170,10 @@ export function LipSyncStudio() {
     videoFileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) { AuthModal(() => videoFileInput.click()); return; }
+        if (!(await requireSession(() => videoFileInput.click()))) { videoFileInput.value = ''; return; }
         showVideoSpinner();
         try {
-            uploadedVideoUrl = await muapi.uploadFile(file);
+            uploadedVideoUrl = await gateway.uploadFile(file);
             showVideoReady(file.name);
         } catch (err) { showVideoIcon(); alert(`Video upload failed: ${err.message}`); }
         videoFileInput.value = '';
@@ -237,11 +237,10 @@ export function LipSyncStudio() {
     audioFileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) { AuthModal(() => audioFileInput.click()); return; }
+        if (!(await requireSession(() => audioFileInput.click()))) { audioFileInput.value = ''; return; }
         showAudioSpinner();
         try {
-            uploadedAudioUrl = await muapi.uploadFile(file);
+            uploadedAudioUrl = await gateway.uploadFile(file);
             showAudioReady(file.name);
         } catch (err) { showAudioIcon(); alert(`Audio upload failed: ${err.message}`); }
         audioFileInput.value = '';
@@ -288,7 +287,7 @@ export function LipSyncStudio() {
     modelBtn.id = 'ls-model-btn';
     modelBtn.type = 'button';
     modelBtn.className = 'flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/40 transition-all text-xs font-bold text-white group';
-    modelBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span id="ls-model-btn-label">${getCurrentModels()[0].name}</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-muted group-hover:text-white transition-colors"><polyline points="6 9 12 15 18 9"/></svg>`;
+    modelBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span id="ls-model-btn-label">${initialModel.name}</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-muted group-hover:text-white transition-colors"><polyline points="6 9 12 15 18 9"/></svg>`;
 
     // Resolution selector
     const resolutionBtn = document.createElement('button');
@@ -329,7 +328,7 @@ export function LipSyncStudio() {
     const populateDropdown = (type) => {
         dropdown.innerHTML = '';
         if (type === 'model') {
-            const models = getCurrentModels();
+            const models = pickableModels(getCurrentModels());
             models.forEach(m => {
                 const item = document.createElement('button');
                 item.type = 'button';
@@ -419,23 +418,8 @@ export function LipSyncStudio() {
             mediaStatusLabel.className = uploadedVideoUrl ? 'text-primary' : 'text-muted';
         }
 
-        // Switch to first model of new mode
-        const models = getCurrentModels();
-        selectedModel = models[0].id;
-        document.getElementById('ls-model-btn-label').textContent = models[0].name;
-
-        // Update resolution
-        const resolutions = getResolutionsForLipSyncModel(selectedModel);
-        if (resolutions.length > 0) {
-            selectedResolution = models[0].inputs?.resolution?.default || resolutions[0];
-            document.getElementById('ls-resolution-btn-label').textContent = selectedResolution;
-            resolutionBtn.classList.remove('hidden');
-        } else {
-            resolutionBtn.classList.add('hidden');
-        }
-
-        // Show/hide prompt
-        textarea.style.display = models[0].hasPrompt ? '' : 'none';
+        // Switch to the first runnable model of the new mode
+        applyModel(defaultCloudModel(getCurrentModels()));
     };
 
     imageModeBtn.onclick = () => {
@@ -465,7 +449,7 @@ export function LipSyncStudio() {
     const generationHistory = [];
 
     const historySidebar = document.createElement('div');
-    historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
+    historySidebar.className = 'fixed right-0 top-16 bottom-0 w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
     historySidebar.id = 'lipsync-history-sidebar';
 
     const historyLabel = document.createElement('div');
@@ -588,8 +572,8 @@ export function LipSyncStudio() {
     (async () => {
         const pending = getPendingJobs('lipsync');
         if (!pending.length) return;
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) return;
+        // Signed out: leave the jobs for the next launch.
+        if (!(await hasSession())) return;
         const banner = document.createElement('div');
         banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[200] bg-[#111] border border-white/10 text-white text-sm px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3';
         banner.innerHTML = `<span class="animate-spin text-primary">◌</span> <span class="banner-text">Resuming ${pending.length} pending generation${pending.length > 1 ? 's' : ''}…</span>`;
@@ -599,7 +583,7 @@ export function LipSyncStudio() {
             const elapsedAttempts = Math.floor((Date.now() - job.submittedAt) / job.interval);
             const attemptsLeft = Math.max(1, job.maxAttempts - elapsedAttempts);
             try {
-                const result = await muapi.pollForResult(job.requestId, apiKey, attemptsLeft, job.interval);
+                const result = await gateway.pollForResult(job.requestId, attemptsLeft, job.interval);
                 const url = result.outputs?.[0] || result.url || result.output?.url;
                 if (url) addToHistory({ id: job.requestId, url, ...job.historyMeta, timestamp: new Date().toISOString() });
             } catch (e) { console.warn('[LipSyncStudio] Pending job failed:', job.requestId, e.message); }
@@ -668,8 +652,7 @@ export function LipSyncStudio() {
             return;
         }
 
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) { AuthModal(() => generateBtn.click()); return; }
+        if (!(await requireSession(() => generateBtn.click()))) return;
 
         hero.classList.add('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
         generateBtn.disabled = true;
@@ -704,8 +687,7 @@ export function LipSyncStudio() {
 
             if (model?.hasSeed) lipsyncParams.seed = -1;
 
-            const res = await muapi.processLipSync(lipsyncParams);
-            console.log('[LipSyncStudio] Response:', res);
+            const res = await gateway.processLipSync(lipsyncParams);
 
             if (res && res.url) {
                 if (capturedRequestId) removePendingJob(capturedRequestId);
@@ -727,6 +709,31 @@ export function LipSyncStudio() {
             if (!hadError) generateBtn.innerHTML = t('common.generate');
         }
     };
+
+    // Selects `model` and syncs the model label, resolution and prompt field.
+    function applyModel(model) {
+        if (!model) return;
+        selectedModel = model.id;
+        const label = container.querySelector('#ls-model-btn-label');
+        if (label) label.textContent = model.name;
+        const resolutions = getResolutionsForLipSyncModel(selectedModel);
+        if (resolutions.length > 0) {
+            selectedResolution = model.inputs?.resolution?.default || resolutions[0];
+            const resLabel = container.querySelector('#ls-resolution-btn-label');
+            if (resLabel) resLabel.textContent = selectedResolution;
+            resolutionBtn.classList.remove('hidden');
+        } else {
+            resolutionBtn.classList.add('hidden');
+        }
+        textarea.style.display = model.hasPrompt ? '' : 'none';
+    }
+
+    // Once the gateway's model list arrives, move off a model it can't run.
+    onModelAvailability(() => {
+        if (isCloudModelAvailable(selectedModel)) return;
+        const next = defaultCloudModel(getCurrentModels());
+        if (next && next.id !== selectedModel) applyModel(next);
+    });
 
     return container;
 }

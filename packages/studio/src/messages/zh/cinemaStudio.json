@@ -49,5 +49,10 @@
   "media": {
     "addReference": "添加参考图",
     "removeReference": "移除参考图"
+  },
+  "errors": {
+    "uploadFailed": "图片上传失败：{message}",
+    "modelUnavailable": "Aquora 暂时无法生成电影镜头，请稍后再试。",
+    "generationFailed": "电影镜头生成失败"
   }
 }

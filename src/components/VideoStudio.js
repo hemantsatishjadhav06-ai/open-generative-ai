@@ -1,6 +1,6 @@
-import { muapi } from '../lib/muapi.js';
+import { gateway, defaultModel as defaultCloudModel, hasSession, pickableModels, isCloudModelAvailable, onModelAvailability } from '../lib/gateway.js';
 import { t2vModels, getAspectRatiosForVideoModel, getDurationsForModel, getResolutionsForVideoModel, i2vModels, getAspectRatiosForI2VModel, getDurationsForI2VModel, getResolutionsForI2VModel, v2vModels } from '../lib/models.js';
-import { AuthModal } from './AuthModal.js';
+import { requireSession } from './AccessCodeModal.js';
 import { t } from '../lib/i18n.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
@@ -32,8 +32,15 @@ export function VideoStudio() {
     const allT2V = [...t2vModels, ...localT2V];
     const allI2V = [...i2vModels, ...localI2V];
 
+    // Video tools that need nothing but the uploaded video (the default pick
+    // after a video upload).
+    const SINGLE_INPUT_V2V = v2vModels.filter(m => !m.imageField && !m.promptRequired);
+    const defaultT2V = () => defaultCloudModel(allT2V);
+    const defaultV2V = () => defaultCloudModel(SINGLE_INPUT_V2V.length ? SINGLE_INPUT_V2V : v2vModels);
+    const EXTEND_MODEL_ID = 'seedance-v2.0-extend';
+
     // --- State ---
-    const defaultModel = allT2V[0];
+    const defaultModel = defaultT2V();
     let selectedModel = defaultModel.id;
     let selectedModelName = defaultModel.name;
     let selectedAr = defaultModel.inputs?.aspect_ratio?.default || '16:9';
@@ -52,7 +59,7 @@ export function VideoStudio() {
     let uploadedVideoUrl = null;
 
     const getCurrentModels = () => v2vMode ? v2vModels : (imageMode ? allI2V : allT2V);
-    // Local Wan2GP entries don't live in the Muapi-derived helpers, so we
+    // Local Wan2GP entries don't live in the cloud model helpers, so we
     // resolve aspect ratios off the catalog when the selected id is local.
     const getCurrentAspectRatios = (id) => {
         const local = getLocalModelById(id);
@@ -144,7 +151,7 @@ export function VideoStudio() {
                 const sibling = currentT2V?.family
                     ? allI2V.find(m => m.family === currentT2V.family)
                     : null;
-                const target = sibling || allI2V[0];
+                const target = (sibling && isCloudModelAvailable(sibling.id) ? sibling : null) || defaultCloudModel(allI2V);
                 selectedModel = target.id;
                 selectedModelName = target.name;
                 document.getElementById('v-model-btn-label').textContent = selectedModelName;
@@ -161,17 +168,17 @@ export function VideoStudio() {
             // Clearing the start frame invalidates any selected end frame.
             uploadedEndImageUrl = null;
             endPicker?.reset();
-            selectedModel = allT2V[0].id;
-            selectedModelName = allT2V[0].name;
+            selectedModel = defaultT2V().id;
+            selectedModelName = defaultT2V().name;
             document.getElementById('v-model-btn-label').textContent = selectedModelName;
             updateControlsForModel(selectedModel);
             textarea.placeholder = t('video.placeholder');
             textarea.disabled = false;
         },
         // Route the upload through the configured Wan2GP server when the active
-        // model is local; otherwise fall back to the Muapi-hosted upload.
-        uploadFn: (file) => isWan2gpModelId(selectedModel) ? localAI.uploadFileToWan2gp(file) : muapi.uploadFile(file),
-        requireApiKey: () => !isWan2gpModelId(selectedModel),
+        // model is local; otherwise upload to the Aquora gateway's storage.
+        uploadFn: (file) => isWan2gpModelId(selectedModel) ? localAI.uploadFileToWan2gp(file) : gateway.uploadFile(file),
+        requiresSession: () => !isWan2gpModelId(selectedModel),
     });
     topRow.appendChild(picker.trigger);
     container.appendChild(picker.panel);
@@ -184,8 +191,8 @@ export function VideoStudio() {
         anchorContainer: container,
         onSelect: ({ url }) => { uploadedEndImageUrl = url; },
         onClear: () => { uploadedEndImageUrl = null; },
-        uploadFn: (file) => isWan2gpModelId(selectedModel) ? localAI.uploadFileToWan2gp(file) : muapi.uploadFile(file),
-        requireApiKey: () => !isWan2gpModelId(selectedModel),
+        uploadFn: (file) => isWan2gpModelId(selectedModel) ? localAI.uploadFileToWan2gp(file) : gateway.uploadFile(file),
+        requiresSession: () => !isWan2gpModelId(selectedModel),
     });
     endPicker.trigger.title = 'End frame (optional)';
     // Visual marker: small "L" badge in the corner so users can tell the two
@@ -277,8 +284,8 @@ export function VideoStudio() {
             return;
         }
         v2vMode = false;
-        selectedModel = allT2V[0].id;
-        selectedModelName = allT2V[0].name;
+        selectedModel = defaultT2V().id;
+        selectedModelName = defaultT2V().name;
         document.getElementById('v-model-btn-label').textContent = selectedModelName;
         updateControlsForModel(selectedModel);
         textarea.placeholder = 'Describe the video you want to create';
@@ -298,15 +305,14 @@ export function VideoStudio() {
         const file = e.target.files[0];
         if (!file) return;
 
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) {
-            AuthModal(() => videoFileInput.click());
+        if (!(await requireSession(() => videoFileInput.click()))) {
+            videoFileInput.value = '';
             return;
         }
 
         showVideoSpinner();
         try {
-            const url = await muapi.uploadFile(file);
+            const url = await gateway.uploadFile(file);
             uploadedVideoUrl = url;
             showVideoReady(file.name);
 
@@ -317,19 +323,20 @@ export function VideoStudio() {
                     ? (getCurrentModel()?.promptRequired ? 'Describe the motion' : 'Describe the motion (optional)')
                     : 'Now upload a reference image using the 🖼 button';
             } else {
-                // Default v2v flow (e.g. watermark remover) — auto-pick the first v2v model
+                // Default v2v flow — auto-pick the first runnable video-only tool
                 if (imageMode) {
                     picker.reset();
                     uploadedImageUrl = null;
                     imageMode = false;
                 }
                 v2vMode = true;
-                selectedModel = v2vModels[0].id;
-                selectedModelName = v2vModels[0].name;
+                const tool = defaultV2V();
+                selectedModel = tool.id;
+                selectedModelName = tool.name;
                 document.getElementById('v-model-btn-label').textContent = selectedModelName;
                 updateControlsForModel(selectedModel);
-                textarea.placeholder = 'Video ready — click Generate to remove watermark';
-                textarea.disabled = true;
+                textarea.placeholder = t('video.v2vReady');
+                textarea.disabled = !tool.hasPrompt;
             }
         } catch (err) {
             console.error('[VideoStudio] Video upload failed:', err);
@@ -629,13 +636,13 @@ export function VideoStudio() {
                 const lf = filter.toLowerCase();
 
                 // Regular generation models (always t2v or i2v, never v2v)
-                const generationModels = imageMode ? allI2V : allT2V;
+                const generationModels = pickableModels(imageMode ? allI2V : allT2V);
                 const filteredMain = generationModels
                     .filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf));
                 filteredMain.forEach(m => list.appendChild(makeModelItem(m, false)));
 
                 // Video Tools section
-                const filteredV2V = v2vModels.filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf));
+                const filteredV2V = pickableModels(v2vModels).filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf));
                 if (filteredV2V.length > 0) {
                     const sectionLabel = document.createElement('div');
                     sectionLabel.className = 'text-[10px] font-bold text-orange-400/70 uppercase tracking-widest px-3 py-2 mt-1 border-t border-white/5';
@@ -834,7 +841,7 @@ export function VideoStudio() {
     const generationHistory = [];
 
     const historySidebar = document.createElement('div');
-    historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
+    historySidebar.className = 'fixed right-0 top-16 bottom-0 w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
     historySidebar.id = 'video-history-sidebar';
 
     const historyLabel = document.createElement('div');
@@ -899,8 +906,9 @@ export function VideoStudio() {
         promptWrapper.classList.add('hidden');
 
         // Show extend button only for seedance-v2.0-t2v and i2v (not extend itself)
+        // (and only while the gateway can run the extend model).
         const isSeedance2 = genModel && (genModel === 'seedance-v2.0-t2v' || genModel === 'seedance-v2.0-i2v');
-        extendBtn.classList.toggle('hidden', !isSeedance2);
+        extendBtn.classList.toggle('hidden', !isSeedance2 || !isCloudModelAvailable(EXTEND_MODEL_ID));
 
         resultVideo.src = videoUrl;
         resultVideo.onloadeddata = () => {
@@ -995,8 +1003,8 @@ export function VideoStudio() {
         const pending = getPendingJobs('video');
         if (!pending.length) return;
 
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) return; // can't poll without key; jobs remain for next time
+        // Signed out: leave the jobs for the next launch.
+        if (!(await hasSession())) return;
 
         const banner = document.createElement('div');
         banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[200] bg-[#111] border border-white/10 text-white text-sm px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3';
@@ -1008,7 +1016,7 @@ export function VideoStudio() {
             const elapsedAttempts = Math.floor((Date.now() - job.submittedAt) / job.interval);
             const attemptsLeft = Math.max(1, job.maxAttempts - elapsedAttempts);
             try {
-                const result = await muapi.pollForResult(job.requestId, apiKey, attemptsLeft, job.interval);
+                const result = await gateway.pollForResult(job.requestId, attemptsLeft, job.interval);
                 const url = result.outputs?.[0] || result.url || result.output?.url;
                 if (url) {
                     addToHistory({ id: job.requestId, url, ...job.historyMeta, timestamp: new Date().toISOString() });
@@ -1053,8 +1061,8 @@ export function VideoStudio() {
         uploadedVideoUrl = null;
         v2vMode = false;
         showVideoIcon();
-        selectedModel = allT2V[0].id;
-        selectedModelName = allT2V[0].name;
+        selectedModel = defaultT2V().id;
+        selectedModelName = defaultT2V().name;
         document.getElementById('v-model-btn-label').textContent = selectedModelName;
         updateControlsForModel(selectedModel);
         textarea.placeholder = 'Describe the video you want to create';
@@ -1069,7 +1077,7 @@ export function VideoStudio() {
         picker.reset();
         uploadedImageUrl = null;
         imageMode = false;
-        selectedModel = 'seedance-v2.0-extend';
+        selectedModel = EXTEND_MODEL_ID;
         selectedModelName = 'Seedance 2.0 Extend';
         document.getElementById('v-model-btn-label').textContent = selectedModelName;
         updateControlsForModel(selectedModel);
@@ -1117,14 +1125,8 @@ export function VideoStudio() {
 
         const isLocal = isWan2gpModelId(selectedModel);
 
-        // Local Wan2GP generations don't go through Muapi — skip the auth gate.
-        if (!isLocal) {
-            const apiKey = localStorage.getItem('muapi_key');
-            if (!apiKey) {
-                AuthModal(() => generateBtn.click());
-                return;
-            }
-        }
+        // Local Wan2GP generations don't go through the gateway — no sign-in needed.
+        if (!isLocal && !(await requireSession(() => generateBtn.click()))) return;
 
         hero.classList.add('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
         generateBtn.disabled = true;
@@ -1180,8 +1182,7 @@ export function VideoStudio() {
                 const v2vParams = { model: selectedModel, video_url: uploadedVideoUrl, onRequestId };
                 if (model?.imageField && uploadedImageUrl) v2vParams.image_url = uploadedImageUrl;
                 if (model?.hasPrompt && prompt) v2vParams.prompt = prompt;
-                const res = await muapi.processV2V(v2vParams);
-                console.log('[VideoStudio] V2V response:', res);
+                const res = await gateway.processV2V(v2vParams);
                 if (res && res.url) {
                     if (capturedRequestId) removePendingJob(capturedRequestId);
                     const genId = res.id || capturedRequestId || Date.now().toString();
@@ -1216,8 +1217,7 @@ export function VideoStudio() {
                 if (selectedMode) i2vParams.mode = selectedMode;
                 if (selectedEffectName) i2vParams.name = selectedEffectName;
 
-                const res = await muapi.generateI2V(i2vParams);
-                console.log('[VideoStudio] I2V response:', res);
+                const res = await gateway.generateI2V(i2vParams);
 
                 if (res && res.url) {
                     if (capturedRequestId) removePendingJob(capturedRequestId);
@@ -1259,9 +1259,7 @@ export function VideoStudio() {
             if (selectedQuality) params.quality = selectedQuality;
             if (selectedMode) params.mode = selectedMode;
 
-            const res = await muapi.generateVideo(params);
-
-            console.log('[VideoStudio] Full response:', res);
+            const res = await gateway.generateVideo(params);
 
             if (res && res.url) {
                 if (capturedRequestId) removePendingJob(capturedRequestId);
@@ -1306,6 +1304,20 @@ export function VideoStudio() {
             if (!hadError) generateBtn.innerHTML = t('common.generate');
         }
     };
+
+    // Once the gateway's model list arrives, move off a cloud model it can't
+    // run (the default comes from the full catalog until then). Local Wan2GP
+    // models are never touched.
+    onModelAvailability(() => {
+        if (isWan2gpModelId(selectedModel) || isCloudModelAvailable(selectedModel)) return;
+        const next = v2vMode ? defaultV2V() : (imageMode ? defaultCloudModel(allI2V) : defaultT2V());
+        if (!next || next.id === selectedModel) return;
+        selectedModel = next.id;
+        selectedModelName = next.name;
+        const label = container.querySelector('#v-model-btn-label');
+        if (label) label.textContent = selectedModelName;
+        updateControlsForModel(selectedModel);
+    });
 
     return container;
 }

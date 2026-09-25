@@ -14,6 +14,7 @@
     "nowPlaying": "Now Playing",
     "defaultTitle": "Generated Track",
     "muteUnmute": "Mute/Unmute",
+    "volume": "Volume",
     "pause": "Pause",
     "play": "Play",
     "download": "Download Audio",
@@ -34,7 +35,8 @@
     "cta": "Generate Track",
     "noUrlError": "No audio URL returned by the API.",
     "genericError": "Audio generation failed",
-    "droppedFileUploadError": "Failed to upload dropped file: {message}"
+    "droppedFileUploadError": "Failed to upload dropped file: {message}",
+    "modelUnavailable": "This model isn't available on Aquora yet. Pick another model."
   },
   "result": {
     "errorHeading": "Generation Error",

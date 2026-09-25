@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { processMotionControl, uploadFile } from "../muapi.js";
+import { processMotionControl, uploadFile } from "../gateway.js";
 import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { usePersistKey } from "../persistKey.js";
+import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
+import { useAvailableModels } from "../useModelAvailability.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -464,7 +466,7 @@ function AssetsDropdown({
                 <span className="text-xs text-white/95 font-semibold truncate" title={item.name}>
                   {item.name}
                 </span>
-                <span className="text-[10px] text-white/40 truncate mt-0.5">
+                <span className="text-[10px] text-white/60 truncate mt-0.5">
                   {new Date(item.timestamp || Date.now()).toLocaleDateString()}
                 </span>
               </div>
@@ -587,19 +589,24 @@ export default function MotionControlStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_motion_control_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  // Both keys are null until the signed-in workspace is known.
+  const PERSIST_KEY = usePersistKey("hg_motion_control_studio_persistent");
+  const ASSETS_KEY = usePersistKey("hg_motion_control_assets");
 
   // ── Mode: 'motion_transfer' | 'objects_swap' ────────────────────────────────
   const [mode, setMode] = useState("motion_transfer");
 
   // ── Model Selection ─────────────────────────────────────────────────────────
-  const [selectedModelId, setSelectedModelId] = useState("seedance-2.5-motion-control");
+  const [selectedModelId, setSelectedModelId] = useState(
+    () => firstAvailableModel(motionControlModels, ["seedance-2.5-motion-control"])?.id || "seedance-2.5-motion-control",
+  );
   const selectedModel = getMotionControlModelById(selectedModelId) || motionControlModels[0];
+  const visibleModels = useAvailableModels(
+    motionControlModels,
+    selectedModelId,
+    (model) => setSelectedModelId(model.id),
+    ["seedance-2.5-motion-control"],
+  );
 
   const maxImagesAllowed = selectedModel.maxImages || 30;
   const maxDurationAllowed = selectedModel.maxDuration || 30;
@@ -661,40 +668,25 @@ export default function MotionControlStudio({
   useFocusReturn(Boolean(fullscreenUrl));
 
   // ── Asset Library Storage ───────────────────────────────────────────────────
-  const [assetVideos, setAssetVideos] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_motion_control_assets");
-        if (stored) return JSON.parse(stored).videos || [];
-      } catch {}
-    }
-    return [];
-  });
+  const [assetVideos, setAssetVideos] = useState([]);
+  const [assetImages, setAssetImages] = useState([]);
+  const [assetResults, setAssetResults] = useState([]);
 
-  const [assetImages, setAssetImages] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_motion_control_assets");
-        if (stored) return JSON.parse(stored).images || [];
-      } catch {}
-    }
-    return [];
-  });
-
-  const [assetResults, setAssetResults] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_motion_control_assets");
-        if (stored) return JSON.parse(stored).results || [];
-      } catch {}
-    }
-    return [];
-  });
+  useEffect(() => {
+    if (!ASSETS_KEY) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem(ASSETS_KEY) || "{}");
+      setAssetVideos(Array.isArray(stored.videos) ? stored.videos : []);
+      setAssetImages(Array.isArray(stored.images) ? stored.images : []);
+      setAssetResults(Array.isArray(stored.results) ? stored.results : []);
+    } catch {}
+  }, [ASSETS_KEY]);
 
   const saveAssets = (v, i, r) => {
+    if (!ASSETS_KEY) return;
     try {
       localStorage.setItem(
-        "hg_motion_control_assets",
+        ASSETS_KEY,
         JSON.stringify({ videos: v, images: i, results: r })
       );
     } catch {}
@@ -751,6 +743,7 @@ export default function MotionControlStudio({
 
   // ── Load / Save History ─────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const saved = JSON.parse(localStorage.getItem(PERSIST_KEY) || "[]");
       if (Array.isArray(saved)) setHistory(saved);
@@ -759,6 +752,7 @@ export default function MotionControlStudio({
 
   const saveHistory = (items) => {
     setHistory(items);
+    if (!PERSIST_KEY) return;
     try {
       localStorage.setItem(PERSIST_KEY, JSON.stringify(items));
     } catch {}
@@ -838,6 +832,10 @@ export default function MotionControlStudio({
 
   // ── Handle Generation ───────────────────────────────────────────────────────
   const handleGenerate = async () => {
+    if (!isModelAvailable(selectedModelId)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
     if (!videoUrl) {
       notifyError(copy.errors.missingVideo);
       return;
@@ -1026,7 +1024,7 @@ export default function MotionControlStudio({
                     <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand/10 rounded border border-brand/20 whitespace-nowrap">
                       {entry.mode === "objects_swap" ? copy.badges.objectsSwap : copy.badges.motionTransfer}
                     </span>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-[10px] text-white/60">
                       {entry.duration ? `${entry.duration}s • ` : ""}
                       {entry.aspectRatio || "16:9"}
                     </span>
@@ -1152,7 +1150,7 @@ export default function MotionControlStudio({
               <MenuDropdown
                 isOpen={openDropdown === "model"}
                 title={copy.dropdowns.model}
-                items={motionControlModels}
+                items={visibleModels}
                 selectedId={selectedModelId}
                 onSelect={(item) => setSelectedModelId(item.id)}
                 onClose={() => setOpenDropdown(null)}
@@ -1303,7 +1301,7 @@ export default function MotionControlStudio({
                     <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                       <div className="flex flex-col">
                         <span className="text-xs font-semibold text-white">{copy.labels.highBitrate}</span>
-                        <span className="text-[10px] text-white/40">Enhanced video encoding fidelity</span>
+                        <span className="text-[10px] text-white/60">Enhanced video encoding fidelity</span>
                       </div>
                       <button
                         type="button"
@@ -1348,7 +1346,7 @@ export default function MotionControlStudio({
                   <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                     <div className="flex flex-col">
                       <span className="text-xs font-semibold text-white">{copy.labels.seed}</span>
-                      <span className="text-[10px] text-white/40">{copy.labels.randomSeed}</span>
+                      <span className="text-[10px] text-white/60">{copy.labels.randomSeed}</span>
                     </div>
                     <input
                       type="number"

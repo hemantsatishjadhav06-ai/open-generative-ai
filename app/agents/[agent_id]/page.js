@@ -1,98 +1,35 @@
-import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import AgentChatClient from "./AgentChatClient";
+import { requireAgentsViewer } from "../pageData";
+import { loadAgentForPage } from "@/lib/gateway/agents/viewer";
 
 /**
- * Server component — fetches agentDetails from the /api/agents proxy
- * (which forwards to https://api.muapi.ai/agents/by-slug/{id})
- * using the muapi_key cookie for auth, then renders the client chat component.
- *
- * URL: /agents/[agent_id]   (new chat — no conversation ID yet)
+ * New chat with an agent: /agents/[agent_id]
+ * The agent (a built-in template or one from the visitor's workspace) is
+ * read straight from the gateway store on the server; the chat itself runs
+ * through /api/agents/* from the browser.
  */
-export async function generateMetadata() {
-  return {
-    title: 'Agent chat — Aquora',
-  };
-}
+export const dynamic = "force-dynamic";
 
-const BASE_URL = 'https://api.muapi.ai';
-
-async function fetchAgentDetails(agentId, apiKey) {
-  if (!apiKey) return { status: 'error' };
-
-  // Try fetching by slug first, then by direct ID (if it looks like a UUID).
-  // 'missing' = every lookup we tried said 404; anything else is 'error'.
-  try {
-    const res = await fetch(
-      `${BASE_URL}/agents/by-slug/${agentId}`,
-      {
-        cache: "no-store",
-        headers: { "x-api-key": apiKey },
-      }
-    );
-    if (res.ok) return { status: 'ok', data: await res.json() };
-    if (res.status !== 404) {
-      console.warn(`[AgentPage] Agent lookup failed with ${res.status}`);
-      return { status: 'error' };
-    }
-
-    if (agentId.length > 20) {
-      const resId = await fetch(
-        `${BASE_URL}/agents/${agentId}`,
-        {
-          cache: "no-store",
-          headers: { "x-api-key": apiKey },
-        }
-      );
-      if (resId.ok) return { status: 'ok', data: await resId.json() };
-      if (resId.status !== 404) {
-        console.warn(`[AgentPage] Agent lookup by ID failed with ${resId.status}`);
-        return { status: 'error' };
-      }
-    }
-
-    return { status: 'missing' };
-  } catch (error) {
-    console.error("[AgentPage] Fetch error:", error?.message || error);
-    return { status: 'error' };
-  }
-}
-
-async function fetchUserData(apiKey) {
-  if (!apiKey) return null;
-  try {
-    const res = await fetch(`${BASE_URL}/api/v1/account/balance`, {
-      cache: "no-store",
-      headers: { "x-api-key": apiKey },
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+export async function generateMetadata({ params }) {
+  const { agent_id } = await params;
+  const { cid, locale } = await requireAgentsViewer();
+  const result = await loadAgentForPage(cid, agent_id, { locale });
+  return { title: result.status === "ok" ? `${result.agent.name} — Aquora` : "Agent chat — Aquora" };
 }
 
 export default async function AgentPage({ params }) {
   const { agent_id } = await params;
-  const cookieStore = await cookies();
-  const apiKey = cookieStore.get("muapi_key")?.value;
-
-  // No key yet: the studio shows the key screen and sets the cookie.
-  if (!apiKey) redirect('/studio/agents');
-
-  const [agentResult, userData] = await Promise.all([
-    fetchAgentDetails(agent_id, apiKey),
-    fetchUserData(apiKey)
-  ]);
-
-  if (agentResult.status === 'missing') notFound();
+  const { cid, locale } = await requireAgentsViewer();
+  const result = await loadAgentForPage(cid, agent_id, { locale });
+  if (result.status === "missing") notFound();
 
   return (
     <AgentChatClient
-      agentDetails={agentResult.status === 'ok' ? agentResult.data : null}
-      loadError={agentResult.status === 'error'}
+      agentDetails={result.status === "ok" ? result.agent : null}
+      loadError={result.status === "error"}
       initialHistory={null}
-      userData={userData}
+      locale={locale}
     />
   );
 }

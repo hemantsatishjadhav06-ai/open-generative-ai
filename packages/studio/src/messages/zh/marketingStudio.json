@@ -8,41 +8,40 @@
     "product": "产品",
     "avatar": "形象",
     "references": "参考图",
-    "uploadPrefix": "上传"
+    "uploadPrefix": "上传",
+    "referenceVideo": "参考视频",
+    "referenceVideoHint": "上传参考视频（可选，2–15 秒，不超过 50 MB），复刻它的格式和节奏"
   },
   "prompt": {
     "placeholder": "描述您的广告脚本... 使用 @image1 表示产品，@image2 表示形象。"
   },
   "dropdowns": {
-    "videoFormatPresets": "视频格式预设",
-    "avatarPresets": "形象预设",
     "aspectRatio": "宽高比",
     "resolution": "分辨率",
-    "duration": "时长",
-    "selectAvatarFallback": "选择形象"
+    "duration": "时长"
   },
   "buttons": {
     "generating": "生成中...",
     "launch": "生成",
-    "enlargePreview": "放大预览",
-    "enlargeSelectedAvatar": "放大已选形象",
-    "selectAvatar": "选择形象",
     "download": "下载",
-    "delete": "删除"
+    "delete": "删除",
+    "remove": "移除"
   },
   "history": {
     "badge": "营销工作室"
   },
-  "alt": {
-    "previousAvatar": "上一个形象",
-    "nextAvatar": "下一个形象"
-  },
   "errors": {
     "missingScript": "请输入广告脚本。",
     "missingProductImage": "请上传产品图片。",
-    "generationFailed": "营销广告生成失败"
+    "generationFailed": "营销广告生成失败",
+    "referenceVideoType": "请选择视频文件作为参考。",
+    "referenceVideoTooLarge": "参考视频不能超过 50 MB。",
+    "modelUnavailable": "该分辨率暂不支持生成营销广告，请换一个分辨率。"
   },
   "confirm": {
     "deleteItem": "确定要删除此生成内容吗？"
+  },
+  "fullscreen": {
+    "close": "关闭"
   }
 }

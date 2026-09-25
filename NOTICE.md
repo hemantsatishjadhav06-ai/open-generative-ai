@@ -33,4 +33,13 @@ used under its license; the copyright lines below are reproduced as required.
 
 ---
 
-MuAPI is a third-party service, not bundled code.
+## Third-party services
+
+Aquora's server calls these services with the site owner's own keys. They are
+not bundled code, and no provider key is ever sent to the browser.
+
+- **fal.ai** (https://fal.ai): image, video, audio and lip-sync generation, and
+  media storage. Governed by fal's terms of service.
+- **OpenRouter** (https://openrouter.ai): text generation for prompt tools,
+  agents, the design agent and workflows. Governed by OpenRouter's terms and
+  the terms of each model provider it routes to.

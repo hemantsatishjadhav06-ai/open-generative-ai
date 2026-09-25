@@ -32,6 +32,18 @@ test('logProxy never logs keys or bodies, even if a caller passes them', async (
     assert.ok(!lines[0].includes('prompt text'));
 });
 
+test('logProxy ignores cookies, access codes and provider keys passed by mistake', async () => {
+    const { logProxy } = await load();
+    const lines = capture(() => logProxy({
+        route: 'session', method: 'POST', status: 401, ms: 2, reqId: 'r3',
+        cookie: 'aquora_session=abc.def', code: 'letmein-123', FAL_KEY: 'fal-secret', OPENROUTER_API_KEY: 'sk-or-secret',
+    }));
+    assert.equal(lines.length, 1);
+    for (const secret of ['aquora_session', 'abc.def', 'letmein-123', 'fal-secret', 'sk-or-secret']) {
+        assert.ok(!lines[0].includes(secret), secret);
+    }
+});
+
 test('newReqId returns a non-empty string', async () => {
     const { newReqId } = await load();
     assert.equal(typeof newReqId(), 'string');

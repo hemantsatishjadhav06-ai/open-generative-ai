@@ -71,7 +71,8 @@
     "uploadReferenceFirst": "请先上传一张参考图片。",
     "uploadSwapFaceFirst": "请上传一张换脸图片。",
     "enterPromptFirst": "请输入提示词以生成图像。",
-    "generationFailed": "图像生成失败"
+    "generationFailed": "图像生成失败",
+    "modelUnavailable": "Aquora 暂不支持该模型，请换一个模型。"
   },
   "fullscreen": {
     "previewAlt": "全屏预览"

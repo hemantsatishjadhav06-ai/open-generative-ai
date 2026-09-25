@@ -1,29 +1,19 @@
-import { proxyToMuapi, routeLabel, MUAPI_BASE } from '@/lib/muapiProxy';
+// /api/v1/creative-agent/* — Aquora's own design agent API (canvas sessions,
+// asset registry, agent runs and their event log). Handlers live in
+// lib/gateway/design/api.js; every call needs a session and works on the
+// caller's workspace.
+import { handleCreativeAgent } from '../../../../../lib/gateway/design/api.js';
+import { route } from '../../../../../lib/gateway/http.js';
 
-// Proxies /api/v1/creative-agent/* -> https://api.muapi.ai/api/v1/creative-agent/*
-async function forward(request, params, method) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    const { search } = new URL(request.url);
-    return proxyToMuapi(request, `${MUAPI_BASE}/api/v1/creative-agent/${path}${search}`, {
-        method,
-        route: routeLabel('creative-agent', pathSegments),
-    });
-}
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+// Runs are background jobs: a chat submit returns as soon as it is queued.
+export const maxDuration = 60;
 
-export async function GET(request, { params }) {
-    return forward(request, params, 'GET');
-}
+const handler = route('creative-agent', handleCreativeAgent, { session: true });
 
-export async function POST(request, { params }) {
-    return forward(request, params, 'POST');
-}
-
-export async function PATCH(request, { params }) {
-    return forward(request, params, 'PATCH');
-}
-
-export async function DELETE(request, { params }) {
-    return forward(request, params, 'DELETE');
-}
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;

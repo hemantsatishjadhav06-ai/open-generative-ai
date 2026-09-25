@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { FiUpload } from "react-icons/fi";
-import axios from "axios";
+import { errorMessage, isFetchableMedia, uploadFile } from "./gatewayClient";
+import { t } from "./i18n";
 import AudioPlayer from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 import { IoImageOutline, IoTrashOutline } from "react-icons/io5";
@@ -30,59 +31,30 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
       return;
     }
 
-    let acceptedTypes = [];
-
-    if (acceptType === "image") {
-      acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
-    } else if (acceptType === "video") {
-      acceptedTypes = ["video/mp4", "video/webm"];
-    } else if (acceptType === "audio") {
-      acceptedTypes = ["audio/mpeg", "audio/wav", "audio/webm"];
-    }
+    // The server checks the file's real type; this only catches obvious mix-ups.
+    const accepted = typeof file.type === "string" && file.type.startsWith(`${acceptType}/`);
 
     const type = file.type.startsWith("video") ? "video_url" : file.type.startsWith("image") ? "image_url": "audio_url";
     
-    if (!acceptedTypes.includes(file.type)) {
-      toast.error(`Please upload a valid ${acceptType} file`);
+    if (!accepted) {
+      toast.error(t("uploadInvalidType", { kind: t(`kind_${acceptType}`) }));
       return;
     };
 
     setUploading(true);
-    axios.get("/api/app/get_file_upload_url", {
-      params: { filename: file.name }
-    })
-    .then((response) => {
-      const { url, fields } = response.data;
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
-      axios.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        }
-      })
-      .then(() => {
-        const prefix = "https://cdn.muapi.ai/";
-        const uploadedUrl = prefix + fields.key;
+    uploadFile(file, setUploadProgress)
+      .then((uploadedUrl) => {
         setFormValues(prev => ({ ...prev, [type]: uploadedUrl }));
-
         setTimeout(() => {
           setUploading(false);
           setUploadProgress(0);
         }, 500);
       })
-    })
-    .catch((error) => {
-      console.error("Upload failed", error);
-      toast.error("Upload failed.", error?.response?.data);
-      setUploading(false);
-      setUploadProgress(0);
-    })  
+      .catch((error) => {
+        toast.error(errorMessage(error, t("uploadFailed")));
+        setUploading(false);
+        setUploadProgress(0);
+      });
   };
 
   const handleDragOver = (e) => {
@@ -149,7 +121,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
       };
       img.src = resultUrl;
       
-      fetch(resultUrl, { method: 'HEAD' })
+      (isFetchableMedia(resultUrl) ? fetch(resultUrl, { method: 'HEAD' }) : Promise.reject(new Error('skip')))
         .then(res => {
           const size = res.headers.get('content-length');
           if (size) {

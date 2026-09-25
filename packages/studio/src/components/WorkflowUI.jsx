@@ -5,10 +5,9 @@ import { WorkflowBuilder } from "workflow-builder";
 import "reactflow/dist/style.css";
 import "react-toastify/dist/ReactToastify.css";
 
-
+// The node canvas. It talks to /api/workflow/* itself with the session
+// cookie, so no key or token is passed in.
 const WorkflowUI = ({
-  apiKey,
-  workflowId,
   initialNodeSchemas,
   initialWorkflowData,
   onGenerationStart,
@@ -23,11 +22,8 @@ const WorkflowUI = ({
   return (
     <div className="w-full h-full bg-black">
       <WorkflowBuilder
-        apiKey={apiKey}
-        workflowId={workflowId}
         initialNodeSchemas={initialNodeSchemas}
         initialWorkflowData={initialWorkflowData}
-        costType="dollars"
         onGenerationStart={onGenerationStart}
         onGenerationEnd={onGenerationEnd}
         onGenerationComplete={onGenerationComplete}

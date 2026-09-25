@@ -1,0 +1,1822 @@
+[
+  {
+    "model_id": "nano-banana",
+    "key": "nano-banana",
+    "name": "Nano Banana",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/nano-banana",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough; fal enum 21:9,16:9,3:2,4:3,5:4,1:1,4:5,3:4,2:3,9:16 (identical to Legacy enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana/api",
+    "notes": "Gemini 2.5 Flash Image t2i. Optional fal extras: num_images(1-4), output_format(jpeg|png|webp, default png), seed, safety_tolerance('1'-'6')."
+  },
+  {
+    "model_id": "flux-dev",
+    "key": "flux-dev-image",
+    "name": "FLUX.1 Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux/dev",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "num_images": "int 1-4 (clamp)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/dev/api",
+    "notes": "Default image_size on fal is landscape_4_3; always send explicit object. Optional: num_inference_steps(28), guidance_scale(3.5), seed, output_format(jpeg|png), acceleration."
+  },
+  {
+    "model_id": "flux-kontext-dev-t2i",
+    "key": "flux-kontext-dev-t2i",
+    "name": "FLUX.1 Kontext Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-kontext-lora/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {
+      "loras": []
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-kontext-lora/text-to-image/api",
+    "notes": "fal has no plain 'FLUX.1 Kontext [dev] text-to-image' endpoint; fal-ai/flux-kontext-lora/text-to-image runs Kontext [dev] t2i and accepts an empty loras list. fal-ai/flux-kontext/dev itself is an edit endpoint (requires image_url)."
+  },
+  {
+    "model_id": "hidream-i1-fast",
+    "key": "hidream_i1_fast_image",
+    "name": "HiDream I1 Fast",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/hidream-i1-fast",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/hidream-i1-fast/api",
+    "notes": "Same model/variant. fal default image_size {1024,1024}. Optional: negative_prompt, seed, num_inference_steps, output_format(jpeg|png)."
+  },
+  {
+    "model_id": "hidream-i1-dev",
+    "key": "hidream_i1_dev_image",
+    "name": "HiDream I1 Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/hidream-i1-dev",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/hidream-i1-dev/api",
+    "notes": "Same model/variant. fal default image_size {1024,1024}. Optional: negative_prompt, seed, num_inference_steps, output_format(jpeg|png)."
+  },
+  {
+    "model_id": "hidream-i1-full",
+    "key": "hidream_i1_full_image",
+    "name": "HiDream I1 Full",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/hidream-i1-full",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/hidream-i1-full/api",
+    "notes": "Same model/variant. fal default image_size {1024,1024}. Optional: negative_prompt, seed, num_inference_steps, output_format(jpeg|png). Full also accepts guidance_scale and loras."
+  },
+  {
+    "model_id": "ai-anime-generator",
+    "key": "ai-anime-generator",
+    "name": "Ai Anime Generator",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/pony-v7",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/pony-v7/api",
+    "notes": "Legacy-proprietary app (provider 'legacy', underlying model undisclosed). No fal equivalent. param_map targets the suggested fallback fal-ai/pony-v7 (anime/stylized SDXL-class model, verified schema: prompt,image_size,num_images<=2,guidance_scale,num_inference_steps 20-50,seed)."
+  },
+  {
+    "model_id": "wan2.1-text-to-image",
+    "key": "wan2.1-text-to-image",
+    "name": "Wan 2.1",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-a14b/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-a14b/text-to-image/api",
+    "notes": "fal lists no Wan 2.1 text-to-image endpoint (fal-ai/wan/v2.1/text-to-image docs page 404). Nearest same-family model is Wan 2.2 A14B t2i. NOTE output is a single object image.url (not images[]). Optional: negative_prompt, seed, num_inference_steps(27), guidance_scale, enable_prompt_expansion."
+  },
+  {
+    "model_id": "flux-kontext-pro-t2i",
+    "key": "flux-kontext-pro-t2i",
+    "name": "FLUX.1 Kontext Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/kontext/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough for 16:9,9:16,1:1,4:3,3:4,21:9; Legacy '16:21' is not in fal enum (21:9,16:9,4:3,3:2,1:1,2:3,3:4,9:16,9:21) -> map 16:21 to 3:4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/kontext/text-to-image/api",
+    "notes": "Optional: num_images(1-4), seed, guidance_scale(3.5), safety_tolerance('1'-'6', default '2'), output_format(jpeg|png), enhance_prompt."
+  },
+  {
+    "model_id": "flux-kontext-max-t2i",
+    "key": "flux-kontext-max-t2i",
+    "name": "FLUX.1 Kontext Max",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-pro/kontext/max/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough; 16:21 -> 3:4 (not in fal enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pro/kontext/max/text-to-image/api",
+    "notes": "Same schema as Kontext [pro] t2i."
+  },
+  {
+    "model_id": "gpt4o-text-to-image",
+    "key": "gpt4o-text-to-image",
+    "name": "GPT-4o",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/gpt-image-1/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "1:1->'1024x1024', 3:2->'1536x1024', 2:3->'1024x1536' (fal enum auto|1024x1024|1536x1024|1024x1536)",
+      "num_images": "1|2|4 passthrough (fal max 4)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/gpt-image-1/text-to-image/api",
+    "notes": "Legacy 'GPT-4o' image generation == OpenAI gpt-image-1 (the model behind GPT-4o native image gen). Optional: quality(auto|low|medium|high), background(auto|transparent|opaque), output_format(jpeg|png|webp). Billed by fal (no BYOK needed for this endpoint per schema)."
+  },
+  {
+    "model_id": "flux-schnell",
+    "key": "flux-schnell-image",
+    "name": "FLUX.1 Schnell",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux/schnell",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/schnell/api",
+    "notes": "num_inference_steps default 4 (1-12)."
+  },
+  {
+    "model_id": "bytedance-seedream-v3",
+    "key": "bytedance-seedream-image",
+    "name": "Seedream 3.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v3/text-to-image",
+    "fallback_endpoint": "fal-ai/bytedance/seedream/v4/text-to-image",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v3/text-to-image/api",
+    "notes": "Exact model exists on fal but is status=deprecated and its docs page says 'This model is no longer supported' (schema: prompt,image_size,guidance_scale 2.5,num_images,seed,enable_safety_checker). Route to fallback Seedream v4 t2i if calls fail."
+  },
+  {
+    "model_id": "qwen-image",
+    "key": "qwen-image",
+    "name": "Qwen Image",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image/api",
+    "notes": "Optional: negative_prompt, seed, guidance_scale(2.5), num_inference_steps(30), acceleration, use_turbo, loras[{path,scale}], output_format(jpeg|png)."
+  },
+  {
+    "model_id": "flux-pulid",
+    "key": "flux-pulid",
+    "name": "Flux Pulid",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-pulid",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "reference_image_url",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-pulid/api",
+    "notes": "PuLID Flux (fal category image-to-image). Required: prompt, reference_image_url. Optional: id_weight(0-1, default 1), negative_prompt, guidance_scale(4), num_inference_steps(20), true_cfg, start_step, seed."
+  },
+  {
+    "model_id": "ideogram-v3-t2i",
+    "key": "ideogram-v3-t2i",
+    "name": "Ideogram 3.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/ideogram/v3",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "render_speed": "rendering_speed",
+      "style": "style",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "rendering_speed": "Turbo->TURBO, Balanced->BALANCED, Quality->QUALITY (uppercase)",
+      "style": "Auto->AUTO, General->GENERAL, Realistic->REALISTIC, Design->DESIGN (uppercase)",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "num_images": "int 1-8"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/ideogram/v3/api",
+    "notes": "Optional: negative_prompt, seed, expand_prompt(default true), style_preset, color_palette, image_urls (style refs). Output items are File objects with .url."
+  },
+  {
+    "model_id": "google-imagen4",
+    "key": "google-imagen4",
+    "name": "Imagen 4",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/imagen4/preview",
+    "fallback_endpoint": "fal-ai/nano-banana-2",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (1:1,16:9,9:16,3:4,4:3)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/imagen4/preview/api",
+    "notes": "Imagen 4 is only on fal as the *preview* endpoints, which /v1/models lists with status=deprecated; the docs page https://fal.ai/models/fal-ai/imagen4/preview/api now returns 404 and the platform API will not return its OpenAPI. Input names (prompt, aspect_ratio, num_images, negative_prompt, seed) are INFERRED from the historical schema. Treat as best-effort; fallback to Google's current image model on fal (nano-banana-2, aspect_ratio passthrough)."
+  },
+  {
+    "model_id": "google-imagen4-fast",
+    "key": "google-imagen4-fast",
+    "name": "Imagen 4 Fast",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/imagen4/preview/fast",
+    "fallback_endpoint": "fal-ai/nano-banana-2",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (1:1,16:9,9:16,3:4,4:3)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/imagen4/preview/fast/api",
+    "notes": "Imagen 4 is only on fal as the *preview* endpoints, which /v1/models lists with status=deprecated; the docs page https://fal.ai/models/fal-ai/imagen4/preview/fast/api now returns 404 and the platform API will not return its OpenAPI. Input names (prompt, aspect_ratio, num_images, negative_prompt, seed) are INFERRED from the historical schema. Treat as best-effort; fallback to Google's current image model on fal (nano-banana-2, aspect_ratio passthrough)."
+  },
+  {
+    "model_id": "google-imagen4-ultra",
+    "key": "google-imagen4-ultra",
+    "name": "Imagen 4 Ultra",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/imagen4/preview/ultra",
+    "fallback_endpoint": "fal-ai/nano-banana-2",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (1:1,16:9,9:16,3:4,4:3)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/imagen4/preview/ultra/api",
+    "notes": "Imagen 4 is only on fal as the *preview* endpoints, which /v1/models lists with status=deprecated; the docs page https://fal.ai/models/fal-ai/imagen4/preview/ultra/api now returns 404 and the platform API will not return its OpenAPI. Input names (prompt, aspect_ratio, num_images, negative_prompt, seed) are INFERRED from the historical schema. Treat as best-effort; fallback to Google's current image model on fal (nano-banana-2, aspect_ratio passthrough)."
+  },
+  {
+    "model_id": "sdxl-image",
+    "key": "sdxl-image",
+    "name": "Stable Diffusion XL 1.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/fast-sdxl",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/fast-sdxl/api",
+    "notes": "Stable Diffusion XL 1.0. Output format field is 'format' (jpeg|png), not output_format. Optional: negative_prompt, guidance_scale(7.5), num_inference_steps(25), num_images(1-8), loras, seed."
+  },
+  {
+    "model_id": "bytedance-seedream-v4",
+    "key": "bytedance-seedream-v4",
+    "name": "Seedream 4.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v4/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1K≈1024², 2K≈2048², 4K≈4096²), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'; fal also accepts 'auto','auto_2K','auto_4K' but those ignore aspect ratio",
+      "num_images": "int 1-6"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4/text-to-image/api",
+    "notes": "fal default image_size {2048,2048}. Optional: seed, max_images, enhance_prompt_mode(standard|fast). Side limits beyond schema max 14142 not documented; Seedream v4 native range is ~1024-4096 per side (inferred)."
+  },
+  {
+    "model_id": "hunyuan-image-2.1",
+    "key": "hunyuan-image-2.1",
+    "name": "Hunyuan Image 2.1",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/hunyuan-image/v2.1/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/hunyuan-image/v2.1/text-to-image/api",
+    "notes": "Optional: negative_prompt, guidance_scale(3.5), num_inference_steps(28), use_reprompt(true), use_refiner, num_images(1-4), seed, output_format(jpeg|png)."
+  },
+  {
+    "model_id": "chroma-image",
+    "key": "chroma-image",
+    "name": "Chroma Image",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/flux/schnell",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/schnell/api",
+    "notes": "Chroma (lodestones, FLUX.1-schnell-derived) is not hosted on fal (/v1/models?endpoint_id=fal-ai/chroma -> 404, search 'chroma' finds only post-processing). Suggested fallback is the FLUX.1 [schnell] base it derives from; param_map targets the fallback."
+  },
+  {
+    "model_id": "flux-redux",
+    "key": "flux-redux",
+    "name": "FLUX.1 Redux Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux/dev/redux",
+    "fallback_endpoint": "fal-ai/flux-pro/v1.1/redux",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "prompt"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/dev/redux/api",
+    "notes": "fal-ai/flux/dev/redux (image-to-image category) has NO prompt field (required: image_url) - Legacy prompt is dropped. If prompt conditioning matters, fallback fal-ai/flux-pro/v1.1/redux accepts prompt+image_url (FLUX1.1 [pro] tier, different price)."
+  },
+  {
+    "model_id": "flux-krea-dev",
+    "key": "flux-krea-dev",
+    "name": "FLUX.1 Krea Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux/krea",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "num_images": "int 1-4"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/krea/api",
+    "notes": "FLUX.1 Krea [dev]. guidance_scale default 4.5."
+  },
+  {
+    "model_id": "perfect-pony-xl",
+    "key": "perfect-pony-xl",
+    "name": "Perfect Pony Xl",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/lora",
+    "fallback_endpoint": "fal-ai/pony-v7",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {
+      "model_name": "<Perfect Pony XL SDXL checkpoint: HuggingFace repo id or Civitai download URL - must be configured>",
+      "prediction_type": "epsilon"
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/lora/api",
+    "notes": "No hosted Perfect Pony XL on fal. fal-ai/lora ('Stable Diffusion with LoRAs') runs ANY SD1.5/SDXL checkpoint by URL/HF id (model_name is required), so the same weights can be served if we pin a checkpoint URL (license check needed). Otherwise fallback to fal-ai/pony-v7."
+  },
+  {
+    "model_id": "neta-lumina",
+    "key": "neta-lumina",
+    "name": "Neta Lumina",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/lumina-image/v2",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/lumina-image/v2/api",
+    "notes": "Neta Lumina (anime finetune of Lumina-Image-2.0) is not on fal (search 'neta' -> 0 results). Fallback is the Lumina Image 2 base model (different style); param_map targets fallback."
+  },
+  {
+    "model_id": "wan2.5-text-to-image",
+    "key": "wan2.5-text-to-image",
+    "name": "Wan 2.5",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/text-to-image/api",
+    "notes": "Optional: negative_prompt, num_images(1-4), seed, enable_prompt_expansion(default true)."
+  },
+  {
+    "model_id": "hunyuan-image-3.0",
+    "key": "hunyuan-image-3.0",
+    "name": "Hunyuan Image 3.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/hunyuan-image/v3/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/hunyuan-image/v3/text-to-image/api",
+    "notes": "Optional: negative_prompt, guidance_scale(7.5), num_inference_steps(28), enable_prompt_expansion, num_images(1-4), seed."
+  },
+  {
+    "model_id": "leonardoai-phoenix-1.0",
+    "key": "leonardoai-phoenix-1.0",
+    "name": "Leonardo Phoenix 1.0",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/flux-2-pro",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-pro/api",
+    "notes": "Leonardo.Ai models are not on fal (search 'leonardo' -> 0 results). Suggested same-capability fallback: FLUX.2 [pro] (param_map targets fallback)."
+  },
+  {
+    "model_id": "leonardoai-lucid-origin",
+    "key": "leonardoai-lucid-origin",
+    "name": "Lucid Origin",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/flux-2-pro",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-pro/api",
+    "notes": "Leonardo.Ai models are not on fal (search 'leonardo' -> 0 results). Suggested same-capability fallback: FLUX.2 [pro] (param_map targets fallback)."
+  },
+  {
+    "model_id": "reve-text-to-image",
+    "key": "reve-text-to-image",
+    "name": "Reve Image",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/reve/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough for 16:9,9:16,4:3,3:4,1:1; 21:9->16:9, 9:21->9:16 (fal enum 16:9,9:16,3:2,2:3,4:3,3:4,1:1; default 3:2 so always send it)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/reve/text-to-image/api",
+    "notes": "Docs page https://fal.ai/models/fal-ai/reve/text-to-image/api is live and not deprecated, but the endpoint is not listed in /v1/models catalog and its OpenAPI could not be fetched; schema read from the docs page: prompt, aspect_ratio, num_images, output_format(png|jpeg|webp), sync_mode."
+  },
+  {
+    "model_id": "grok-imagine-text-to-image",
+    "key": "grok-imagine-text-to-image",
+    "name": "Grok Imagine Image",
+    "list": "t2iModels",
+    "fal_endpoint": "xai/grok-imagine-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (all Legacy values 9:16,16:9,2:3,3:2,1:1 are in fal enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-image/api",
+    "notes": "Optional: resolution(1k|2k), num_images(1-4), output_format. Output also has revised_prompt."
+  },
+  {
+    "model_id": "nano-banana-pro",
+    "key": "nano-banana-pro",
+    "name": "Nano Banana Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/nano-banana-pro",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "1k->1K, 2k->2K, 4k->4K (uppercase)",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana-pro/api",
+    "notes": "Optional: num_images(1-4), enable_web_search, output_format, seed, safety_tolerance."
+  },
+  {
+    "model_id": "kling-o1-text-to-image",
+    "key": "kling-o1-text-to-image",
+    "name": "Kling Image O1",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/kling-image/o3/text-to-image",
+    "fallback_endpoint": "fal-ai/kling-image/o1",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "resolution": "1k->1K, 2k->2K",
+      "aspect_ratio": "passthrough (fal enum 16:9,9:16,1:1,4:3,3:4,3:2,2:3,21:9)",
+      "num_images": "int 1-9"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-image/o3/text-to-image/api",
+    "notes": "fal's Kling O1 image endpoint (fal-ai/kling-image/o1) is edit-only: required [prompt, image_urls]. No O1 text-to-image on fal, so t2i is routed to the successor Kling Omni 3 t2i. If a reference image is supplied, fal-ai/kling-image/o1 can be used with image_urls."
+  },
+  {
+    "model_id": "z-image-turbo",
+    "key": "z-image-turbo",
+    "name": "Z Image Turbo",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/z-image/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/turbo/api",
+    "notes": "num_inference_steps default 8 (1-8). Optional: num_images(1-4), seed, enable_prompt_expansion, output_format(jpeg|png|webp)."
+  },
+  {
+    "model_id": "flux-2-dev",
+    "key": "flux-2-dev",
+    "name": "FLUX.2 Dev",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/api",
+    "notes": "'FLUX 2' on fal = FLUX.2 [dev]. Optional: guidance_scale(2.5), num_inference_steps(28), num_images(1-4), acceleration(default regular), enable_prompt_expansion, output_format."
+  },
+  {
+    "model_id": "flux-2-flex",
+    "key": "flux-2-flex",
+    "name": "FLUX.2 Flex",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2-flex",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1MP (1024²), 2k≈4MP (2048²)), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-flex/api",
+    "notes": "No num_images on flex. Optional: guidance_scale(3.5), num_inference_steps(28), safety_tolerance('1'-'5'), seed, output_format."
+  },
+  {
+    "model_id": "flux-2-pro",
+    "key": "flux-2-pro",
+    "name": "FLUX.2 Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2-pro",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1MP (1024²), 2k≈4MP (2048²)), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2-pro/api",
+    "notes": "No num_images/steps on pro. Optional: safety_tolerance('1'-'5'), seed, output_format(jpeg|png)."
+  },
+  {
+    "model_id": "vidu-q2-text-to-image",
+    "key": "vidu-q2-text-to-image",
+    "name": "Vidu Q2 Image",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/vidu/q2/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "fal enum is only 16:9|9:16|1:1: pass those; 4:3,3:2,21:9 -> 16:9; 3:4,2:3 -> 9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "image.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/text-to-image/api",
+    "notes": "Same model. fal schema has NO resolution field (1k/2k/4k dropped) and a reduced aspect set. Output is a single object image.url."
+  },
+  {
+    "model_id": "bytedance-seedream-v4.5",
+    "key": "bytedance-seedream-v4.5",
+    "name": "Seedream 4.5",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/bytedance/seedream/v4.5/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (basic≈2K area 2048², high≈4K area 4096²), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd' (INFERRED mapping of Legacy 'quality'; fal also accepts auto_2K|auto_4K but those ignore aspect)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image/api",
+    "notes": "fal default image_size {2048,2048}. Optional: num_images(1-6), max_images, seed."
+  },
+  {
+    "model_id": "gpt-image-1.5",
+    "key": "gpt-image-1.5",
+    "name": "GPT Image 1.5",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/gpt-image-1.5",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "quality"
+    },
+    "value_transforms": {
+      "image_size": "1:1->'1024x1024', 3:2->'1536x1024', 2:3->'1024x1536'",
+      "quality": "passthrough low|medium|high"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/gpt-image-1.5/api",
+    "notes": "Optional: num_images(1-4), background, output_format."
+  },
+  {
+    "model_id": "gpt-image-2",
+    "key": "gpt-image-2-text-to-image",
+    "name": "GPT Image 2",
+    "list": "t2iModels",
+    "fal_endpoint": "openai/gpt-image-2",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect 'auto' -> 'auto'; else aspect_ratio+resolution -> {width,height}: long edge 1K=1024, 2K=2048, 4K=3840, other edge = long/ar, both rounded to multiples of 16 (edge limits for gpt-image-2 INFERRED; 1:1@1K may use 'square_hd', 16:9@1K 'landscape_16_9', 9:16@1K 'portrait_16_9', 4:3@1K 'landscape_4_3', 3:4@1K 'portrait_4_3')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/openai/gpt-image-2/api",
+    "notes": "fal default image_size landscape_4_3 - always send. Optional: quality(auto|low|medium|high, default high), num_images(1-4), background, output_format."
+  },
+  {
+    "model_id": "wan2.6-text-to-image",
+    "key": "wan2.6-text-to-image",
+    "name": "Wan 2.6",
+    "list": "t2iModels",
+    "fal_endpoint": "wan/v2.6/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/wan/v2.6/text-to-image/api",
+    "notes": "Uses max_images (1-5) instead of num_images. Optional: negative_prompt, seed, image_url (reference). Output images[] items are File objects (.url)."
+  },
+  {
+    "model_id": "qwen-text-to-image-2512",
+    "key": "qwen-text-to-image-2512",
+    "name": "Qwen Image 2512",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2512",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "width": "image_size.width",
+      "height": "image_size.height"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2512/api",
+    "notes": "Optional: negative_prompt, guidance_scale(4), num_inference_steps(28), num_images(1-4), acceleration, output_format(jpeg|png|webp)."
+  },
+  {
+    "model_id": "flux-2-klein-4b",
+    "key": "flux-2-klein-4b",
+    "name": "FLUX.2 Klein 4B",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b",
+    "fallback_endpoint": "fal-ai/flux-2/klein/4b/base",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/api",
+    "notes": "fal-ai/flux-2/klein/4b is the distilled 4-step release (steps 4-8). Undistilled variant with guidance/negative_prompt is fal-ai/flux-2/klein/4b/base."
+  },
+  {
+    "model_id": "flux-2-klein-9b",
+    "key": "flux-2-klein-9b",
+    "name": "FLUX.2 Klein 9B",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b",
+    "fallback_endpoint": "fal-ai/flux-2/klein/9b/base",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/api",
+    "notes": "Distilled 9B (steps 4-8). Undistilled: fal-ai/flux-2/klein/9b/base."
+  },
+  {
+    "model_id": "z-image-base",
+    "key": "z-image-base",
+    "name": "Z Image Base",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/z-image/base",
+    "fallback_endpoint": "fal-ai/z-image/turbo/image-to-image",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "strength"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/base/api",
+    "notes": "Text-to-image path maps exactly. fal has no Z-Image *Base* image-to-image endpoint in its catalog; when Legacy image_url is set, route to fallback fal-ai/z-image/turbo/image-to-image (Turbo variant; its field names were not fetched - verify image_url/strength before use)."
+  },
+  {
+    "model_id": "nano-banana-2",
+    "key": "nano-banana-2",
+    "name": "Nano Banana 2",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/nano-banana-2",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "google_search": "enable_web_search",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "resolution": "1k->1K, 2k->2K, 4k->4K (fal also has 0.5K)",
+      "output_format": "jpg->jpeg, png->png",
+      "aspect_ratio": "passthrough (fal enum incl. auto,1:4,4:1,1:8,8:1)",
+      "enable_web_search": "boolean passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/nano-banana-2/api",
+    "notes": "Optional: num_images(1-4), thinking_level(minimal|high), seed, safety_tolerance."
+  },
+  {
+    "model_id": "seedream-5.0",
+    "key": "seedream-5.0",
+    "name": "Seedream 5.0",
+    "list": "t2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/lite/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (basic≈2K area 2048², high≈3K area 3072² (fal lite offers auto_2K|auto_3K|auto_4K)), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd' - quality mapping INFERRED"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/lite/text-to-image/api",
+    "notes": "Legacy 'Seedream 5.0' (non-Pro) assumed to be ByteDance Seedream 5.0 Lite (fal: bytedance/seedream/v5/lite/text-to-image). fal also has bytedance/seedream/v5/flash/text-to-image (faster/cheaper tier). Optional: num_images(1-6), max_images, return_byteplus_urls."
+  },
+  {
+    "model_id": "bytedance-seedream-v5.0",
+    "key": "seedream-5.0",
+    "name": "Seedream 5.0",
+    "list": "t2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/lite/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "quality": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (basic≈2K area 2048², high≈3K area 3072² (fal lite offers auto_2K|auto_3K|auto_4K)), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd' - quality mapping INFERRED"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/lite/text-to-image/api",
+    "notes": "Legacy 'Seedream 5.0' (non-Pro) assumed to be ByteDance Seedream 5.0 Lite (fal: bytedance/seedream/v5/lite/text-to-image). fal also has bytedance/seedream/v5/flash/text-to-image (faster/cheaper tier). Optional: num_images(1-6), max_images, return_byteplus_urls. Duplicate of seedream-5.0 (same Legacy endpoint)."
+  },
+  {
+    "model_id": "z-image-p",
+    "key": "z-image-p",
+    "name": "Z-Image P",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/z-image/base",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "negative_prompt": "negative_prompt",
+      "width": "image_size.width",
+      "height": "image_size.height",
+      "seed": "seed",
+      "batch_size": "num_images"
+    },
+    "value_transforms": {
+      "image_size": "width+height -> image_size:{width:int,height:int} (custom ImageSize object; each side <= 14142 per schema)",
+      "seed": "seed -1 (Legacy 'random') -> omit field; otherwise pass int",
+      "num_images": "batch_size int 1-4 (clamp)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "flow_shift"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/base/api",
+    "notes": "'Z-Image P' is a Legacy-specific variant (flow_shift/batch_size inputs suggest a custom deployment); fal has no such endpoint. Z-Image Base is the closest fal model that supports negative_prompt+seed (turbo has no negative_prompt)."
+  },
+  {
+    "model_id": "qwen-image-2.0",
+    "key": "qwen-image-2.0",
+    "name": "Qwen Image 2.0",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2/text-to-image",
+    "fallback_endpoint": "alibaba/qwen-image-3/text-to-image",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2/text-to-image/api",
+    "notes": "Exact model on fal but status=deprecated ('This endpoint is deprecated' on docs page). Schema from docs page: prompt, negative_prompt, image_size(default square_hd), enable_prompt_expansion(true), seed, num_images, output_format(jpeg|png|webp)."
+  },
+  {
+    "model_id": "qwen-image-2.0-pro",
+    "key": "qwen-image-2.0-pro",
+    "name": "Qwen Image 2.0 Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2/pro/text-to-image",
+    "fallback_endpoint": "alibaba/qwen-image-3/text-to-image",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2/pro/text-to-image/api",
+    "notes": "status=deprecated in /v1/models. Assumed same schema as fal-ai/qwen-image-2/text-to-image (INFERRED; pro page not fetched)."
+  },
+  {
+    "model_id": "flux-2-klein-4b-turbo",
+    "key": "flux-2-klein-4b-turbo",
+    "name": "Flux 2 Klein 4B Turbo",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {
+      "num_inference_steps": 4
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/api",
+    "notes": "fal exposes no separate 'klein turbo'; the default klein/4b endpoint is already the step-distilled model - pin num_inference_steps=4 (minimum) for the turbo tier."
+  },
+  {
+    "model_id": "flux-2-klein-9b-turbo",
+    "key": "flux-2-klein-9b-turbo",
+    "name": "Flux 2 Klein 9B Turbo",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {
+      "num_inference_steps": 4
+    },
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/api",
+    "notes": "See flux-2-klein-4b-turbo."
+  },
+  {
+    "model_id": "wan2.7-text-to-image",
+    "key": "wan2.7-text-to-image",
+    "name": "Wan 2.7 Image",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "thinking_mode"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/text-to-image/api",
+    "notes": "fal schema has no thinking_mode. Optional: num_images(1-5), negative_prompt, seed, output_format. Output images[] are File objects (.url)."
+  },
+  {
+    "model_id": "wan2.7-text-to-image-pro",
+    "key": "wan2.7-text-to-image-pro",
+    "name": "Wan 2.7 Image Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/pro/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "thinking_mode"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/pro/text-to-image/api",
+    "notes": "Same schema as wan v2.7 t2i."
+  },
+  {
+    "model_id": "midjourney-v7",
+    "key": "midjourney-v7",
+    "name": "Midjourney V7",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/flux/krea",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "seed": "0 -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "stylize",
+      "chaos",
+      "weird",
+      "negative_prompt"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/krea/api",
+    "notes": "Midjourney has no public API and is not on fal (search 'midjourney' -> 0). Suggested aesthetic-focused fallback FLUX.1 Krea [dev]; param_map targets fallback. Legacy MJ returns a 4-image grid; set num_images=4 on fallback to mimic."
+  },
+  {
+    "model_id": "midjourney-v8",
+    "key": "midjourney-v8",
+    "name": "Midjourney V8",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/flux/krea",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "seed": "0 -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "stylize",
+      "chaos",
+      "weird",
+      "negative_prompt"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux/krea/api",
+    "notes": "Midjourney has no public API and is not on fal (search 'midjourney' -> 0). Suggested aesthetic-focused fallback FLUX.1 Krea [dev]; param_map targets fallback. Legacy MJ returns a 4-image grid; set num_images=4 on fallback to mimic."
+  },
+  {
+    "model_id": "midjourney-niji",
+    "key": "midjourney-niji",
+    "name": "Midjourney Niji",
+    "list": "t2iModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/pony-v7",
+    "confidence": "none",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "seed": "0 -> omit"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "stylize",
+      "chaos",
+      "weird",
+      "negative_prompt"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/pony-v7/api",
+    "notes": "Niji (anime MJ) not on fal. Suggested anime-capable fallback fal-ai/pony-v7 (num_images max 2)."
+  },
+  {
+    "model_id": "grok-imagine-text-to-image-quality",
+    "key": "grok-imagine-text-to-image-quality",
+    "name": "Grok Imagine Image Quality",
+    "list": "t2iModels",
+    "fal_endpoint": "xai/grok-imagine-image/quality/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-image/quality/text-to-image/api",
+    "notes": "Same schema as xai/grok-imagine-image."
+  },
+  {
+    "model_id": "flux-2-klein-4b-text-to-image-lora",
+    "key": "flux-2-klein-4b-text-to-image-lora",
+    "name": "Flux 2 Klein 4B LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/4b/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "lora_list": "loras",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "loras": "array passthrough [{path:url, scale:0-4}] (same item shape; max 3 on Legacy)",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/4b/lora/api",
+    "notes": "LoRA weights must be fetchable by fal (public URL or HF path)."
+  },
+  {
+    "model_id": "flux-2-klein-9b-text-to-image-lora",
+    "key": "flux-2-klein-9b-text-to-image-lora",
+    "name": "Flux 2 Klein 9B LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-2/klein/9b/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "lora_list": "loras",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "loras": "array passthrough [{path:url, scale:0-4}] (same item shape; max 3 on Legacy)",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-2/klein/9b/lora/api",
+    "notes": "LoRA weights must be fetchable by fal (public URL or HF path)."
+  },
+  {
+    "model_id": "kling-o3-image",
+    "key": "kling-o3-image",
+    "name": "Kling O3 Image",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/kling-image/o3/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "num_images": "num_images"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough",
+      "resolution": "passthrough 1K|2K|4K",
+      "num_images": "int 1-9"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-image/o3/text-to-image/api",
+    "notes": "Optional: result_type(single|series), series_amount, elements, output_format."
+  },
+  {
+    "model_id": "nano-banana-2-lite",
+    "key": "nano-banana-2-lite",
+    "name": "Nano Banana 2 Lite",
+    "list": "t2iModels",
+    "fal_endpoint": "google/nano-banana-2-lite",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/google/nano-banana-2-lite/api",
+    "notes": "Optional: num_images(1-4), thinking_level, seed, output_format."
+  },
+  {
+    "model_id": "bytedance-seedream-5.0-pro",
+    "key": "seedream-5.0-pro",
+    "name": "Seedream 5.0 Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "bytedance/seedream/v5/pro/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1K≈1024², 2K≈2048²), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'; fal also accepts 'auto_1K'|'auto_2K' (default auto_2K) which ignore aspect"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/bytedance/seedream/v5/pro/text-to-image/api",
+    "notes": "Optional: num_images(1-6), output_format(jpeg|png)."
+  },
+  {
+    "model_id": "qwen3-text-to-image",
+    "key": "qwen3-text-to-image",
+    "name": "Qwen Image 3.0",
+    "list": "t2iModels",
+    "fal_endpoint": "alibaba/qwen-image-3/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "output_format": "output_format",
+      "prompt_extend": "enable_prompt_expansion",
+      "negative_prompt": "negative_prompt"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1024², 2k≈2048² (model max 2048x2048 per fal description)), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'",
+      "output_format": "png->png, jpeg->jpeg",
+      "enable_prompt_expansion": "boolean passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/alibaba/qwen-image-3/text-to-image/api",
+    "notes": "Optional: num_images(1-6), seed. Output images[] are File objects (.url)."
+  },
+  {
+    "model_id": "qwen3-pro-text-to-image",
+    "key": "qwen3-pro-text-to-image",
+    "name": "Qwen Image 3.0 Pro",
+    "list": "t2iModels",
+    "fal_endpoint": "alibaba/qwen-image-3/text-to-image",
+    "fallback_endpoint": "fal-ai/qwen-image-max/text-to-image",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "output_format": "output_format",
+      "prompt_extend": "enable_prompt_expansion",
+      "negative_prompt": "negative_prompt"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1024², 2k≈2048²), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'",
+      "enable_prompt_expansion": "boolean passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/alibaba/qwen-image-3/text-to-image/api",
+    "notes": "fal has no Qwen Image 3 *Pro* endpoint (search 'qwen-image-3' -> only text-to-image and edit). Routed to standard Qwen Image 3; alternative premium Qwen tier on fal is fal-ai/qwen-image-max/text-to-image (schema not fetched)."
+  },
+  {
+    "model_id": "z-image-base-text-to-image-lora",
+    "key": "z-image-base-text-to-image-lora",
+    "name": "Z-Image Base LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/z-image/base/lora",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "loras": "loras",
+      "aspect_ratio": "image_size",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "loras": "array passthrough [{path,scale}]; Civitai ids ('civitai:ID@VER') must be resolved to a download URL server-side (INFERRED: fal path expects URL/HF path)",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "output_format": "passthrough jpeg|png|webp"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "strength"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/base/lora/api",
+    "notes": "t2i with LoRA maps exactly; Legacy's optional i2i (image_url/strength) has no Z-Image Base LoRA i2i endpoint on fal (fal-ai/z-image/turbo/image-to-image/lora exists for the Turbo variant)."
+  },
+  {
+    "model_id": "z-image-turbo-text-to-image-lora",
+    "key": "z-image-turbo-text-to-image-lora",
+    "name": "Z-Image Turbo LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/z-image/turbo/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "loras": "loras",
+      "aspect_ratio": "image_size",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "loras": "array passthrough [{path,scale}]; resolve 'civitai:' ids to URLs (INFERRED)",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "output_format": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/z-image/turbo/lora/api",
+    "notes": "num_inference_steps default 8."
+  },
+  {
+    "model_id": "grok-imagine-image-2",
+    "key": "grok-imagine-image-2",
+    "name": "Grok Imagine Image 2.0",
+    "list": "t2iModels",
+    "fal_endpoint": "xai/grok-imagine-image/v2.0/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-image/v2.0/text-to-image/api",
+    "notes": "Optional: quality(low|medium, default medium), resolution(1k|2k), num_images(1-4)."
+  },
+  {
+    "model_id": "flux-1-dev-style-lora-inference",
+    "key": "flux-1-dev-style-lora-inference",
+    "name": "Flux Dev Style LoRA Inference",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/flux-lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "lora_url": "loras[0].path",
+      "lora_weight": "loras[0].scale",
+      "aspect_ratio": "image_size"
+    },
+    "value_transforms": {
+      "loras": "[{path: lora_url, scale: lora_weight (0-4)}]",
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/flux-lora/api",
+    "notes": "FLUX.1 [dev] + LoRA. LoRAs trained on Legacy live on the legacy API - they must be re-hosted (fal storage) or retrained with fal's FLUX LoRA trainer (e.g. fal-ai/flux-lora-fast-training) once Legacy is removed."
+  },
+  {
+    "model_id": "krea-v2-turbo",
+    "key": "krea-v2-turbo",
+    "name": "Krea 2 Turbo",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/krea-2/turbo",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1MP 1024², 2k≈4MP 2048²), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'",
+      "seed": "seed -1 (Legacy 'random') -> omit field; otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "strength"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/krea-2/turbo/api",
+    "notes": "Krea 2 Turbo t2i maps exactly. fal has no Krea 2 Turbo image-to-image endpoint (search 'krea-2' -> turbo, turbo/lora, turbo/style, v2 medium/large t2i only); Legacy i2i inputs dropped. fal-ai/krea-2/turbo/style accepts a style reference image if needed."
+  },
+  {
+    "model_id": "krea-v2-turbo-lora",
+    "key": "krea-v2-turbo-lora",
+    "name": "Krea 2 Turbo LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/krea-2/turbo/lora",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "loras": "loras",
+      "aspect_ratio": "image_size",
+      "resolution": "image_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "loras": "array passthrough [{path,scale}] (max 3)",
+      "image_size": "aspect_ratio+resolution -> image_size:{width,height}: pick target area by tier (1k≈1MP, 2k≈4MP), w=round16(sqrt(area*ar)), h=round16(w/ar); 1:1 at 1K may use 'square_hd'",
+      "seed": "seed -1 (Legacy 'random') -> omit field; otherwise pass int"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "image_url",
+      "strength"
+    ],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/krea-2/turbo/lora/api",
+    "notes": "See krea-v2-turbo; i2i dropped."
+  },
+  {
+    "model_id": "muse-image-text-to-image",
+    "key": "muse-image-text-to-image",
+    "name": "Muse Image",
+    "list": "t2iModels",
+    "fal_endpoint": "meta/muse-image/text-to-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough (fal field is free string|null)",
+      "output_format": "passthrough webp|png|jpeg"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/meta/muse-image/text-to-image/api",
+    "notes": "Optional: num_images(1-10)."
+  },
+  {
+    "model_id": "qwen-image-text-to-image-lora",
+    "key": "qwen-image-text-to-image-lora",
+    "name": "Qwen Image LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "loras": "loras",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "loras": "array passthrough [{path,scale}]",
+      "output_format": "jpeg->jpeg, png->png, webp->png (fal qwen-image supports jpeg|png only)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image/api",
+    "notes": "fal-ai/qwen-image natively accepts loras (no separate /lora endpoint)."
+  },
+  {
+    "model_id": "qwen-image-text-to-image-2512-lora",
+    "key": "qwen-image-text-to-image-2512-lora",
+    "name": "Qwen Image 2512 LoRA",
+    "list": "t2iModels",
+    "fal_endpoint": "fal-ai/qwen-image-2512/lora",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "aspect_ratio": "image_size",
+      "loras": "loras",
+      "output_format": "output_format"
+    },
+    "value_transforms": {
+      "image_size": "aspect_ratio -> image_size (fal ImageSize enum|{width,height}): 1:1->square_hd, 16:9->landscape_16_9, 9:16->portrait_16_9, 4:3->landscape_4_3, 3:4->portrait_4_3; any other ratio -> {width,height} ~1MP rounded to multiples of 16 (3:2->1216x832, 2:3->832x1216, 21:9->1536x640, 9:21->640x1536, 4:5->896x1120, 5:4->1120x896, 16:21->896x1176, 1:4->512x2048, 4:1->2048x512)",
+      "loras": "array passthrough [{path,scale}]",
+      "output_format": "passthrough jpeg|png|webp"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "images[].url",
+    "doc_url": "https://fal.ai/models/fal-ai/qwen-image-2512/lora/api",
+    "notes": ""
+  }
+]

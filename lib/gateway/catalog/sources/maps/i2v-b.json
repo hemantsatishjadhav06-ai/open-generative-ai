@@ -1,0 +1,2591 @@
+[
+  {
+    "model_id": "veo-4-image-to-video",
+    "key": "veo-4-image-to-video",
+    "name": "Veo 4",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/fast/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "aspect_ratio": "16:9|9:16 passthrough; 1:1 -> 'auto' (fal Veo 3.1 i2v enum auto|16:9|9:16; square is lost)",
+      "duration": "int 5-30 -> fal enum '4s'|'6s'|'8s': 5-6 -> '6s', >=7 -> '8s' (anything beyond 8s is lost)",
+      "prompt": "fal requires prompt; Legacy prompt optional -> send a neutral default (e.g. \"Animate this image naturally\") when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/image-to-video/api",
+    "notes": "No Veo 4 on fal (fal image-to-video catalog listing, 235 endpoints, and api.fal.ai/v1/models?q=veo only show veo2/veo3/veo3.1 families, checked 2026-09-24). Nearest same-family model is Veo 3.1 I2V -> low; long durations and 1:1 are lost. fal extras: resolution 720p|1080p|4k (default 720p), generate_audio (default true), negative_prompt, seed, safety_tolerance. [Legacy def: packages/studio/src/models.js:17963]"
+  },
+  {
+    "model_id": "seedance-2-vip-image-to-video-1080p",
+    "key": "sd-2-vip-image-to-video-1080p",
+    "name": "Seedance 2 VIP Image to Video 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16 covers Legacy set)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:18020]"
+  },
+  {
+    "model_id": "seedance-2-vip-image-to-video-fast-1080p",
+    "key": "sd-2-vip-image-to-video-fast-1080p",
+    "name": "Seedance 2 VIP Image to Video Fast 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16 covers Legacy set)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal's fast tier caps at 720p, so 1080p is only possible on the standard tier -> routed to the standard endpoint (slower, pricier); fallback = fast tier at 720p. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:18082]"
+  },
+  {
+    "model_id": "seedance-2-vip-omni-reference-1080p",
+    "key": "sd-2-vip-omni-reference-1080p",
+    "name": "Seedance 2 VIP Omni Reference 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "video_files": "video_urls",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. Limits match exactly (fal image_urls<=9, video_urls<=3, audio_urls<=3). Prompt refs: @Image1/@Video1/@Audio1 style (same as Legacy). Uploaded files must be public URLs (fal storage or our bucket). fal defaults aspect_ratio/duration 'auto' - always send. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:18144]"
+  },
+  {
+    "model_id": "seedance-2-vip-omni-reference-fast-1080p",
+    "key": "sd-2-vip-omni-reference-fast-1080p",
+    "name": "Seedance 2 VIP Omni Reference Fast 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "video_files": "video_urls",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal's fast reference tier caps at 720p -> 1080p routed to the standard reference endpoint; fallback = fast tier at 720p. Limits match exactly (fal image_urls<=9, video_urls<=3, audio_urls<=3). Prompt refs: @Image1/@Video1/@Audio1 style (same as Legacy). Uploaded files must be public URLs (fal storage or our bucket). fal defaults aspect_ratio/duration 'auto' - always send. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:18230]"
+  },
+  {
+    "model_id": "seedance-2-vip-first-last-frame-1080p",
+    "key": "sd-2-vip-first-last-frame-1080p",
+    "name": "Seedance 2 VIP First Last Frame 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url",
+      "aspect_ratio": "'adaptive' -> 'auto'; others passthrough",
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. First/last-frame is not a separate fal endpoint: Seedance 2.0 image-to-video takes end_image_url. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:18316]"
+  },
+  {
+    "model_id": "kling-v3.0-4k-image-to-video",
+    "key": "kling-v3.0-4k-image-to-video",
+    "name": "Kling v3.0 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/4k/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v3/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/4k/image-to-video/api",
+    "notes": "Exact model+tier (Kling V3 4K I2V). Legacy fixedParameters resolution='4K' is implicit in the fal endpoint. Aspect ratio inherited from the start image (Legacy aspectRatioMode=inherited; fal has no aspect_ratio). fal extras: negative_prompt, cfg_scale, shot_type, multi_prompt, elements. [Legacy def: packages/studio/src/models.js:18379]"
+  },
+  {
+    "model_id": "vidu-q3-pro-image-to-video",
+    "key": "vidu-q3-pro-image-to-video",
+    "name": "Vidu Q3 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "audio": "audio"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 1-16",
+      "audio": "passthrough; fal default true vs Legacy false -> always send",
+      "resolution": "passthrough 360p|540p|720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/image-to-video/api",
+    "notes": "Exact model (fal describes fal-ai/vidu/q3/image-to-video as \"Vidu's latest Q3 pro models\"). fal Q3 I2V has no aspect_ratio (output follows the input image) -> aspect_ratio dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:18435]"
+  },
+  {
+    "model_id": "vidu-q3-pro-first-last-frames",
+    "key": "vidu-q3-pro-first-last-frames",
+    "name": "Vidu Q3 Pro First Last Frames",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "audio": "audio",
+      "last_image": "end_image_url"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 1-16",
+      "audio": "passthrough; fal default true vs Legacy false -> always send",
+      "resolution": "passthrough; fal: 360p not available with end_image_url -> 360p -> 540p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/image-to-video/api",
+    "notes": "Exact model (fal describes fal-ai/vidu/q3/image-to-video as \"Vidu's latest Q3 pro models\"). First/last frames = same fal endpoint with end_image_url (no separate FLF endpoint for Q3). fal Q3 I2V has no aspect_ratio (output follows the input image) -> aspect_ratio dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:18511]"
+  },
+  {
+    "model_id": "vidu-q3-turbo-image-to-video",
+    "key": "vidu-q3-turbo-image-to-video",
+    "name": "Vidu Q3 Turbo",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/image-to-video/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "audio": "audio"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 1-16",
+      "audio": "passthrough; fal default true vs Legacy false -> always send",
+      "resolution": "passthrough 360p|540p|720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/image-to-video/turbo/api",
+    "notes": "Exact model (fal: \"Vidu's Q3 Turbo Model\"). fal Q3 I2V has no aspect_ratio (output follows the input image) -> aspect_ratio dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:18597]"
+  },
+  {
+    "model_id": "vidu-q3-turbo-first-last-frames",
+    "key": "vidu-q3-turbo-first-last-frames",
+    "name": "Vidu Q3 Turbo First Last Frames",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q3/image-to-video/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "audio": "audio",
+      "last_image": "end_image_url"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 1-16",
+      "audio": "passthrough; fal default true vs Legacy false -> always send",
+      "resolution": "passthrough; fal: 360p not available with end_image_url -> 360p -> 540p"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q3/image-to-video/turbo/api",
+    "notes": "Exact model (fal: \"Vidu's Q3 Turbo Model\"). First/last frames = same fal endpoint with end_image_url (no separate FLF endpoint for Q3). fal Q3 I2V has no aspect_ratio (output follows the input image) -> aspect_ratio dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:18673]"
+  },
+  {
+    "model_id": "vidu-q2-pro-image-to-video",
+    "key": "vidu-q2-pro-image-to-video",
+    "name": "Vidu Q2 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/image-to-video/pro",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 2-8 (fal default 4 vs Legacy 5 -> always send); Legacy rule bgm=true -> duration 4 is enforced client-side, keep it",
+      "resolution": "passthrough 720p|1080p",
+      "movement_amplitude": "passthrough auto|small|medium|large"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/image-to-video/pro/api",
+    "notes": "Exact model (Vidu Q2 Pro I2V). fal has no aspect_ratio for Q2 I2V (follows image) -> dropped. fal extras: end_image_url, seed. [Legacy def: packages/studio/src/models.js:18760]"
+  },
+  {
+    "model_id": "vidu-q2-turbo-image-to-video",
+    "key": "vidu-q2-turbo-image-to-video",
+    "name": "Vidu Q2 Turbo",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/image-to-video/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 2-8 (fal default 4 vs Legacy 5 -> always send); Legacy rule bgm=true -> duration 4 is enforced client-side, keep it",
+      "resolution": "passthrough 720p|1080p",
+      "movement_amplitude": "passthrough auto|small|medium|large"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/image-to-video/turbo/api",
+    "notes": "Exact model (Vidu Q2 Turbo I2V). fal has no aspect_ratio for Q2 I2V (follows image) -> dropped. fal extras: end_image_url, seed. [Legacy def: packages/studio/src/models.js:18840]"
+  },
+  {
+    "model_id": "happy-horse-1-reference-to-video-1080p",
+    "key": "happy-horse-1-reference-to-video-1080p",
+    "name": "HappyHorse 1.0 Reference 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 3-15",
+      "aspect_ratio": "passthrough (same enum)",
+      "seed": "passthrough (omit if empty)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/reference-to-video/api",
+    "notes": "Exact model (HappyHorse 1.0 reference-to-video; fal POST alias /fal-ai/happy-horse/reference-to-video). fal prompt refers to subjects as character1..character9 (order of image_urls). Output video is VideoFile (also width/height/fps). [Legacy def: packages/studio/src/models.js:18920]"
+  },
+  {
+    "model_id": "happy-horse-1-reference-to-video-720p",
+    "key": "happy-horse-1-reference-to-video-720p",
+    "name": "HappyHorse 1.0 Reference 720P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 3-15",
+      "aspect_ratio": "passthrough (same enum)",
+      "seed": "passthrough (omit if empty)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/reference-to-video/api",
+    "notes": "Exact model (HappyHorse 1.0 reference-to-video; fal POST alias /fal-ai/happy-horse/reference-to-video). fal prompt refers to subjects as character1..character9 (order of image_urls). Output video is VideoFile (also width/height/fps). [Legacy def: packages/studio/src/models.js:18984]"
+  },
+  {
+    "model_id": "gemini-omni-image-to-video",
+    "key": "gemini-omni-image-to-video",
+    "name": "Gemini Omni",
+    "list": "i2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/reference-to-video",
+    "fallback_endpoint": "google/gemini-omni-flash/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "image_urls": "image_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "duration": "passthrough int (Legacy 4|6|8|10 within fal 3-10)",
+      "aspect_ratio": "passthrough 16:9|9:16"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution",
+      "audio_ids",
+      "seed",
+      "character_ids"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/reference-to-video/api",
+    "notes": "Same model (Gemini Omni Flash). Legacy serves both the animate_image and references workflows from this one route (videoWorkflows.js:57-58); fal splits it: image-to-video (single image_url) and reference-to-video (image_urls 1-10). fal v1.0 has no resolution/seed -> dropped (use google/gemini-omni-flash/v1.1/reference-to-video if 1080p/4k control matters). audio_ids/character_ids are IDs minted by Legacy's own Gemini Omni Audio/Character endpoints - not portable, no fal counterpart -> dropped. [Legacy def: packages/studio/src/models.js:19048]",
+    "routing": [
+      {
+        "when": "workflow animate_image or exactly 1 image",
+        "fal_endpoint": "google/gemini-omni-flash/image-to-video",
+        "param_map_overrides": {
+          "image_urls": "image_url (image_urls[0])"
+        }
+      },
+      {
+        "when": "workflow references or 2-7 images",
+        "fal_endpoint": "google/gemini-omni-flash/reference-to-video"
+      }
+    ]
+  },
+  {
+    "model_id": "grok-imagine-video-1-5-preview",
+    "key": "grok-imagine-video-1-5-preview",
+    "name": "Grok Imagine Video 1.5 Preview",
+    "list": "i2vModels",
+    "fal_endpoint": "xai/grok-imagine-video/v1.5/image-to-video",
+    "fallback_endpoint": "xai/grok-imagine-video/v1.5/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] (1 image)",
+      "duration": "passthrough int 1-15 (fal i2v default 6 vs Legacy 8 -> always send)",
+      "resolution": "passthrough 480p|720p (fal i2v also 1080p)",
+      "aspect_ratio": "i2v: not sent (fal i2v has no aspect_ratio; follows image = Legacy 'auto'). reference route: 'auto' -> nearest of fal enum 16:9|4:3|3:2|1:1|2:3|3:4|9:16 computed from images_list[0] dims (or omit -> fal default 16:9)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-video/v1.5/image-to-video/api",
+    "notes": "Same model (Grok Imagine Video 1.5; Legacy still labels it 'Preview'). Legacy registers it for both animate_image and references workflows (xaiModels.js:14); fal splits: v1.5/image-to-video (POST alias /fal-ai/xai/v1.5/image-to-video) and v1.5/reference-to-video (reference_image_urls 1-7; POST alias /fal-ai/xai/v1.5/reference-to-video). Output video is VideoFile. [Legacy def: packages/studio/src/models.js:19149]",
+    "routing": [
+      {
+        "when": "exactly 1 image (animate_image workflow)",
+        "fal_endpoint": "xai/grok-imagine-video/v1.5/image-to-video",
+        "param_map_overrides": {
+          "images_list": "image_url (images_list[0])",
+          "aspect_ratio": "(drop)"
+        }
+      },
+      {
+        "when": "2-7 images (references workflow)",
+        "fal_endpoint": "xai/grok-imagine-video/v1.5/reference-to-video",
+        "param_map_overrides": {
+          "images_list": "reference_image_urls"
+        }
+      }
+    ]
+  },
+  {
+    "model_id": "kling-v3-turbo-standard-image-to-video",
+    "key": "kling-v3-turbo-standard-image-to-video",
+    "name": "Kling v3 Turbo Standard",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/turbo/standard/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v3/standard/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/turbo/standard/image-to-video/api",
+    "notes": "Exact model+tier (Kling V3 Turbo Standard I2V). Legacy fixedParameters resolution (720p) is implicit in the fal tier. fal turbo has no end_image_url/generate_audio; supports multi_prompt. [Legacy def: packages/studio/src/models.js:19199]"
+  },
+  {
+    "model_id": "kling-v3-turbo-pro-image-to-video",
+    "key": "kling-v3-turbo-pro-image-to-video",
+    "name": "Kling v3 Turbo Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/turbo/pro/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v3/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int 3-15 -> string \"3\"..\"15\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/turbo/pro/image-to-video/api",
+    "notes": "Exact model+tier (Kling V3 Turbo Pro I2V). Legacy fixedParameters resolution (1080p) is implicit in the fal tier. fal turbo has no end_image_url/generate_audio; supports multi_prompt. [Legacy def: packages/studio/src/models.js:19243]"
+  },
+  {
+    "model_id": "seedance-2.5-image-to-video",
+    "key": "seedance-2.5-image-to-video",
+    "name": "Seedance 2.5",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:19288]"
+  },
+  {
+    "model_id": "seedance-2-mini-image-to-video",
+    "key": "seedance-2-mini-image-to-video",
+    "name": "Seedance 2 Mini",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/mini/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] when 1 image; 2-9 images -> route to mini/reference-to-video as image_urls",
+      "duration": "int 4-15 -> string",
+      "resolution": "passthrough 480p|720p",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "high_bitrate"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/mini/image-to-video/api",
+    "notes": "Exact model (Seedance 2.0 Mini). Legacy semantics (models.js field doc): 1 image = start frame, 2-9 images = reference images -> split across two fal endpoints. fal Mini has no bitrate_mode -> high_bitrate dropped. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:19349]",
+    "routing": [
+      {
+        "when": "1 image (start frame)",
+        "fal_endpoint": "bytedance/seedance-2.0/mini/image-to-video",
+        "param_map_overrides": {
+          "images_list": "image_url (images_list[0])"
+        }
+      },
+      {
+        "when": "2-9 images (reference images, @image1..)",
+        "fal_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+        "param_map_overrides": {
+          "images_list": "image_urls"
+        }
+      }
+    ]
+  },
+  {
+    "model_id": "happy-horse-1.1-image-to-video-1080p",
+    "key": "happy-horse-1.1-image-to-video-1080p",
+    "name": "Happy Horse 1.1 Image to Video 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "duration": "passthrough int 3-15"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/image-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1 I2V; fal POST alias /fal-ai/happy-horse-1.5/image-to-video). fal I2V has no aspect_ratio (output follows the image) -> dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:19434]"
+  },
+  {
+    "model_id": "happy-horse-1.1-image-to-video-720p",
+    "key": "happy-horse-1.1-image-to-video-720p",
+    "name": "Happy Horse 1.1 Image to Video 720P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "duration": "passthrough int 3-15"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/image-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1 I2V; fal POST alias /fal-ai/happy-horse-1.5/image-to-video). fal I2V has no aspect_ratio (output follows the image) -> dropped. fal extra: seed. [Legacy def: packages/studio/src/models.js:19494]"
+  },
+  {
+    "model_id": "happy-horse-1.1-reference-to-video-1080p",
+    "key": "happy-horse-1.1-reference-to-video-1080p",
+    "name": "HappyHorse 1.1 Reference 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 3-15",
+      "aspect_ratio": "passthrough (fal also accepts 21:9, 9:21, 5:4, 4:5)",
+      "seed": "passthrough (omit if empty)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/reference-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1 reference-to-video; fal POST alias /fal-ai/happy-horse-1.5/reference-to-video). [Legacy def: packages/studio/src/models.js:19554]"
+  },
+  {
+    "model_id": "happy-horse-1.1-reference-to-video-720p",
+    "key": "happy-horse-1.1-reference-to-video-720p",
+    "name": "HappyHorse 1.1 Reference 720P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/v1.1/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 3-15",
+      "aspect_ratio": "passthrough (fal also accepts 21:9, 9:21, 5:4, 4:5)",
+      "seed": "passthrough (omit if empty)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/v1.1/reference-to-video/api",
+    "notes": "Exact model (HappyHorse 1.1 reference-to-video; fal POST alias /fal-ai/happy-horse-1.5/reference-to-video). [Legacy def: packages/studio/src/models.js:19618]"
+  },
+  {
+    "model_id": "seedance-2-vip-image-to-video-4k",
+    "key": "sd-2-vip-image-to-video-4k",
+    "name": "Seedance 2 VIP Image to Video 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0]",
+      "duration": "int 4-15 -> string \"4\"..\"15\"",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16 covers Legacy set)"
+    },
+    "fixed_params": {
+      "resolution": "4k"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal standard tier natively supports resolution '4k'. fal defaults aspect_ratio='auto' and duration='auto' - always send both explicitly. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:19682]"
+  },
+  {
+    "model_id": "seedance-2-vip-first-last-frame-4k",
+    "key": "sd-2-vip-first-last-frame-4k",
+    "name": "Seedance 2 VIP First Last Frame 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url",
+      "aspect_ratio": "'adaptive' -> 'auto'; others passthrough",
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "4k"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. First/last-frame is not a separate fal endpoint: Seedance 2.0 image-to-video takes end_image_url. fal standard tier supports '4k' natively. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:19744]"
+  },
+  {
+    "model_id": "seedance-2-vip-omni-reference-4k",
+    "key": "sd-2-vip-omni-reference-4k",
+    "name": "Seedance 2 VIP Omni Reference 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "video_files": "video_urls",
+      "audio_files": "audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {
+      "resolution": "4k"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Legacy 'VIP' is a Legacy priority/routing tier, not a different model; fal has one queue per endpoint, so the tier is dropped. fal standard reference tier natively supports resolution '4k'. Limits match exactly (fal image_urls<=9, video_urls<=3, audio_urls<=3). Prompt refs: @Image1/@Video1/@Audio1 style (same as Legacy). Uploaded files must be public URLs (fal storage or our bucket). fal defaults aspect_ratio/duration 'auto' - always send. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:19807]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-image-to-video",
+    "key": "seedance-2.5-spicy-image-to-video",
+    "name": "Seedance 2.5 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url",
+      "resolution": "resolution",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "resolution": "passthrough 480p|720p|1080p; '4K' -> '1080p' + optional fal-ai/seedvr/upscale/video post-pass"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:19893]"
+  },
+  {
+    "model_id": "seedance-2.5-image-to-video-480p",
+    "key": "seedance-2.5-image-to-video-480p",
+    "name": "Seedance 2.5 Image to Video 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:19947]"
+  },
+  {
+    "model_id": "seedance-2.5-first-last-frame",
+    "key": "seedance-2.5-first-last-frame",
+    "name": "Seedance 2.5 First & Last Frame",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:20008]"
+  },
+  {
+    "model_id": "seedance-2.5-first-last-frame-480p",
+    "key": "seedance-2.5-first-last-frame-480p",
+    "name": "Seedance 2.5 First Last Frame 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:20074]"
+  },
+  {
+    "model_id": "seedance-2.5-omni-reference",
+    "key": "seedance-2.5-omni-reference",
+    "name": "Seedance 2.5 Omni Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:20140]"
+  },
+  {
+    "model_id": "seedance-2.5-omni-reference-480p",
+    "key": "seedance-2.5-omni-reference-480p",
+    "name": "Seedance 2.5 Omni Reference 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:20241]"
+  },
+  {
+    "model_id": "seedance-2-spicy-image-to-video",
+    "key": "seedance-2-spicy-image-to-video",
+    "name": "Seedance 2 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url",
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy route exposes no resolution -> fal default 720p. fal defaults aspect_ratio/duration 'auto' - always send. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:20342]"
+  },
+  {
+    "model_id": "seedance-2-spicy-image-to-video-fast",
+    "key": "seedance-2-spicy-image-to-video-fast",
+    "name": "Seedance 2 Spicy Image to Video Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url",
+      "duration": "int 4-15 -> string",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy route exposes no resolution -> fal default 720p. fal defaults aspect_ratio/duration 'auto' - always send. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:20410]"
+  },
+  {
+    "model_id": "seedance-2-mini-spicy-image-to-video",
+    "key": "seedance-2-mini-spicy-image-to-video",
+    "name": "Seedance 2 Mini Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/mini/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] when 1 image; 2-9 images -> route to mini/reference-to-video as image_urls",
+      "duration": "int 4-15 -> string",
+      "resolution": "passthrough 480p|720p",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "high_bitrate"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/mini/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy semantics (models.js field doc): 1 image = start frame, 2-9 images = reference images -> split across two fal endpoints. fal Mini has no bitrate_mode -> high_bitrate dropped. fal OpenAPI POST path alias: bytedance/seedance-2.0/* is served as /fal-ai/seedance-2/*; submit to https://queue.fal.run/<endpoint_id> as usual. [Legacy def: packages/studio/src/models.js:20478]",
+    "routing": [
+      {
+        "when": "1 image (start frame)",
+        "fal_endpoint": "bytedance/seedance-2.0/mini/image-to-video",
+        "param_map_overrides": {
+          "images_list": "image_url (images_list[0])"
+        }
+      },
+      {
+        "when": "2-9 images (reference images, @image1..)",
+        "fal_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+        "param_map_overrides": {
+          "images_list": "image_urls"
+        }
+      }
+    ]
+  },
+  {
+    "model_id": "minimax-h3-image-to-video",
+    "key": "minimax-h3-image-to-video",
+    "name": "MiniMax H3 Image to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "last_image_url": "end_image_url",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "resolution": "'2k' -> '2K' (fal enum 480P|768P|2K|4K, uppercase)",
+      "duration": "passthrough int 5-15"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/image-to-video/api",
+    "notes": "Exact model (MiniMax H3 I2V at 2K; fal: '2K and 4K upscale a 768P base result'). Aspect follows the image. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:20563]"
+  },
+  {
+    "model_id": "minimax-h3-reference-to-video",
+    "key": "minimax-h3-reference-to-video",
+    "name": "MiniMax H3 Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "reference_images": "reference_image_urls",
+      "reference_videos": "reference_video_urls",
+      "reference_audios": "reference_audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "resolution": "'2k' -> '2K'",
+      "aspect_ratio": "passthrough (fal enum adaptive|21:9|16:9|4:3|1:1|3:4|9:16)",
+      "duration": "passthrough int 5-15"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/reference-to-video/api",
+    "notes": "Exact model+mode. fal limits: images<=9, videos<=3, audios<=3, <=12 files total; prompt refers to 'Image 1', 'Video 1', 'Audio 1'. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:20610]"
+  },
+  {
+    "model_id": "minimax-h3-open-image-to-video",
+    "key": "minimax-h3-open-image-to-video",
+    "name": "MiniMax H3 Open Image to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P'",
+      "duration": "passthrough int 5-15",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/image-to-video/api",
+    "notes": "Legacy 'H3 Open' = base/open routing of H3 at native 480p/768p with seed. fal exposes one H3 I2V endpoint with the same 480P/768P native modes and seed; the 'open/base' distinction is not reproducible -> medium. fal default resolution is 2K -> always send. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:20674]"
+  },
+  {
+    "model_id": "minimax-h3-open-reference-to-video",
+    "key": "minimax-h3-open-reference-to-video",
+    "name": "MiniMax H3 Base Ref2VA",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "audios_list": "reference_audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P'",
+      "aspect_ratio": "'9:21' -> '9:16' (fal has no 9:21); others passthrough",
+      "duration": "passthrough int 5-15",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/reference-to-video/api",
+    "notes": "Legacy labels this 'MiniMax H3 Base Ref2VA'; same fal H3 reference endpoint at native 480P/768P -> medium. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:20722]"
+  },
+  {
+    "model_id": "flux-3-image-to-video",
+    "key": "flux-3-image-to-video",
+    "name": "FLUX 3",
+    "list": "i2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/image-to-video",
+    "fallback_endpoint": "blackforestlabs/flux-3/image-to-video/draft",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 5-20 (fal enum ints 5..20 or \"auto\")",
+      "aspect_ratio": "passthrough (fal default 'auto' vs Legacy 16:9 -> always send)",
+      "resolution": "passthrough 720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/image-to-video/api",
+    "notes": "Exact model (FLUX 3 I2V; fal POST alias /fal-ai/flux-3/image-to-video). fal extra: safety_tolerance 0-4 (default 2). Output also returns seed. [Legacy def: packages/studio/src/models.js:20788]"
+  },
+  {
+    "model_id": "wan3.0-image-to-video",
+    "key": "wan3.0-image-to-video",
+    "name": "Wan 3.0",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p vs Legacy 720p -> always send)",
+      "aspect_ratio": "passthrough (same enum incl. adaptive)",
+      "duration": "passthrough int 2-30 (null = smart duration on fal)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/image-to-video/api",
+    "notes": "Exact model (Wan 3.0 I2V; fal POST alias /fal-ai/wan-3/image-to-video). fal extra: enable_prompt_expansion (default true). Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:20863]"
+  },
+  {
+    "model_id": "wan3.0-spicy-image-to-video",
+    "key": "wan3.0-spicy-image-to-video",
+    "name": "Wan 3.0 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p vs Legacy 720p -> always send)",
+      "aspect_ratio": "passthrough (same enum incl. adaptive)",
+      "duration": "passthrough int 2-30 (null = smart duration on fal)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal extra: enable_prompt_expansion (default true). Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:20959]"
+  },
+  {
+    "model_id": "seedance-2.5-image-to-video-1080p",
+    "key": "seedance-2.5-image-to-video-1080p",
+    "name": "Seedance 2.5 Image to Video 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21055]"
+  },
+  {
+    "model_id": "seedance-2.5-image-to-video-4k",
+    "key": "seedance-2.5-image-to-video-4k",
+    "name": "Seedance 2.5 Image to Video 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21116]"
+  },
+  {
+    "model_id": "seedance-2.5-first-last-frame-1080p",
+    "key": "seedance-2.5-first-last-frame-1080p",
+    "name": "Seedance 2.5 First Last Frame 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21177]"
+  },
+  {
+    "model_id": "seedance-2.5-first-last-frame-4k",
+    "key": "seedance-2.5-first-last-frame-4k",
+    "name": "Seedance 2.5 First Last Frame 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21243]"
+  },
+  {
+    "model_id": "seedance-2.5-omni-reference-1080p",
+    "key": "seedance-2.5-omni-reference-1080p",
+    "name": "Seedance 2.5 Omni Reference 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21309]"
+  },
+  {
+    "model_id": "seedance-2.5-omni-reference-4k",
+    "key": "seedance-2.5-omni-reference-4k",
+    "name": "Seedance 2.5 Omni Reference 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21410]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-image-to-video",
+    "key": "seedance-2.5-intl-image-to-video",
+    "name": "Seedance 2.5 Intl",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21511]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-image-to-video-480p",
+    "key": "seedance-2.5-intl-image-to-video-480p",
+    "name": "Seedance 2.5 Intl Image to Video 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21572]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-image-to-video-480p",
+    "key": "seedance-2.5-spicy-image-to-video-480p",
+    "name": "Seedance 2.5 Spicy Image to Video 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21633]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-image-to-video-1080p",
+    "key": "seedance-2.5-intl-image-to-video-1080p",
+    "name": "Seedance 2.5 Intl Image to Video 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21694]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-image-to-video-1080p",
+    "key": "seedance-2.5-spicy-image-to-video-1080p",
+    "name": "Seedance 2.5 Spicy Image to Video 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21755]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-image-to-video-4k",
+    "key": "seedance-2.5-intl-image-to-video-4k",
+    "name": "Seedance 2.5 Intl Image to Video 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21816]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-image-to-video-4k",
+    "key": "seedance-2.5-spicy-image-to-video-4k",
+    "name": "Seedance 2.5 Spicy Image to Video 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "image_url": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Exact model (Seedance 2.5 I2V). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21877]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-first-last-frame",
+    "key": "seedance-2.5-intl-first-last-frame",
+    "name": "Seedance 2.5 Intl First Last Frame",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:21938]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-first-last-frame",
+    "key": "seedance-2.5-spicy-first-last-frame",
+    "name": "Seedance 2.5 Spicy First Last Frame",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22004]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-first-last-frame-480p",
+    "key": "seedance-2.5-intl-first-last-frame-480p",
+    "name": "Seedance 2.5 Intl First Last Frame 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22070]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-first-last-frame-480p",
+    "key": "seedance-2.5-spicy-first-last-frame-480p",
+    "name": "Seedance 2.5 Spicy First Last Frame 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22136]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-first-last-frame-1080p",
+    "key": "seedance-2.5-intl-first-last-frame-1080p",
+    "name": "Seedance 2.5 Intl First Last Frame 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22202]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-first-last-frame-1080p",
+    "key": "seedance-2.5-spicy-first-last-frame-1080p",
+    "name": "Seedance 2.5 Spicy First Last Frame 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22268]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-first-last-frame-4k",
+    "key": "seedance-2.5-intl-first-last-frame-4k",
+    "name": "Seedance 2.5 Intl First Last Frame 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22334]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-first-last-frame-4k",
+    "key": "seedance-2.5-spicy-first-last-frame-4k",
+    "name": "Seedance 2.5 Spicy First Last Frame 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode",
+      "images_list": "image_url"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\") (fal \"4\"..\"30\" or \"auto\")",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\"",
+      "image_url": "images_list[0] -> image_url; images_list[1] (if present) -> end_image_url"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "seed",
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/image-to-video/api",
+    "notes": "Seedance 2.5 first/last frame = same fal image-to-video endpoint with end_image_url (no separate FLF endpoint). fal Seedance 2.5 I2V has NO seed input and aspect_ratio is 'Always \"auto\" for image-to-video' (fal schema) -> both dropped; output follows the first frame.  Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22400]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-omni-reference",
+    "key": "seedance-2.5-intl-omni-reference",
+    "name": "Seedance 2.5 Intl Omni Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22466]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-omni-reference",
+    "key": "seedance-2.5-spicy-omni-reference",
+    "name": "Seedance 2.5 Spicy Omni Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Legacy route exposes no resolution -> fal default 720p (inferred). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22567]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-omni-reference-480p",
+    "key": "seedance-2.5-intl-omni-reference-480p",
+    "name": "Seedance 2.5 Intl Omni Reference 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22668]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-omni-reference-480p",
+    "key": "seedance-2.5-spicy-omni-reference-480p",
+    "name": "Seedance 2.5 Spicy Omni Reference 480p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22769]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-omni-reference-1080p",
+    "key": "seedance-2.5-intl-omni-reference-1080p",
+    "name": "Seedance 2.5 Intl Omni Reference 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22870]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-omni-reference-1080p",
+    "key": "seedance-2.5-spicy-omni-reference-1080p",
+    "name": "Seedance 2.5 Spicy Omni Reference 1080p",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:22971]"
+  },
+  {
+    "model_id": "seedance-2.5-intl-omni-reference-4k",
+    "key": "seedance-2.5-intl-omni-reference-4k",
+    "name": "Seedance 2.5 Intl Omni Reference 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'Intl' is a Legacy hosting/routing tier of the same model; fal hosts it as one global endpoint (plus a US-hosted '/us/' variant limited to 480p/720p). fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:23072]"
+  },
+  {
+    "model_id": "seedance-2.5-spicy-omni-reference-4k",
+    "key": "seedance-2.5-spicy-omni-reference-4k",
+    "name": "Seedance 2.5 Spicy Omni Reference 4K",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fallback_endpoint": "fal-ai/seedvr/upscale/video",
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "image_urls",
+      "videos_list": "video_urls",
+      "audios_list": "audio_urls",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "seed": "seed",
+      "omni_reference_task_type": "task",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "duration": "int -> string (e.g. 5 -> \"5\"); Legacy -1 (edit) -> 'auto'",
+      "aspect_ratio": "'adaptive' -> 'auto'; '9:21' -> '9:16' (fal enum auto|21:9|16:9|4:3|1:1|3:4|9:16, no 9:21); others passthrough",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "task": "auto -> omit (fal default 'reference'); reference -> 'reference'; edit -> 'editing'; extend -> 'extension'",
+      "bitrate_mode": "high_bitrate true -> \"high\", false -> \"standard\""
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.5/reference-to-video/api",
+    "notes": "Exact model+mode (Seedance 2.5 reference-to-video). Limits match (fal image_urls<=30, video_urls<=10, audio_urls<=10, <=50 files total; audio needs at least one image or video). Prompt refs @Image1/@Video1/@Audio1. Legacy 'auto' task-type hint has no fal value: fal needs task set explicitly for edit/extend (fal coerces aspect/duration to auto for those). Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Seedance 2.5 tops out at 1080p: generate at 1080p and, if true 4K is required, post-process with fal-ai/seedvr/upscale/video (upscale_mode='target', target_resolution='2160p') -> low. fal POST path alias /fal-ai/seedance-2.5/*. generate_audio defaults true, codec auto. US-hosted variants bytedance/seedance-2.5/us/{image,reference}-to-video exist (480p|720p only). [Legacy def: packages/studio/src/models.js:23173]"
+  },
+  {
+    "model_id": "wan2.7-image-to-video-spicy",
+    "key": "wan2.7-image-to-video-spicy",
+    "name": "Wan 2.7 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "negative_prompt": "negative_prompt",
+      "audio_url": "audio_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "enable_prompt_expansion": "enable_prompt_expansion",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 5|10|15 (fal 2-15)",
+      "resolution": "passthrough 720p|1080p (fal default 1080p -> always send)",
+      "enable_prompt_expansion": "passthrough (fal default true vs Legacy false -> always send)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "shot_type"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal Wan 2.7 I2V (POST alias /fal-ai/wan-27-i2v) has no multi-shot switch -> shot_type dropped. fal extras: end_image_url, video_url (continuation). Output VideoFile + actual_prompt. [Legacy def: packages/studio/src/models.js:23274]"
+  },
+  {
+    "model_id": "wan2.6-image-to-video-spicy",
+    "key": "wan2.6-image-to-video-spicy",
+    "name": "Wan 2.6 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "wan/v2.6/image-to-video",
+    "fallback_endpoint": "wan/v2.6/image-to-video/flash",
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "negative_prompt": "negative_prompt",
+      "audio_url": "audio_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "shot_type": "multi_shots",
+      "enable_prompt_expansion": "enable_prompt_expansion",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "duration": "int 5|10|15 -> string \"5\"|\"10\"|\"15\"",
+      "multi_shots": "shot_type 'multi' -> true, 'single' -> false",
+      "resolution": "passthrough 720p|1080p (always send)",
+      "enable_prompt_expansion": "passthrough (always send)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "prompt": "fal requires prompt; Legacy optional -> send neutral default when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/wan/v2.6/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal POST alias /fal-ai/wan-26-i2v. [Legacy def: packages/studio/src/models.js:23368]"
+  },
+  {
+    "model_id": "minimax-h3-image-to-video-lora",
+    "key": "minimax-h3-image-to-video-lora",
+    "name": "MiniMax H3 Image to Video LoRA",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/image-to-video/lora",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed",
+      "loras": "loras"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P' (fal default 2K -> always send)",
+      "duration": "int 3-15 -> clamp to fal min 5 (3|4 -> 5)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "loras": "array of {path, scale} -> fal LoRAInput {path, scale, weight_name?}; Legacy allows a bare Civitai model ID in path -> gateway must turn it into a downloadable URL (e.g. https://civitai.com/api/download/models/<id>, inferred) since fal accepts only URL or HF repo id"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/image-to-video/lora/api",
+    "notes": "Same model+mode (H3 I2V with LoRA). fal requires 1-3 loras. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:23462]"
+  },
+  {
+    "model_id": "minimax-h3-reference-to-video-lora",
+    "key": "minimax-h3-reference-to-video-lora",
+    "name": "MiniMax H3 Reference to Video LoRA",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/reference-to-video/lora",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "audios_list": "reference_audio_urls",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed",
+      "loras": "loras"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P' (fal default 2K -> always send)",
+      "aspect_ratio": "'9:21' -> '9:16'; others passthrough",
+      "duration": "int 3-15 -> clamp to fal min 5",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "loras": "array of {path, scale} -> fal LoRAInput {path, scale, weight_name?}; Legacy allows a bare Civitai model ID in path -> gateway must turn it into a downloadable URL (e.g. https://civitai.com/api/download/models/<id>, inferred) since fal accepts only URL or HF repo id"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/reference-to-video/lora/api",
+    "notes": "Same model+mode (fal lists it under category video-to-video; POST alias /fal-ai/minimax_h3/reference-to-video/lora). fal requires 1-3 loras; Legacy imageOptional -> at least one reference of any modality still needed. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:23564]"
+  },
+  {
+    "model_id": "ltx-2.5-image-to-video",
+    "key": "ltx-2.5-image-to-video",
+    "name": "LTX 2.5",
+    "list": "i2vModels",
+    "fal_endpoint": "lightricks/ltx-2.5/image-to-video/fast",
+    "fallback_endpoint": "lightricks/ltx-2.5/image-to-video/pro",
+    "confidence": "medium",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "resolution": "'720p'|'1080p' passthrough; '2k' -> '1440p'; '4k' -> '2160p'",
+      "duration": "int 5-20 -> fal enum 6|8|..|20: round up to next even (5->6, 7->8); at 1440p/2160p clamp to 10"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/lightricks/ltx-2.5/image-to-video/fast/api",
+    "notes": "Same model (LTX 2.5). Only the /fast tier offers 1440p/2160p and up to 20s like Legacy; /pro (POST alias /fal-ai/ltx-2.5/image-to-video/pro) is limited to 6|8|10s and 720p|1080p. fal has no seed -> dropped. fal extras: generate_audio (default true), camera_motion, fps (24|25|48|50), aspect_ratio (auto|16:9|9:16). [Legacy def: packages/studio/src/models.js:23697]"
+  },
+  {
+    "model_id": "wan3.0-reference-to-video",
+    "key": "wan3.0-reference-to-video",
+    "name": "Wan 3.0 Reference to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "audios_list": "reference_audio_urls",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough (always send; fal default 1080p)",
+      "aspect_ratio": "passthrough",
+      "duration": "passthrough int 2-30",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/reference-to-video/api",
+    "notes": "Exact model+mode (Wan 3.0 R2V; fal POST alias /fal-ai/wan-3/reference-to-video). Limits match (images<=10, videos<=5, audios<=5). fal extras: file_url/web_url (need enable_thinking=true), enable_prompt_expansion. Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:23767]"
+  },
+  {
+    "model_id": "wan3.0-prime-image-to-video",
+    "key": "wan3.0-prime-image-to-video",
+    "name": "Wan 3.0 Prime",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0-prime/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough 480p|720p|1080p (fal default 1080p vs Legacy 720p -> always send)",
+      "aspect_ratio": "passthrough (same enum incl. adaptive)",
+      "duration": "passthrough int 2-30 (null = smart duration on fal)",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0-prime/image-to-video/api",
+    "notes": "Exact model (Wan 3.0 Prime I2V; fal POST alias /fal-ai/wan-3-prime/image-to-video). fal extra: enable_prompt_expansion (default true). Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:23883]"
+  },
+  {
+    "model_id": "wan3.0-prime-reference-to-video",
+    "key": "wan3.0-prime-reference-to-video",
+    "name": "Wan 3.0 Prime Reference to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0-prime/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "audios_list": "reference_audio_urls",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough (always send; fal default 1080p)",
+      "aspect_ratio": "passthrough",
+      "duration": "passthrough int 2-30",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0-prime/reference-to-video/api",
+    "notes": "Exact model+mode (Wan 3.0 Prime R2V; fal lists it under category video-to-video; POST alias /fal-ai/wan-3-prime/reference-to-video). Limits match (images<=10, videos<=5, audios<=5). fal extras: file_url/web_url (need enable_thinking=true), enable_prompt_expansion. Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:23979]"
+  },
+  {
+    "model_id": "wan3.0-spicy-reference-to-video",
+    "key": "wan3.0-spicy-reference-to-video",
+    "name": "Wan 3.0 Spicy Reference to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/wan-3.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "prompt": "prompt",
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "audios_list": "reference_audio_urls",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "thinking_mode": "enable_thinking",
+      "enable_audio": "audio",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "passthrough (always send; fal default 1080p)",
+      "aspect_ratio": "passthrough",
+      "duration": "passthrough int 2-30",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/wan-3.0/reference-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. Limits match (images<=10, videos<=5, audios<=5). fal extras: file_url/web_url (need enable_thinking=true), enable_prompt_expansion. Output also returns duration, actual_prompt, seed. [Legacy def: packages/studio/src/models.js:24095]"
+  },
+  {
+    "model_id": "flux-3-start-end-to-video",
+    "key": "flux-3-start-end-to-video",
+    "name": "FLUX 3 Start End to Video",
+    "list": "i2vModels",
+    "fal_endpoint": "blackforestlabs/flux-3/first-last-frame-to-video",
+    "fallback_endpoint": "blackforestlabs/flux-3/first-last-frame-to-video/draft",
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_url": "start_image_url",
+      "end_image_url": "end_image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 5-20",
+      "aspect_ratio": "passthrough (always send)",
+      "resolution": "passthrough 720p|1080p"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/blackforestlabs/flux-3/first-last-frame-to-video/api",
+    "notes": "Exact model+mode (FLUX 3 first/last frame; fal POST alias /fal-ai/flux-3/first-last-frame-to-video). Both frames required on fal. [Legacy def: packages/studio/src/models.js:24211]"
+  },
+  {
+    "model_id": "gemini-omni-flash-1-1-image-to-video",
+    "key": "gemini-omni-flash-1-1-image-to-video",
+    "name": "Gemini Omni Flash 1.1",
+    "list": "i2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/v1.1/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "first_frame_url": "image_url",
+      "last_frame_url": "end_image_url",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "aspect_ratio": "passthrough 16:9|9:16",
+      "resolution": "passthrough 720p|1080p|4k (fal also 360p)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "seed"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/v1.1/image-to-video/api",
+    "notes": "Exact model+mode (Gemini Omni Flash 1.1 I2V; fal POST alias /fal-ai/gemini-omni-1.1-flash/image-to-video). fal has no seed -> dropped. Legacy exposes no duration; fal default 8s (range 3-10). [Legacy def: packages/studio/src/models.js:24297]"
+  },
+  {
+    "model_id": "gemini-omni-flash-1-1-reference-to-video",
+    "key": "gemini-omni-flash-1-1-reference-to-video",
+    "name": "Gemini Omni 1.1 Flash Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "google/gemini-omni-flash/v1.1/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "prompt": "prompt",
+      "image_urls": "image_urls",
+      "reference_video_urls": "reference_video_urls",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "passthrough int 3-10",
+      "resolution": "passthrough 360p|720p|1080p|4k",
+      "aspect_ratio": "passthrough"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/google/gemini-omni-flash/v1.1/reference-to-video/api",
+    "notes": "Exact model+mode (Gemini Omni Flash 1.1 reference-to-video). Same field names on both sides. Legacy documents prompt tags <IMAGE_REF_0>/<VIDEO_REF_0>; fal says reference media is sent in list order before the prompt (tag syntax not documented on fal - keep tags, verify in a live test; inferred). [Legacy def: packages/studio/src/models.js:24366]"
+  },
+  {
+    "model_id": "minimax-h3-image-to-video-spicy",
+    "key": "minimax-h3-image-to-video-spicy",
+    "name": "MiniMax H3 Spicy",
+    "list": "i2vModels",
+    "fal_endpoint": "minimax/h3/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "last_image": "end_image_url",
+      "resolution": "resolution",
+      "duration": "duration",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "resolution": "'480p' -> '480P', '768p' -> '768P'",
+      "duration": "int 3-15 -> clamp to fal min 5",
+      "seed": "Legacy -1/empty = random -> omit field; else pass integer",
+      "prompt": "fal requires prompt; Legacy optional -> send neutral default when empty"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/minimax/h3/image-to-video/api",
+    "notes": "Legacy 'spicy' = relaxed-moderation routing tier of the same model. fal applies its own content moderation and exposes no equivalent switch, so NSFW-leaning prompts will be refused/blurred. Same model family & mode, moderation behaviour NOT reproducible -> low. fal OpenAPI POST alias /fal-ai/minimax_h3/*. fal extras: prompt_expansion_mode (default 'balanced'; disabled|fast|balanced|quality), target_audio_url, seed. Output also returns expanded_prompt. [Legacy def: packages/studio/src/models.js:24444]"
+  }
+]

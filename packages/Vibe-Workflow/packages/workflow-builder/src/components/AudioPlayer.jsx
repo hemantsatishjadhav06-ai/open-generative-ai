@@ -85,7 +85,7 @@ const AudioPlayer = ({ src, className }) => {
 
   return (
     <div className={className || "flex flex-col items-center justify-center p-4 w-full h-full bg-gradient-to-br from-[#121418] to-[#08090a] rounded-xl border border-white/5 relative group transition-all duration-500 select-none"}>
-      <audio ref={audioRef} src={src} crossOrigin="anonymous" />
+      <audio ref={audioRef} src={src} />
       <div 
         className="flex items-center justify-center gap-[2px] w-full h-12 mb-4 px-4 overflow-hidden"
         style={{ 

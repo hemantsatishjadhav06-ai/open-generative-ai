@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { uploadFile, generateI2I } from "../muapi.js";
+import { uploadFile, generateI2I } from "../gateway.js";
+import { isModelAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
 import { friendlyError, notify, notifyError } from "../utils/notify.js";
+import { logStudioError } from "../utils/formatError.js";
+
+const DRAW_MODELS = ["nano-banana-pro-edit", "nano-banana-2-edit"];
 
 export default function DrawModal({
   isOpen,
@@ -14,6 +19,14 @@ export default function DrawModal({
   const [bgImageUrl, setBgImageUrl] = useState(null); // Image dataURL or src
   const [aspectRatio, setAspectRatio] = useState("16:9"); // '16:9' | '1:1' | 'Auto'
   const [selectedModel, setSelectedModel] = useState("nano-banana-pro-edit"); // 'nano-banana-2-edit' | 'nano-banana-pro-edit'
+  const availability = useModelAvailability();
+  const drawModels = DRAW_MODELS.filter((id) => isModelAvailable(id));
+  // Keep the selection on a model the gateway can run.
+  useEffect(() => {
+    if (!availability || isModelAvailable(selectedModel)) return;
+    const fallback = DRAW_MODELS.find((id) => isModelAvailable(id));
+    if (fallback) setSelectedModel(fallback);
+  }, [availability, selectedModel]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isArDropdownOpen, setIsArDropdownOpen] = useState(false);
   const [promptText, setPromptText] = useState("Edit the image based on the drawing overlay"); // text prompt for generation
@@ -1075,7 +1088,7 @@ export default function DrawModal({
       notify("Generations complete!", { type: "success" });
       onClose();
     } catch (e) {
-      console.error("[DrawModal] Generation failed:", e);
+      logStudioError("[DrawModal] Generation failed:", e);
       notifyError(`Generation failed: ${friendlyError(e)}`);
     } finally {
       setGenerating(false);
@@ -1193,11 +1206,23 @@ export default function DrawModal({
               }`}
             >
               <div className="w-56 h-36 rounded-xl border border-white/5 overflow-hidden shadow-lg select-none relative bg-black/40">
-                <img
-                  src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
-                  alt="Draw visual representation"
-                  className="w-full h-full object-cover opacity-60"
-                />
+                <svg
+                  viewBox="0 0 224 144"
+                  className="w-full h-full opacity-70"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <defs>
+                    <linearGradient id="draw-modal-art" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#2ee6d6" stopOpacity="0.35" />
+                      <stop offset="1" stopColor="#3b82f6" stopOpacity="0.25" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="224" height="144" fill="url(#draw-modal-art)" />
+                  <path d="M20 112 C 52 60, 84 124, 116 72 S 180 40, 204 88" fill="none" stroke="#2ee6d6" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M40 40 l 18 -10 l 10 18 z" fill="none" stroke="#93c5fd" strokeWidth="3" strokeLinejoin="round" />
+                  <circle cx="176" cy="36" r="12" fill="none" stroke="#57f0dc" strokeWidth="3" />
+                </svg>
                 <div className="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-md rounded-md p-1 px-2 border border-white/5 flex items-center gap-1">
                   <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse"></div>
                   <span className="text-[9px] text-white/50 tracking-wider uppercase font-bold">
@@ -1757,6 +1782,7 @@ export default function DrawModal({
                       Select model
                     </div>
 
+                    {drawModels.includes("nano-banana-2-edit") && (
                     <button
                       onClick={() => {
                         setSelectedModel("nano-banana-2-edit");
@@ -1778,7 +1804,9 @@ export default function DrawModal({
                         Google&apos;s Advanced Image Editing Model
                       </div>
                     </button>
+                    )}
 
+                    {drawModels.includes("nano-banana-pro-edit") && (
                     <button
                       onClick={() => {
                         setSelectedModel("nano-banana-pro-edit");
@@ -1800,6 +1828,7 @@ export default function DrawModal({
                         Best 4K Image Model Ever
                       </div>
                     </button>
+                    )}
                   </div>
                 )}
               </div>

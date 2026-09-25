@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "./gatewayClient";
 
+// Estimated USD for one run of the selected model with the current fields
+// (POST /api/app/calculate_dynamic_cost). null hides the badge: input steps,
+// text steps (billed by usage) and anything the price table doesn't know.
 export const useGenerationCost = (selectedModel, formValues) => {
   const [generationCost, setGenerationCost] = useState(null);
   const [isRefreshingCost, setIsRefreshingCost] = useState(false);
@@ -11,25 +14,30 @@ export const useGenerationCost = (selectedModel, formValues) => {
       return;
     }
 
+    let cancelled = false;
     const delayDebounce = setTimeout(() => {
       setIsRefreshingCost(true);
-      // We use the direct 8000 port since workflow-demo doesn't proxy /app/ internally and muapiapp runs on 8000
-      axios.post("/api/app/calculate_dynamic_cost", {
+      api.post("/api/app/calculate_dynamic_cost", {
         task_name: selectedModel.id,
         payload: formValues
-      })
+      }, { silent: true })
       .then((response) => {
-        setGenerationCost(response.data.cost);
+        if (cancelled) return;
+        const cost = Number(response.data?.cost);
+        setGenerationCost(response.data?.cost !== null && Number.isFinite(cost) ? Math.round(cost * 1000) / 1000 : null);
         setIsRefreshingCost(false);
       })
-      .catch((error) => {
-        console.error("Error fetching cost:", error);
+      .catch(() => {
+        if (cancelled) return;
         setGenerationCost(null);
         setIsRefreshingCost(false);
       });
     }, 1000);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      cancelled = true;
+      clearTimeout(delayDebounce);
+    };
   }, [selectedModel?.id, formValues]);
 
   return { generationCost, isRefreshingCost };

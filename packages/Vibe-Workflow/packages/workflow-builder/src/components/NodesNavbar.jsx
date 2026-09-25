@@ -5,14 +5,7 @@ import { IoImageOutline, IoVideocamOutline, IoAddCircleOutline } from "react-ico
 import { TfiText } from "react-icons/tfi";
 import { MdAutoFixHigh, MdCrop, MdOutlineImage } from "react-icons/md";
 import { RiImageAiLine, RiVideoOnAiLine } from "react-icons/ri";
-import {
-  imageModels,
-  videoModels,
-  textModels,
-  audioModels,
-  concatModels,
-  videoCombinerModels
-} from "./utility";
+import { concatModels, videoCombinerModels } from "./utility";
 import { TbArrowMerge } from "react-icons/tb";
 import { RiInputMethodLine } from "react-icons/ri";
 import { LuUpload } from "react-icons/lu";
@@ -25,7 +18,7 @@ const SPECIAL_MODEL_NAMES = {
   "audio-passthrough": "Input Audio",
 };
 
-const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchemas = {} }) => {
+const NodesNavbar = ({ addNode, filterNodeTypes = null, nodeSchemas = {} }) => {
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef(null);
@@ -35,9 +28,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
     if (id.includes('text-llms') || id === 'text-llms') return 'textNode';
     if (id === 'concat' || id === 'text-utils' || id === 'utilities') return ['concatNode', 'vidConcatNode'];
     if (id.includes('image')) return 'imageNode';
-    if (id.includes('video')) return 'videoNode';
+    if (id.includes('video') || id === 'lipsync') return 'videoNode';
     if (id.includes('audio')) return 'audioNode';
-    if (id === 'api-models') return 'apiNode';
     return null;
   };
 
@@ -63,14 +55,13 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       modelsMap ? Object.entries(modelsMap).map(([id, model]) => ({
         ...model,
         id,
-        name: SPECIAL_MODEL_NAMES[id] || formatName(id)
+        name: model.name || SPECIAL_MODEL_NAMES[id] || formatName(id)
       })) : [];
 
     const imageModels = mapModels(categories.image?.models);
     const videoModels = mapModels(categories.video?.models);
     const textModels = mapModels(categories.text?.models);
     const audioModels = mapModels(categories.audio?.models);
-    const apiModels = mapModels(categories.api?.models);
     const rawUtilityModels = mapModels(categories.utility?.models);
     const utilityModels = [...rawUtilityModels];
 
@@ -90,11 +81,16 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       ...audioModels.filter(isPassthrough).map(m => ({ ...m, type: 'audioNode' })),
     ];
 
-    const generateImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && !m.id.includes("edit") && !m.id.includes("reference") && !m.id.includes("image-to-image"));
-    const editImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && (m.id.includes("edit") || m.id.includes("reference") || m.id.includes("image-to-image")));
-    const upscaleImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && m.id.includes("upscale"));
-    const generateVideoModels = videoModels.filter(m => m?.id && !isPassthrough(m) && !m.id.includes("edit"));
-    const editVideoModels = videoModels.filter(m => m?.id && !isPassthrough(m) && m.id.includes("edit"));
+    // Server models carry a group (generate / edit / tools / lipsync); the id
+    // heuristics are a fallback for older schema documents.
+    const inGroup = (m, group, fallback) => (m?.group ? m.group === group : fallback(m));
+    const byName = (a, b) => String(a.name).localeCompare(String(b.name));
+    const generateImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && inGroup(m, "generate", (x) => !x.id.includes("edit") && !x.id.includes("reference") && !x.id.includes("image-to-image"))).sort(byName);
+    const editImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && inGroup(m, "edit", (x) => x.id.includes("edit") || x.id.includes("reference") || x.id.includes("image-to-image"))).sort(byName);
+    const upscaleImageModels = imageModels.filter(m => m?.id && !isPassthrough(m) && inGroup(m, "tools", (x) => x.id.includes("upscale"))).sort(byName);
+    const generateVideoModels = videoModels.filter(m => m?.id && !isPassthrough(m) && inGroup(m, "generate", (x) => !x.id.includes("edit"))).sort(byName);
+    const editVideoModels = videoModels.filter(m => m?.id && !isPassthrough(m) && inGroup(m, "edit", (x) => x.id.includes("edit"))).sort(byName);
+    const lipsyncVideoModels = videoModels.filter(m => m?.id && !isPassthrough(m) && m.group === "lipsync").sort(byName);
     const textModelsFiltered = textModels.filter(m => !isPassthrough(m));
     const audioModelsFiltered = audioModels.filter(m => !isPassthrough(m));
 
@@ -105,11 +101,11 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       upscaleImage: upscaleImageModels,
       generateVideo: generateVideoModels,
       editVideo: editVideoModels,
+      lipsync: lipsyncVideoModels,
       audio: audioModelsFiltered,
       text: textModelsFiltered,
       textUtils: utilityModels,
       utilities: utilityModels,
-      api: apiNodeModels,
     };
   };
 
@@ -140,7 +136,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       items: [
         { label: "Generate Image", icon: <IoImageOutline />, hasSubmenu: true, id: "generate-image" },
         { label: "Edit Image", icon: <RiImageAiLine />, hasSubmenu: true, id: "edit-image" },
-        // { label: "Upscale Image", icon: <MdOutlineImage />, hasSubmenu: true, id: "upscale-image" },
+        { label: "Image Tools", icon: <MdAutoFixHigh />, hasSubmenu: true, id: "upscale-image" },
         // { label: "Image Utilities", icon: <MdCrop />, hasSubmenu: true, id: "image-utils" },
       ]
     },
@@ -149,6 +145,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       items: [
         { label: "Generate Video", icon: <IoVideocamOutline />, hasSubmenu: true, id: "generate-video" },
         { label: "Edit Video", icon: <RiVideoOnAiLine />, hasSubmenu: true, id: "edit-video" },
+        { label: "Lip Sync", icon: <RiVideoOnAiLine />, hasSubmenu: true, id: "lipsync" },
       ]
     },
     {
@@ -157,12 +154,6 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
         { label: "Generate Audio", icon: <AiOutlineAudio />, hasSubmenu: true, id: "generate-audio" },
       ]
     },
-    {
-      label: "API Models",
-      items: [
-        { label: "Api Node", icon: <RiInputMethodLine />, hasSubmenu: true, id: "api-models" },
-      ]
-    }
   ];
 
   const getSubmenuItems = (id) => {
@@ -181,8 +172,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       case "text-llms": return categorizedModels.text.map(m => ({ label: m.name, model: m, type: "textNode" }));
       case "generate-video": return categorizedModels.generateVideo.map(m => ({ label: m.name, model: m, type: "videoNode" }));
       case "edit-video": return categorizedModels.editVideo.map(m => ({ label: m.name, model: m, type: "videoNode" }));
+      case "lipsync": return categorizedModels.lipsync.map(m => ({ label: m.name, model: m, type: "videoNode" }));
       case "generate-audio": return categorizedModels.audio.map(m => ({ label: m.name, model: m, type: "audioNode" }));
-      case "api-models": return categorizedModels.api.map(m => ({ label: m.name, model: m, type: "apiNode" }));
       default: return [];
     }
   };
@@ -191,8 +182,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
     const { 
       inputs,
       generateImage, editImage, upscaleImage, 
-      generateVideo, editVideo, 
-      text, audio, textUtils, api 
+      generateVideo, editVideo, lipsync,
+      text, audio, textUtils
     } = categorizedModels;
 
     const allModels = [
@@ -202,10 +193,10 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       ...upscaleImage.map(m => ({ ...m, type: "imageNode" })),
       ...generateVideo.map(m => ({ ...m, type: "videoNode" })),
       ...editVideo.map(m => ({ ...m, type: "videoNode" })),
+      ...lipsync.map(m => ({ ...m, type: "videoNode" })),
       ...text.map(m => ({ ...m, type: "textNode" })),
       ...audio.map(m => ({ ...m, type: "audioNode" })),
       ...textUtils.map(m => ({ ...m, type: m.id === "video-combiner" ? "vidConcatNode" : "concatNode" })),
-      ...apiNodeModels.map(m => ({ ...m, type: "apiNode" })),
     ];
 
     const filtered = allModels.filter(m => m && m.name && m.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -225,7 +216,6 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
             {item.type === "textNode" && <TfiText />}
             {item.type === "audioNode" && <AiOutlineAudio />}
             {item.type === "concatNode" && <TbArrowMerge className="rotate-90" />}
-            {item.type === "apiNode" && <RiInputMethodLine />}
             <span>{item.name}</span>
           </button>
         )) : (
@@ -421,8 +411,8 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
         return <IoImageOutline />;
       case "Edit Image":
         return <RiImageAiLine />;
-      case "Upscale Image":
-        return <MdCrop />;
+      case "Image Tools":
+        return <MdAutoFixHigh />;
       case "Image Utilities":
         return <MdAutoFixHigh />;
       case "Generate Video":
@@ -433,8 +423,8 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
         return <MdCrop />;
       case "Generate Audio":
         return <AiOutlineAudio />;
-      case "Api Node":
-        return <RiInputMethodLine />;
+      case "Lip Sync":
+        return <RiVideoOnAiLine />;
       default:
         return null;
     }

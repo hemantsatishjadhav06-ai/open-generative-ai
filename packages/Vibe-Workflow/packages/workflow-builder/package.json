@@ -1,15 +1,16 @@
 {
   "name": "workflow-builder",
   "version": "1.0.0",
-  "description": "Shared UI components and utilities for my Next.js apps",
+  "description": "Aquora workflow builder (node canvas for /api/workflow)",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build:css": "tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify",
-    "build": "npm run build:css && babel src --out-dir dist --extensions .js,.jsx"
+    "build": "npm run clean && npm run build:css && babel src --out-dir dist --extensions .js,.jsx"
   },
   "license": "MIT",
   "dependencies": {

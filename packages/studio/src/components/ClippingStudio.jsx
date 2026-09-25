@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
-import { runClipping, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
+import { runClipping, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -32,6 +33,46 @@ import { notify, notifyError } from "../utils/notify.js";
 
 const MAX_VIDEO_SIZE_MB = 100;
 const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+// The gateway picks at most this many highlights per run.
+const MAX_HIGHLIGHTS = 10;
+
+// Copy for how Aquora's clipping pipeline actually works (speech transcript
+// → AI picks → trim + centre crop). Kept here until it moves into
+// messages/<locale>/clippingStudio.json; the shape mirrors that file.
+const PIPELINE_COPY = {
+  en: {
+    howItWorks: "We transcribe the speech, pick the strongest moments and cut them into clips. Works best on talking videos such as podcasts, interviews and vlogs.",
+    cropNote: "Clips are centre-cropped to the shape you pick (no face tracking). Choose Original to keep the full frame.",
+    originalAspect: "Original",
+    originalAspectLabel: "Original (no crop)",
+    originalFraming: "Original framing",
+    centreCrop: "Centre crop",
+    upTo: "Up to {max}",
+    close: "Close",
+    play: "Play",
+    notices: {
+      reframe_unavailable: "Cropping wasn't available for these clips, so they keep the original framing.",
+      some_clips_failed: "Some highlights couldn't be cut into clips; their timecodes are still listed.",
+      clips_unavailable: "The clips couldn't be cut right now, so here are the timecodes instead. Try again later for video clips.",
+    },
+  },
+  zh: {
+    howItWorks: "我们会转写视频中的语音，挑选最精彩的片段并剪成短片。最适合有人说话的视频，例如播客、访谈和 Vlog。",
+    cropNote: "片段会按所选比例居中裁剪（不追踪人脸）。选择“原始”可保留完整画面。",
+    originalAspect: "原始",
+    originalAspectLabel: "原始（不裁剪）",
+    originalFraming: "原始画面",
+    centreCrop: "居中裁剪",
+    upTo: "最多 {max} 个",
+    close: "关闭",
+    play: "播放",
+    notices: {
+      reframe_unavailable: "这些片段暂时无法裁剪，因此保留了原始画面。",
+      some_clips_failed: "部分高光未能剪成片段，但仍列出了它们的时间点。",
+      clips_unavailable: "暂时无法剪出片段，先为你列出时间点。稍后再试即可获得视频片段。",
+    },
+  },
+};
 // ---------------------------------------------------------------------------
 // Inline SVG Icons
 // ---------------------------------------------------------------------------
@@ -132,11 +173,9 @@ export default function ClippingStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_clipping_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const pipelineCopy = resolveCopy(PIPELINE_COPY.en, PIPELINE_COPY[locale], locale);
+  // null until the signed-in workspace is known (history is per workspace).
+  const PERSIST_KEY = usePersistKey("hg_clipping_studio_persistent");
 
   // ── Clipping Parameters State ───────────────────────────────────────────
   const [videoUrl, setVideoUrl] = useState("");
@@ -162,6 +201,9 @@ export default function ClippingStudio({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
+  const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
+  useEscapeKey(Boolean(fullscreenUrl), closeFullscreen);
+  useFocusReturn(Boolean(fullscreenUrl));
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef(null);
 
@@ -180,7 +222,9 @@ export default function ClippingStudio({
     { label: copy.aspectRatioLabels["4:5"], value: "4:5" },
     { label: copy.aspectRatioLabels["4:3"], value: "4:3" },
     { label: copy.aspectRatioLabels["3:4"], value: "3:4" },
+    { label: pipelineCopy.originalAspectLabel, value: "original" },
   ];
+  const aspectLabel = (value) => (value === "original" ? pipelineCopy.originalAspect : value);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -225,12 +269,13 @@ export default function ClippingStudio({
 
   // ── Load Persistent State from localStorage ──────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
         const data = JSON.parse(stored);
         if (data.videoUrl) setVideoUrl(data.videoUrl);
-        if (data.numHighlights) setNumHighlights(data.numHighlights);
+        if (data.numHighlights) setNumHighlights(Math.max(1, Math.min(MAX_HIGHLIGHTS, Number(data.numHighlights) || 3)));
         if (data.aspectRatio) setAspectRatio(data.aspectRatio);
         if (data.returnCoordinatesOnly !== undefined) setReturnCoordinatesOnly(data.returnCoordinatesOnly);
         if (data.history) setHistory(data.history);
@@ -239,10 +284,11 @@ export default function ClippingStudio({
     } catch (err) {
       console.warn("Failed to load ClippingStudio persistent state:", err);
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Save Persistent State to localStorage ───────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -259,7 +305,7 @@ export default function ClippingStudio({
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [videoUrl, numHighlights, aspectRatio, returnCoordinatesOnly, history, result]);
+  }, [videoUrl, numHighlights, aspectRatio, returnCoordinatesOnly, history, result, PERSIST_KEY]);
 
   // ── Handle Dropped Files ────────────────────────────────────────────────
   useEffect(() => {
@@ -357,7 +403,7 @@ export default function ClippingStudio({
       });
       setVideoUrl(url);
     } catch (err) {
-      console.error("[ClippingStudio] Video upload failed:", err);
+      logStudioError("[ClippingStudio] Video upload failed:", err);
       showVideoUploadError(err, copy);
     } finally {
       setVideoUploading(false);
@@ -430,35 +476,31 @@ export default function ClippingStudio({
         num_highlights: numHighlights,
         aspect_ratio: aspectRatio,
         return_coordinates_only: returnCoordinatesOnly,
+        prompt: prompt.trim(),
       };
 
       const res = await runClipping(apiKey, params);
 
-      // Parse the result
-      const clips = res.outputs || [];
+      // Parse the result. The gateway returns real timecodes only; when the
+      // clips could not be cut it switches the result to timeline mode.
+      const clips = Array.isArray(res.outputs) ? res.outputs : [];
       const outputCoordinates = res.output?.coordinates || res.coordinates || res.output?.timings || res.timings || [];
-      
+      const coordinatesOnly = res.return_coordinates_only === true || returnCoordinatesOnly || clips.length === 0;
+
       const newResult = {
         id: res.id || Date.now().toString(),
         videoUrl: videoUrl,
         clips: clips,
-        coordinates: Array.isArray(outputCoordinates) ? outputCoordinates : (res.output?.clips || []),
-        returnCoordinatesOnly: returnCoordinatesOnly,
+        clipDetails: Array.isArray(res.output?.clips) ? res.output.clips : [],
+        coordinates: Array.isArray(outputCoordinates) ? outputCoordinates : [],
+        returnCoordinatesOnly: coordinatesOnly,
         aspectRatio: aspectRatio,
+        numHighlights: numHighlights,
+        prompt: prompt.trim(),
+        reframe: typeof res.reframe === "string" ? res.reframe : null,
+        notice: typeof res.notice === "string" ? res.notice : null,
         timestamp: new Date().toISOString(),
       };
-
-      // Mock coordinates if API succeeded but modal coordinates are empty in coordinate-only mode
-      if (returnCoordinatesOnly && newResult.coordinates.length === 0) {
-        newResult.coordinates = Array.from({ length: numHighlights }).map((_, idx) => ({
-          label: `Highlight #${idx + 1}`,
-          start_time: idx * 15,
-          end_time: (idx + 1) * 15,
-          start: idx * 15,
-          end: (idx + 1) * 15,
-          score: 0.95 - (idx * 0.05)
-        }));
-      }
 
       setResult(newResult);
       setActiveHighlightIndex(0);
@@ -474,7 +516,7 @@ export default function ClippingStudio({
         });
       }
     } catch (err) {
-      console.error("[ClippingStudio] Error generating clips:", err);
+      logStudioError("[ClippingStudio] Error generating clips:", err);
       const errMsg = formatErrorMessage(err, copy.errors.generationFailed);
       const notificationMessage = isFileSizeError(err)
         ? copy.errors.videoTooLarge
@@ -524,6 +566,9 @@ export default function ClippingStudio({
             <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.headings.emptyStateSubtitle}
             </p>
+            <p className="mt-3 text-white/35 text-[11px] sm:text-xs font-medium text-center max-w-lg leading-relaxed px-4">
+              {pipelineCopy.howItWorks} {pipelineCopy.cropNote}
+            </p>
           </div>
         )}
 
@@ -555,7 +600,7 @@ export default function ClippingStudio({
                       muted
                       loop
                       playsInline
-                      onMouseOver={(e) => e.target.play()}
+                      onMouseOver={(e) => e.target.play()?.catch?.(() => {})}
                       onMouseOut={(e) => {
                         e.target.pause();
                         e.target.currentTime = 0;
@@ -601,7 +646,7 @@ export default function ClippingStudio({
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20">
-                        {entry.aspectRatio}
+                        {aspectLabel(entry.aspectRatio)}
                       </span>
                       <span className="text-[10px] text-white/40">
                         {entry.returnCoordinatesOnly ? copy.labels.highlights.replace('{count}', entry.coordinates?.length || 0) : copy.labels.clips.replace('{count}', entry.clips?.length || 0)}
@@ -635,10 +680,16 @@ export default function ClippingStudio({
                   {result.returnCoordinatesOnly ? copy.modes.timelineSeek : copy.modes.clipsGallery}
                 </span>
                 <span className="text-[10px] text-zinc-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded">
-                  {result.aspectRatio}
+                  {aspectLabel(result.aspectRatio)}
                 </span>
               </div>
             </div>
+
+            {result.notice && pipelineCopy.notices[result.notice] && (
+              <div role="status" className="mb-6 bg-amber-400/10 border border-amber-400/25 text-amber-200 p-3.5 rounded text-xs font-semibold leading-relaxed">
+                {pipelineCopy.notices[result.notice]}
+              </div>
+            )}
 
             {/* Render coordinates Timeline player */}
             {result.returnCoordinatesOnly ? (
@@ -728,13 +779,16 @@ export default function ClippingStudio({
                     {copy.headings.extractedVideoClips}
                   </h3>
                   <span className="text-[10px] font-bold text-zinc-400 bg-surface-card px-2.5 py-1 rounded border border-zinc-800">
-                    {copy.headings.aspectRatioLabel.replace('{ratio}', result.aspectRatio)}
+                    {copy.headings.aspectRatioLabel.replace('{ratio}', aspectLabel(result.aspectRatio))}
                   </span>
                 </div>
 
                 {result.clips && result.clips.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {result.clips.map((clipUrl, i) => (
+                    {result.clips.map((clipUrl, i) => {
+                      const detail = (result.clipDetails || []).find((clip) => clip?.url === clipUrl) || null;
+                      const reframed = detail ? detail.reframed !== false : result.aspectRatio !== "original";
+                      return (
                       <div
                         key={i}
                         onClick={() => setFullscreenUrl(clipUrl)}
@@ -743,12 +797,12 @@ export default function ClippingStudio({
                         <div className="relative group/vid border-b border-white/5 overflow-hidden bg-black/40">
                           <video
                             src={clipUrl}
-                            className={`w-full ${getAspectClass(result.aspectRatio)} object-cover bg-black/40 hover:opacity-85 transition-opacity`}
+                            className={`w-full ${reframed ? `${getAspectClass(result.aspectRatio)} object-cover` : "aspect-video object-contain"} bg-black/40 hover:opacity-85 transition-opacity`}
                             controls={false}
                             loop
                             muted
                             playsInline
-                            onMouseOver={(e) => e.target.play()}
+                            onMouseOver={(e) => e.target.play()?.catch?.(() => {})}
                             onMouseOut={(e) => {
                               e.target.pause();
                               e.target.currentTime = 0;
@@ -808,22 +862,44 @@ export default function ClippingStudio({
                         </div>
 
                         <div className="p-3 bg-black/80 backdrop-blur-sm border-t border-white/5 flex-1 flex flex-col justify-between gap-2">
-                          {result.prompt && (
-                            <p className="text-white/70 text-xs line-clamp-2 leading-relaxed" title={result.prompt}>
-                              {result.prompt}
+                          {detail?.label && (
+                            <p className="text-white text-xs font-bold line-clamp-2 leading-relaxed" title={detail.label}>
+                              {detail.label}
                             </p>
                           )}
-                          <div className="flex items-center justify-between mt-1">
-                            <div className="flex items-center gap-2">
+                          {detail && Number.isFinite(detail.start_time) && Number.isFinite(detail.end_time) && (
+                            <p className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-semibold">
+                              <ClockIcon />
+                              {formatSeconds(detail.start_time)} - {formatSeconds(detail.end_time)}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between mt-1 gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 whitespace-nowrap">
                                 {copy.labels.aiClipping}
                               </span>
-                              <span className="text-[10px] text-white/40">{result.aspectRatio || copy.labels.clipIndex.replace('{index}', i + 1)}</span>
+                              <span className="text-[10px] text-white/50">
+                                {reframed && result.aspectRatio !== "original"
+                                  ? `${pipelineCopy.centreCrop} ${result.aspectRatio}`
+                                  : pipelineCopy.originalFraming}
+                              </span>
                             </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFullscreenUrl(clipUrl);
+                              }}
+                              aria-label={`${pipelineCopy.play} ${copy.labels.clipIndex.replace('{index}', i + 1)}`}
+                              className="shrink-0 flex items-center gap-1 text-[10px] font-bold text-white/80 hover:text-white px-2 py-1 rounded border border-white/10 hover:border-primary/60 transition-colors"
+                            >
+                              <PlayIcon /> {pipelineCopy.play}
+                            </button>
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="py-20 text-center text-xs text-zinc-500 font-semibold border border-zinc-900 rounded bg-surface-panel/20">
@@ -836,6 +912,40 @@ export default function ClippingStudio({
         )}
 
       </div>
+
+      {fullscreenUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={copy.labels.aiClipping}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+          onClick={closeFullscreen}
+        >
+          <button
+            type="button"
+            autoFocus
+            aria-label={pipelineCopy.close}
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeFullscreen();
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          <video
+            src={fullscreenUrl}
+            controls
+            autoPlay
+            playsInline
+            className="max-w-[95vw] max-h-[90vh] rounded-2xl shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* ─── FLOATING BOTTOM PROMPT BAR ─── */}
       <PromptComposer>
@@ -946,7 +1056,7 @@ export default function ClippingStudio({
                 >
                   <PromptAspectRatioIcon />
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                    {aspectRatio}
+                    {aspectLabel(aspectRatio)}
                   </span>
                 </button>
                 {aspectDropdownOpen && (
@@ -954,6 +1064,7 @@ export default function ClippingStudio({
                     <PromptPopoverHeader>
                       {copy.popovers.aspectRatio}
                     </PromptPopoverHeader>
+                    <p className="px-2 pb-2 text-[10px] leading-snug text-white/45 max-w-[220px]">{pipelineCopy.cropNote}</p>
                     <PromptMenuList>
                       {ASPECT_RATIOS.map((r) => (
                         <PromptMenuItem
@@ -964,7 +1075,7 @@ export default function ClippingStudio({
                             setAspectDropdownOpen(false);
                           }}
                         >
-                          {r.value}
+                          {r.value === "original" ? r.label : r.value}
                         </PromptMenuItem>
                       ))}
                     </PromptMenuList>
@@ -1001,12 +1112,14 @@ export default function ClippingStudio({
                       <input
                         type="range"
                         min="1"
-                        max="60"
+                        max={MAX_HIGHLIGHTS}
                         step="1"
                         value={numHighlights}
+                        aria-label={copy.popovers.maxHighlights}
                         onChange={(e) => setNumHighlights(Number(e.target.value))}
                         className="w-full h-1 bg-zinc-850 rounded appearance-none cursor-pointer accent-primary"
                       />
+                      <p className="text-[10px] text-white/40">{pipelineCopy.upTo.replace('{max}', MAX_HIGHLIGHTS)}</p>
                     </div>
                   </PromptPopover>
                 )}
@@ -1015,6 +1128,7 @@ export default function ClippingStudio({
               {/* Return Coordinates Toggle */}
               <button
                 type="button"
+                aria-pressed={returnCoordinatesOnly}
                 onClick={() => setReturnCoordinatesOnly(!returnCoordinatesOnly)}
                 className={promptControlClassName({
                   active: returnCoordinatesOnly,

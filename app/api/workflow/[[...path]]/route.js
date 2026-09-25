@@ -1,30 +1,18 @@
-import { proxyToMuapi, routeLabel, MUAPI_BASE } from '@/lib/muapiProxy';
+// /api/workflow/* — Aquora's own workflows API (CRUD, templates, node schemas
+// from the gateway catalog, runs executed server-side, the architect).
+// Handlers live in lib/gateway/workflows/api.js; every call needs a session
+// and works on the caller's workspace.
+import { handleWorkflow } from '../../../../lib/gateway/workflows/api.js';
+import { route } from '../../../../lib/gateway/http.js';
 
-// Proxies /api/workflow/* -> https://api.muapi.ai/workflow/*
-// Request/response bodies are intentionally never logged.
-async function forward(request, params, method) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const path = pathSegments.join('/');
-    const { search } = new URL(request.url);
-    return proxyToMuapi(request, `${MUAPI_BASE}/workflow/${path}${search}`, {
-        method,
-        route: routeLabel('workflow', pathSegments),
-    });
-}
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+// Runs return as soon as they're queued; the heaviest request is a save.
+export const maxDuration = 60;
 
-export async function GET(request, { params }) {
-    return forward(request, params, 'GET');
-}
+const handler = route('workflow', handleWorkflow, { session: true });
 
-export async function POST(request, { params }) {
-    return forward(request, params, 'POST');
-}
-
-export async function DELETE(request, { params }) {
-    return forward(request, params, 'DELETE');
-}
-
-export async function PUT(request, { params }) {
-    return forward(request, params, 'PUT');
-}
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;

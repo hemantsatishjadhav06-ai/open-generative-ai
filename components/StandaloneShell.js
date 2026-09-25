@@ -3,22 +3,36 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import axios from 'axios';
 // Only light-weight subpath imports from 'studio' here: importing the barrel
 // would statically pull every studio (and the model catalog) into first paint.
-import { getUserBalance } from 'studio/balance';
 import { formatErrorMessage } from 'studio/formatError';
+// One session store for the shell and the studios (history scoping, pickers).
+import {
+  BUDGET_EXCEEDED_EVENT,
+  SESSION_REQUIRED_EVENT,
+  getSessionStatus,
+  signIn,
+  signOut,
+} from 'studio/session';
 import { STUDIO_NOTIFY_EVENT } from 'studio/notify';
 import useEscapeKey from 'studio/useEscapeKey';
-import ApiKeyModal from './ApiKeyModal';
-import { getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
+import AccessCodeModal, { GateNotice } from './AccessCodeModal';
+import { fillCopy, getCommonCopy, getLocaleConfig, localizeStudioPath } from '@/lib/locales';
 // Tab/category ids, icons, and English `label` fallbacks are stable
 // identifiers, not locale copy — the actual rendered label is resolved
 // per-locale from `copy.tabs`/`copy.categories` via tabLabel()/categoryLabel()
 // inside the component below, with these English strings as the fallback
 // when a locale bundle is missing the key.
 import { TABS, STUDIO_TAB_IDS } from '@/lib/studios';
-import { classifyBalanceError } from '@/lib/apiKeyStatus';
+import {
+  budgetView,
+  classifySessionError,
+  errorKind,
+  normalizeSession,
+  signInFailure,
+  workspaceLabel,
+} from '@/lib/sessionStatus';
+import { clearLegacyKeyStorage } from '@/lib/legacyKeyCleanup';
 import { track, installAnalytics } from '@/lib/analytics';
 
 const StudioLoading = () => (
@@ -32,7 +46,6 @@ const ImageStudio = dynamic(() => import('studio/ImageStudio'), { ssr: false, lo
 const VideoStudio = dynamic(() => import('studio/VideoStudio'), { ssr: false, loading: StudioLoading });
 const ClippingStudio = dynamic(() => import('studio/ClippingStudio'), { ssr: false, loading: StudioLoading });
 const MotionControlStudio = dynamic(() => import('studio/MotionControlStudio'), { ssr: false, loading: StudioLoading });
-const VibeMotionStudio = dynamic(() => import('studio/VibeMotionStudio'), { ssr: false, loading: StudioLoading });
 const LipSyncStudio = dynamic(() => import('studio/LipSyncStudio'), { ssr: false, loading: StudioLoading });
 const RecastStudio = dynamic(() => import('studio/RecastStudio'), { ssr: false, loading: StudioLoading });
 const CinemaStudio = dynamic(() => import('studio/CinemaStudio'), { ssr: false, loading: StudioLoading });
@@ -40,7 +53,6 @@ const AudioStudio = dynamic(() => import('studio/AudioStudio'), { ssr: false, lo
 const MarketingStudio = dynamic(() => import('studio/MarketingStudio'), { ssr: false, loading: StudioLoading });
 const WorkflowStudio = dynamic(() => import('studio/WorkflowStudio'), { ssr: false, loading: StudioLoading });
 const AgentStudio = dynamic(() => import('studio/AgentStudio'), { ssr: false, loading: StudioLoading });
-const AppsStudio = dynamic(() => import('studio/AppsStudio'), { ssr: false, loading: StudioLoading });
 const AiInfluencerStudio = dynamic(() => import('studio/AiInfluencerStudio'), { ssr: false, loading: StudioLoading });
 const LayersStudio = dynamic(() => import('studio/LayersStudio'), { ssr: false, loading: StudioLoading });
 const DesignAgentStudio = dynamic(() => import('studio/DesignAgentStudio'), {
@@ -81,7 +93,7 @@ const NAVIGATION_CATEGORIES = [
   {
     id: 'video',
     label: 'Video',
-    tabIds: ['video', 'clipping', 'motion-control', 'vibe-motion', 'lipsync', 'body-swap', 'marketing'],
+    tabIds: ['video', 'clipping', 'motion-control', 'lipsync', 'body-swap', 'marketing'],
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="4" width="15" height="16" rx="2"/>
@@ -130,22 +142,19 @@ const NAVIGATION_CATEGORIES = [
   }
 ];
 
-const EXPLORE_APPS_TAB = TABS.find((tab) => tab.id === 'apps');
-
 const getNavigationCategory = (tabId) => (
   NAVIGATION_CATEGORIES.find((category) => category.tabIds.includes(tabId))
 );
 
-const STORAGE_KEY = 'muapi_key';
 const NOTIFICATIONS_STORAGE_KEY = 'aquora_notifications_v1';
 // Pre-rebrand key: still read (once) so notifications survive the rename.
 const LEGACY_NOTIFICATIONS_STORAGE_KEY = 'creator_agency_notifications_v1';
 const MAX_VISIBLE_NOTIFICATIONS = 3;
 
-// The key cookie is real server-side auth for the /agents/* SSR pages, so
-// mark it Secure whenever the app is served over https.
-const cookieSecureSuffix = () =>
-  (typeof window !== 'undefined' && window.location.protocol === 'https:') ? '; Secure' : '';
+// Budget refresh cadence: every minute while the tab is visible, and shortly
+// after a generation settles (debounced so a burst of jobs costs one request).
+const BUDGET_POLL_MS = 60000;
+const BUDGET_SETTLE_DELAY_MS = 1500;
 
 // Errors are sticky (expiresAt null) until dismissed; everything else times out.
 const isLiveNotification = (notification, now) =>
@@ -237,13 +246,21 @@ export default function StandaloneShell({ locale = 'en' }) {
     if (idFromParams || slug.includes('workflow')) return 'workflows';
     if (slug.includes('agents')) return 'agents';
     if (slug.includes('design-agent')) return 'design-agent';
-    if (slug.includes('apps')) return 'apps';
     const firstSegment = slug[0];
     if (firstSegment && STUDIO_TAB_IDS.includes(firstSegment)) return firstSegment;
     return 'image';
   };
 
-  const [apiKey, setApiKey] = useState(null);
+  // Access-code session from GET /api/session. status:
+  // 'loading' | 'authenticated' | 'signed_out' | 'setup_required' | 'error'
+  const [session, setSession] = useState({ status: 'loading' });
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+  const signedIn = session.status === 'authenticated';
+  // Studios still take an `apiKey` prop (some check it before running). It is
+  // the non-secret workspace id now, never a key: auth is the HttpOnly session
+  // cookie the browser sends on its own, and the gateway client ignores it.
+  const studioIdentity = signedIn ? (session.workspace || 'open') : null;
   const [activeTab, setActiveTab] = useState(getInitialTab());
   // Studios mount on first visit and then stay mounted (state survives tab
   // switches) — nothing loads for tabs the user never opens.
@@ -253,13 +270,13 @@ export default function StandaloneShell({ locale = 'en' }) {
   }, [activeTab]);
   const shouldMount = (id) => activeTab === id || visitedTabs.has(id);
 
-  const [balance, setBalance] = useState(null);
-  // 'loading' | 'ok' | 'error' | 'unauthorized'
-  const [balanceState, setBalanceState] = useState('loading');
-  // null | { message } — shown as an overlay key prompt when MuAPI rejects the key.
-  const [authPrompt, setAuthPrompt] = useState(null);
-  const authPromptDismissedRef = useRef(false);
-  const revalidatingRef = useRef(false);
+  // The session ended while studios were open: ask for the code in an overlay
+  // so in-progress studio state survives.
+  const [sessionPrompt, setSessionPrompt] = useState(false);
+  const sessionPromptRef = useRef(false);
+  sessionPromptRef.current = sessionPrompt;
+  const recheckingRef = useRef(false);
+  const budgetTimerRef = useRef(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
@@ -391,19 +408,38 @@ export default function StandaloneShell({ locale = 'en' }) {
     return () => window.clearTimeout(timer);
   }, [notifications]);
 
-  const fetchBalance = useCallback(async (key) => {
+  // GET /api/session. Background refreshes (budget polls, after a generation)
+  // never tear the studios down: a lost session raises the overlay prompt, and
+  // network errors keep the current state.
+  const refreshSession = useCallback(async ({ background = false } = {}) => {
     try {
-      const data = await getUserBalance(key);
-      setBalance(data.balance);
-      setBalanceState('ok');
-      track('key_check', { ok: true });
+      const next = normalizeSession(await getSessionStatus({ force: true }));
+      if (background && sessionRef.current.status === 'authenticated' && next.status === 'signed_out') {
+        setSession((prev) => ({ ...prev, budget: null }));
+        setSessionPrompt(true);
+        track('session_expired');
+        return next;
+      }
+      setSession(next);
+      if (!background) track('session_check', { ok: true, status: next.status, gate: next.gate });
+      return next;
     } catch (err) {
-      console.error('Balance fetch failed:', err);
-      setBalanceState(classifyBalanceError(err));
-      // Only a 401/403 means the key is bad; anything else is the network/service.
-      track('key_check', { ok: false, status: typeof err?.status === 'number' ? err.status : 'network' });
+      if (!background) {
+        track('session_check', { ok: false, status: typeof err?.status === 'number' && err.status > 0 ? err.status : 'network' });
+        setSession((prev) => (prev.status === 'authenticated' ? prev : { status: 'error', kind: classifySessionError(err) }));
+      }
+      return null;
     }
   }, []);
+
+  const scheduleBudgetRefresh = useCallback(() => {
+    if (sessionRef.current.status !== 'authenticated') return;
+    window.clearTimeout(budgetTimerRef.current);
+    budgetTimerRef.current = window.setTimeout(() => {
+      void refreshSession({ background: true });
+    }, BUDGET_SETTLE_DELAY_MS);
+  }, [refreshSession]);
+  useEffect(() => () => window.clearTimeout(budgetTimerRef.current), []);
 
   const takeDuration = useCallback((tabId) => {
     const queue = generationStartedAt.current[tabId];
@@ -424,20 +460,34 @@ export default function StandaloneShell({ locale = 'en' }) {
       label: tabLabel(tabId),
       resultUrl: data?.url || null,
     });
-  }, [pushNotification, tabLabel, takeDuration]);
+    scheduleBudgetRefresh();
+  }, [pushNotification, scheduleBudgetRefresh, tabLabel, takeDuration]);
 
   const makeErrorCallback = useCallback((tabId) => (errorOrMessage) => {
-    track('generation_failed', { tab: tabId, duration_ms: takeDuration(tabId) });
-    const message = formatErrorMessage(errorOrMessage, copy.notifications.generationFailed, {
+    const kind = errorKind(errorOrMessage);
+    track('generation_failed', { tab: tabId, duration_ms: takeDuration(tabId), reason: kind || 'error' });
+    // Session, budget and rate-limit failures get localized copy; everything
+    // else goes through the studio's formatter.
+    const cannedMessage = {
+      session: copy.notifications.sessionExpired,
+      budget: copy.notifications.budgetExceeded,
+      rate_limited: copy.notifications.rateLimited,
+    }[kind];
+    const message = cannedMessage || formatErrorMessage(errorOrMessage, copy.notifications.generationFailed, {
       unreachable: copy.notifications.unreachable,
-      auth: copy.notifications.badKey,
+      auth: copy.notifications.sessionExpired,
+      credits: copy.notifications.budgetExceeded,
+      rateLimited: copy.notifications.rateLimited,
     });
     const rawMessage = typeof errorOrMessage === 'string'
       ? errorOrMessage
       : String(errorOrMessage?.message || errorOrMessage?.error || errorOrMessage || '');
     pushNotification({ type: 'error', tabId, label: tabLabel(tabId), message, rawMessage: rawMessage.slice(0, 300) });
-    if (apiKey) void fetchBalance(apiKey);
-  }, [apiKey, copy, fetchBalance, pushNotification, tabLabel, takeDuration]);
+    // A 401 the studio didn't report itself still brings up the code prompt
+    // (the listener re-checks /api/session first, so no false prompts).
+    if (kind === 'session') window.dispatchEvent(new CustomEvent(SESSION_REQUIRED_EVENT, { detail: { source: 'shell' } }));
+    scheduleBudgetRefresh();
+  }, [copy, pushNotification, scheduleBudgetRefresh, tabLabel, takeDuration]);
 
   const makeGenerationStartCallback = useCallback((tabId) => () => {
     (generationStartedAt.current[tabId] ||= []).push(Date.now());
@@ -548,123 +598,91 @@ export default function StandaloneShell({ locale = 'en' }) {
     } catch {
       // storage unavailable: keep the expanded default
     }
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setApiKey(stored);
-      fetchBalance(stored);
-      // Sync cookie immediately on mount to establish identity for background requests
-      document.cookie = `muapi_key=${stored}; path=/; max-age=31536000; SameSite=Lax${cookieSecureSuffix()}`;
-    }
-  }, [fetchBalance]);
+    // Browsers from the bring-your-own-key era still hold that key in
+    // localStorage and a readable cookie. Nothing uses it any more: drop it.
+    if (clearLegacyKeyStorage()) track('legacy_key_cleared');
+    void refreshSession();
+  }, [refreshSession]);
 
-  // Analytics: page/tab views and the key wall.
+  // Analytics: page/tab views and the access-code wall.
   useEffect(() => {
     track('studio_view', { tab: activeTab, locale });
   }, [activeTab, locale]);
 
   useEffect(() => {
-    if (hasMounted && !apiKey) track('key_wall_view');
-  }, [hasMounted, apiKey]);
+    if (hasMounted && session.status === 'signed_out') track('access_wall_view', { gate: session.gate });
+  }, [hasMounted, session.status, session.gate]);
 
-  // Validates the key against the balance endpoint BEFORE persisting it.
-  // Returns a string (shown inline by ApiKeyModal) when MuAPI rejects it;
-  // network/5xx failures let the key through with an amber balance pill.
-  const handleKeySave = useCallback(async (key) => {
-    const trimmed = key.trim();
-    try {
-      const data = await getUserBalance(trimmed);
-      setBalance(data.balance);
-      setBalanceState('ok');
-      track('key_check', { ok: true });
-    } catch (err) {
-      const kind = classifyBalanceError(err);
-      track('key_check', { ok: false, status: typeof err?.status === 'number' ? err.status : 'network' });
-      if (kind === 'unauthorized') return copy.apiKeyModal.invalidKey;
-      setBalanceState('error');
-    }
-    localStorage.setItem(STORAGE_KEY, trimmed);
-    document.cookie = `muapi_key=${trimmed}; path=/; max-age=31536000; SameSite=Lax${cookieSecureSuffix()}`;
-    setApiKey(trimmed);
-    authPromptDismissedRef.current = false;
-    setAuthPrompt(null);
-    track('key_saved');
-    return null;
+  const signInErrorMessage = useCallback((result) => {
+    const c = copy.accessCodeModal;
+    if (result.reason === 'invalid_code') return c.invalidCode;
+    if (result.reason === 'rate_limited') return fillCopy(c.rateLimited, { seconds: result.retryAfter || 60 });
+    if (result.reason === 'unavailable') return c.unavailable;
+    return c.genericError;
   }, [copy]);
 
-  const handleKeyChange = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setApiKey(null);
-    setBalance(null);
-    setBalanceState('loading');
-    setAuthPrompt(null);
-    authPromptDismissedRef.current = false;
-    document.cookie = `muapi_key=; path=/; max-age=0; SameSite=Lax${cookieSecureSuffix()}`;
-    track('key_removed');
-  }, []);
+  // POST /api/session {code}. Returns null on success or the inline error for
+  // AccessCodeModal. The server sets the HttpOnly cookie; nothing is stored here.
+  const handleSignIn = useCallback(async (code) => {
+    let next;
+    try {
+      next = normalizeSession(await signIn(code));
+    } catch (err) {
+      const failure = signInFailure(err);
+      track('session_sign_in', { ok: false, reason: failure.reason });
+      if (failure.reason === 'setup_required') {
+        setSessionPrompt(false);
+        setSession({ status: 'setup_required', gate: 'setup_required' });
+        return null;
+      }
+      return signInErrorMessage(failure);
+    }
+    track('session_sign_in', { ok: true });
+    setSession(next);
+    setSessionPrompt(false);
+    return null;
+  }, [signInErrorMessage]);
 
-  // MuAPI said 401/403 somewhere (muapi.js dispatches 'muapi:auth-required').
-  // Re-check against the balance endpoint first, so a 403 about one specific
-  // request or a burst of poll failures can't raise a false/duplicate prompt.
+  // A studio got a 401 (it dispatches 'aquora:session-required'). Re-check
+  // /api/session first so a burst of failing polls raises one prompt, and a
+  // 401 that wasn't about the session raises none.
   useEffect(() => {
-    if (!apiKey) return undefined;
+    if (!signedIn) return undefined;
     const handler = async () => {
-      if (revalidatingRef.current || authPromptDismissedRef.current) return;
-      revalidatingRef.current = true;
+      if (recheckingRef.current || sessionPromptRef.current) return;
+      recheckingRef.current = true;
       try {
-        const data = await getUserBalance(apiKey);
-        setBalance(data.balance);
-        setBalanceState('ok');
-      } catch (err) {
-        if (classifyBalanceError(err) === 'unauthorized') {
-          setBalanceState('unauthorized');
-          setAuthPrompt({ message: copy.apiKeyModal.invalidKey });
-        }
+        await refreshSession({ background: true });
       } finally {
-        revalidatingRef.current = false;
+        recheckingRef.current = false;
       }
     };
-    window.addEventListener('muapi:auth-required', handler);
-    return () => window.removeEventListener('muapi:auth-required', handler);
-  }, [apiKey, copy]);
+    window.addEventListener(SESSION_REQUIRED_EVENT, handler);
+    return () => window.removeEventListener(SESSION_REQUIRED_EVENT, handler);
+  }, [signedIn, refreshSession]);
 
-  // Inject the API key into outgoing Axios requests — same-origin only, so
-  // third-party hosts such as S3 never receive it.
-  useEffect(() => {
-    // Safety: Clear any global defaults that might have been set previously
-    delete axios.defaults.headers.common['x-api-key'];
-
-    if (!apiKey) return;
-
-    const interceptorId = axios.interceptors.request.use((config) => {
-      const url = typeof config.url === 'string' ? config.url : '';
-      const isAbsolute = /^https?:\/\//i.test(url);
-      const isSameOrigin = isAbsolute && typeof window !== 'undefined' && url.startsWith(`${window.location.origin}/`);
-      if (!isAbsolute || isSameOrigin) {
-        config.headers = config.headers || {};
-        config.headers['x-api-key'] = apiKey;
-      }
-      return config;
-    });
-
-    return () => {
-      axios.interceptors.request.eject(interceptorId);
-    };
-  }, [apiKey]);
-
-  // Refresh the balance every 60s while the tab is visible, and right away
+  // Refresh the budget every minute while the tab is visible, and right away
   // when the user comes back to it.
   useEffect(() => {
-    if (!apiKey) return undefined;
+    if (!signedIn) return undefined;
     const refreshIfVisible = () => {
-      if (document.visibilityState === 'visible') fetchBalance(apiKey);
+      if (document.visibilityState === 'visible') void refreshSession({ background: true });
     };
-    const interval = setInterval(refreshIfVisible, 60000);
+    const interval = setInterval(refreshIfVisible, BUDGET_POLL_MS);
     document.addEventListener('visibilitychange', refreshIfVisible);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', refreshIfVisible);
     };
-  }, [apiKey, fetchBalance]);
+  }, [signedIn, refreshSession]);
+
+  // A studio hit today's cap (402): refresh the pill right away.
+  useEffect(() => {
+    if (!signedIn) return undefined;
+    const onBudgetExceeded = () => { void refreshSession({ background: true }); };
+    window.addEventListener(BUDGET_EXCEEDED_EVENT, onBudgetExceeded);
+    return () => window.removeEventListener(BUDGET_EXCEEDED_EVENT, onBudgetExceeded);
+  }, [signedIn, refreshSession]);
 
   // Settings dialog: Esc/backdrop close it and focus returns to the trigger.
   const closeMobileNav = useCallback(() => setIsMobileOpen(false), []);
@@ -672,8 +690,11 @@ export default function StandaloneShell({ locale = 'en' }) {
   // Focus goes to the dialog's Close button on open (autoFocus) and back to
   // the Settings button that opened it on close.
   const settingsTriggerRef = useRef(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
   const openSettings = useCallback((event) => {
     settingsTriggerRef.current = event?.currentTarget || null;
+    setSignOutError('');
     setShowSettings(true);
   }, []);
   const closeSettings = useCallback(() => {
@@ -681,22 +702,25 @@ export default function StandaloneShell({ locale = 'en' }) {
     const trigger = settingsTriggerRef.current;
     if (trigger && typeof trigger.focus === 'function') window.setTimeout(() => trigger.focus(), 0);
   }, []);
-  // "Change key" opens a cancelable key overlay; the current key stays until
-  // the new one is saved.
-  const [changingKey, setChangingKey] = useState(false);
-  const startKeyChange = useCallback(() => {
+  // DELETE /api/session, then back to the access-code wall.
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      await signOut();
+    } catch {
+      // The cookie may still be valid: say so, and resync the shared store.
+      setSigningOut(false);
+      setSignOutError(copy.settingsModal.signOutFailed);
+      void refreshSession({ background: true });
+      return;
+    }
+    setSigningOut(false);
+    track('session_signed_out');
     setShowSettings(false);
-    setChangingKey(true);
-  }, []);
-  const handleChangedKeySave = useCallback(async (key) => {
-    const result = await handleKeySave(key);
-    if (!result) setChangingKey(false);
-    return result;
-  }, [handleKeySave]);
-  const handleKeyRemove = useCallback(() => {
-    setShowSettings(false);
-    handleKeyChange();
-  }, [handleKeyChange]);
+    setSessionPrompt(false);
+    setSession((prev) => ({ status: 'signed_out', gate: prev.gate }));
+  }, [copy, refreshSession]);
   useEscapeKey(showSettings, closeSettings);
 
   // Reelty: after 8s without a load event, offer to open it in a new tab.
@@ -744,14 +768,18 @@ export default function StandaloneShell({ locale = 'en' }) {
     setDroppedFiles(null);
   }, []);
 
-  if (!hasMounted) return (
-    <div className="min-h-screen bg-surface-app flex items-center justify-center">
-      <div className="animate-spin text-brand text-3xl">◌</div>
+  if (!hasMounted || session.status === 'loading') return (
+    <div className="min-h-screen bg-surface-app flex items-center justify-center" role="status">
+      <div className="animate-spin text-brand text-3xl" aria-hidden="true">◌</div>
+      <span className="sr-only">{copy.shell.loading}</span>
     </div>
   );
 
-  // Reelty doesn't use MuAPI, so it opens without the key wall.
-  if (!apiKey && activeTab === 'reelty') {
+  const openReelty = () => handleTabChange('reelty');
+
+  // Reelty is a separate app with its own backend, so it opens without a
+  // session.
+  if (!signedIn && activeTab === 'reelty') {
     return (
       <div className="h-screen bg-surface-app flex flex-col overflow-hidden text-white">
         <header className="flex-shrink-0 h-14 border-b border-white/[0.05] flex items-center justify-between px-4 bg-surface-panel/80 backdrop-blur-md gap-4">
@@ -780,30 +808,33 @@ export default function StandaloneShell({ locale = 'en' }) {
     );
   }
 
-  if (!apiKey) {
-    return <ApiKeyModal onSave={handleKeySave} locale={locale} onOpenReelty={() => handleTabChange('reelty')} />;
+  if (session.status === 'setup_required') {
+    return <GateNotice kind="setup" locale={locale} onRetry={() => refreshSession()} onOpenReelty={openReelty} />;
   }
 
-  const balanceDotClass = {
-    ok: 'bg-green-500 animate-pulse',
-    loading: 'bg-white/40 animate-pulse',
-    error: 'bg-amber-400',
-    unauthorized: 'bg-red-500',
-  }[balanceState];
-  const balanceTitle = {
-    ok: copy.shell.balanceOk,
-    loading: copy.shell.balanceLoading,
-    error: copy.shell.balanceUnavailable,
-    unauthorized: copy.shell.keyNotWorking,
-  }[balanceState];
-  const balanceText = balanceState === 'ok' && balance !== null
-    ? `$${balance}`
-    : balanceState === 'unauthorized'
-      ? copy.shell.keyNotWorking
-      : balanceState === 'error'
-        ? copy.shell.balanceUnavailable
-        : '$---';
-  const balanceTextIsLong = balanceState === 'unauthorized' || balanceState === 'error';
+  if (session.status === 'error') {
+    return <GateNotice kind="offline" locale={locale} onRetry={() => refreshSession()} onOpenReelty={openReelty} />;
+  }
+
+  if (!signedIn) {
+    return <AccessCodeModal onSubmit={handleSignIn} locale={locale} onOpenReelty={openReelty} />;
+  }
+
+  const budget = budgetView(session.budget);
+  const budgetDotClass = budget ? {
+    ok: 'bg-brand',
+    warn: 'bg-amber-400',
+    over: 'bg-red-500',
+  }[budget.level] : '';
+  const budgetMeterClass = budget ? {
+    ok: 'bg-brand',
+    warn: 'bg-amber-400',
+    over: 'bg-red-500',
+  }[budget.level] : '';
+  const budgetValues = budget ? { spent: budget.spentText, cap: budget.capText } : {};
+  const budgetTitle = budget?.level === 'over' ? copy.shell.budgetUsedUp : copy.shell.budgetTitle;
+  const workspaceShort = workspaceLabel(session.workspace);
+  const isOpenGate = session.gate === 'open';
 
   const studioCallbacks = (tabId) => ({
     onGenerationStart: makeGenerationStartCallback(tabId),
@@ -915,25 +946,26 @@ export default function StandaloneShell({ locale = 'en' }) {
               </a>
             )}
 
-            <div
-              title={balanceTitle}
-              aria-label={balanceTitle}
-              className="flex items-center gap-2 sm:gap-2.5 bg-white/5 px-2 sm:px-3 py-1.5 rounded-full border border-white/5 transition-colors"
-            >
-              <div className={`w-2 h-2 rounded-full ${balanceDotClass}`} />
-              <span className={`text-xs font-bold text-white/90 whitespace-nowrap ${balanceTextIsLong ? 'hidden sm:inline' : ''}`}>
-                {balanceText}
-              </span>
-              {balanceState === 'unauthorized' && (
-                <button
-                  type="button"
-                  onClick={() => { authPromptDismissedRef.current = false; setAuthPrompt({ message: copy.apiKeyModal.invalidKey }); }}
-                  className="text-xs font-semibold text-brand hover:text-brand-hover whitespace-nowrap"
-                >
-                  {copy.settingsModal.changeKey}
-                </button>
-              )}
-            </div>
+            {/* Today's estimated spend for this workspace vs its daily cap. */}
+            {budget && (
+              <p
+                title={budgetTitle}
+                data-testid="budget-pill"
+                data-budget-level={budget.level}
+                className="flex items-center gap-2 bg-white/5 px-2.5 sm:px-3 py-1.5 rounded-full border border-white/5 text-xs font-bold text-white/90 whitespace-nowrap"
+              >
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${budgetDotClass}`} aria-hidden="true" />
+                <span className="sr-only">
+                  {fillCopy(copy.shell.budgetToday, budgetValues)}
+                  {budget.level === 'over' ? `. ${copy.shell.budgetUsedUp}` : ''}
+                </span>
+                <span className="sm:hidden" aria-hidden="true">{fillCopy(copy.shell.budgetShort, budgetValues)}</span>
+                <span className="hidden sm:inline" aria-hidden="true">{fillCopy(copy.shell.budgetToday, budgetValues)}</span>
+                <span className="hidden md:block w-10 h-1 rounded-full bg-white/10 overflow-hidden" aria-hidden="true">
+                  <span className={`block h-full rounded-full ${budgetMeterClass}`} style={{ width: `${budget.percent}%` }} />
+                </span>
+              </p>
+            )}
 
             <button
               onClick={openSettings}
@@ -1106,36 +1138,6 @@ export default function StandaloneShell({ locale = 'en' }) {
                 })}
               </div>
 
-              {EXPLORE_APPS_TAB && (
-                <div className="mt-3 pt-3 border-t border-white/[0.07]">
-                  <a
-                    href={studioPath(EXPLORE_APPS_TAB.id)}
-                    onClick={(event) => handleNavigationItemClick(event, EXPLORE_APPS_TAB.id)}
-                    aria-current={activeTab === EXPLORE_APPS_TAB.id ? 'page' : undefined}
-                    aria-label={tabLabel(EXPLORE_APPS_TAB.id)}
-                    title={isSidebarCollapsed && !isMobileOpen ? tabLabel(EXPLORE_APPS_TAB.id) : undefined}
-                    className={`
-                      group relative flex items-center rounded-xl transition-all duration-150 text-[13px] font-semibold
-                      ${isSidebarCollapsed && !isMobileOpen ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3'}
-                      ${activeTab === EXPLORE_APPS_TAB.id
-                        ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
-                      }
-                    `}
-                  >
-                    {activeTab === EXPLORE_APPS_TAB.id && (
-                      <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full" />
-                    )}
-                    <span className={`flex-shrink-0 ${activeTab === EXPLORE_APPS_TAB.id ? 'text-brand' : 'text-white/50 group-hover:text-white'}`}>
-                      {EXPLORE_APPS_TAB.icon}
-                    </span>
-                    {(!isSidebarCollapsed || isMobileOpen) && (
-                      <span className="truncate">{tabLabel(EXPLORE_APPS_TAB.id)}</span>
-                    )}
-                  </a>
-                </div>
-              )}
-
               {showLanguageToggle && (isMobileOpen || !isSidebarCollapsed) && (
                 <div className="sm:hidden mt-3 pt-3 border-t border-white/[0.07]">
                   <a
@@ -1153,45 +1155,44 @@ export default function StandaloneShell({ locale = 'en' }) {
           </aside>
         )}
 
-        {/* Studio Content */}
-        <div className="flex-1 min-h-0 h-full relative overflow-hidden bg-surface-app">
+        {/* Studio Content. Keyed by workspace: signing in with a different
+            access code remounts the studios so no state crosses workspaces. */}
+        <div key={studioIdentity} className="flex-1 min-h-0 h-full relative overflow-hidden bg-surface-app">
         <div className={activeTab === 'image' ? "h-full w-full" : "hidden"}>
-          {shouldMount('image') && <ImageStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('image')} />}
+          {shouldMount('image') && <ImageStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('image')} />}
         </div>
         <div className={activeTab === 'layers' ? "h-full w-full" : "hidden"}>
-          {shouldMount('layers') && <LayersStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('layers')} />}
+          {shouldMount('layers') && <LayersStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('layers')} />}
         </div>
         <div className={activeTab === 'video' ? "h-full w-full" : "hidden"}>
-          {shouldMount('video') && <VideoStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('video')} />}
+          {shouldMount('video') && <VideoStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('video')} />}
         </div>
         <div className={activeTab === 'clipping' ? "h-full w-full" : "hidden"}>
-          {shouldMount('clipping') && <ClippingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('clipping')} />}
+          {shouldMount('clipping') && <ClippingStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('clipping')} />}
         </div>
         <div className={activeTab === 'motion-control' ? "h-full w-full" : "hidden"}>
-          {shouldMount('motion-control') && <MotionControlStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('motion-control')} />}
-        </div>
-        <div className={activeTab === 'vibe-motion' ? "h-full w-full" : "hidden"}>
-          {shouldMount('vibe-motion') && <VibeMotionStudio apiKey={apiKey} locale={locale} {...studioCallbacks('vibe-motion')} />}
+          {shouldMount('motion-control') && <MotionControlStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('motion-control')} />}
         </div>
         <div className={activeTab === 'lipsync' ? "h-full w-full" : "hidden"}>
-          {shouldMount('lipsync') && <LipSyncStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('lipsync')} />}
+          {shouldMount('lipsync') && <LipSyncStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('lipsync')} />}
         </div>
         <div className={activeTab === 'body-swap' ? "h-full w-full" : "hidden"}>
-          {shouldMount('body-swap') && <RecastStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('body-swap')} />}
+          {shouldMount('body-swap') && <RecastStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('body-swap')} />}
         </div>
         <div className={activeTab === 'cinema' ? "h-full w-full" : "hidden"}>
-          {shouldMount('cinema') && <CinemaStudio apiKey={apiKey} locale={locale} {...studioCallbacks('cinema')} />}
+          {shouldMount('cinema') && <CinemaStudio apiKey={studioIdentity} locale={locale} {...studioCallbacks('cinema')} />}
         </div>
         <div className={activeTab === 'audio' ? "h-full w-full" : "hidden"}>
-          {shouldMount('audio') && <AudioStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('audio')} />}
+          {shouldMount('audio') && <AudioStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('audio')} />}
         </div>
         <div className={activeTab === 'marketing' ? "h-full w-full" : "hidden"}>
-          {shouldMount('marketing') && <MarketingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('marketing')} />}
+          {shouldMount('marketing') && <MarketingStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('marketing')} />}
         </div>
         <div className={activeTab === 'workflows' ? "h-full w-full" : "hidden"}>
           {shouldMount('workflows') && (
             <WorkflowStudio
-              apiKey={apiKey}
+              apiKey={studioIdentity}
+              locale={locale}
               isHeaderVisible={isHeaderVisible}
               onToggleHeader={setIsHeaderVisible}
               {...studioCallbacks('workflows')}
@@ -1199,12 +1200,13 @@ export default function StandaloneShell({ locale = 'en' }) {
           )}
         </div>
         <div className={activeTab === 'agents' ? "h-full w-full" : "hidden"}>
-          {shouldMount('agents') && <AgentStudio apiKey={apiKey} locale={locale} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+          {shouldMount('agents') && <AgentStudio apiKey={studioIdentity} locale={locale} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         </div>
         <div className={activeTab === 'design-agent' ? "h-full w-full" : "hidden"}>
           {activeTab === 'design-agent' && (
             <DesignAgentStudio
-              apiKey={apiKey}
+              apiKey={studioIdentity}
+              locale={locale}
               isHeaderVisible={isHeaderVisible}
               onToggleHeader={setIsHeaderVisible}
               backHref={studioPath()}
@@ -1218,13 +1220,10 @@ export default function StandaloneShell({ locale = 'en' }) {
             />
           )}
         </div>
-        <div className={activeTab === 'apps' ? "h-full w-full" : "hidden"}>
-          {shouldMount('apps') && <AppsStudio apiKey={apiKey} locale={locale} />}
-        </div>
         <div className={activeTab === 'ai-influencer' ? "h-full w-full" : "hidden"}>
           {shouldMount('ai-influencer') && (
             <AiInfluencerStudio
-              apiKey={apiKey}
+              apiKey={studioIdentity}
               locale={locale}
               {...studioCallbacks('ai-influencer')}
             />
@@ -1422,72 +1421,107 @@ export default function StandaloneShell({ locale = 'en' }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-modal-title"
+          aria-describedby="settings-modal-subtitle"
         >
-          <div className="bg-surface-panel border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
+          <div className="bg-surface-panel border border-white/10 rounded-2xl p-6 sm:p-8 w-full max-w-sm shadow-2xl max-h-[calc(100vh-32px)] overflow-y-auto">
             <h2 id="settings-modal-title" className="font-display text-white font-bold text-lg mb-2">{copy.settingsModal.title}</h2>
-            <p className="text-secondary text-[13px] mb-8">
+            <p id="settings-modal-subtitle" className="text-secondary text-[13px] mb-6">
               {copy.settingsModal.subtitle}
             </p>
 
-            <div className="space-y-4 mb-8">
-              <div className="bg-white/5 border border-white/[0.06] rounded-xl p-4">
-                <p className="block text-xs font-semibold text-secondary mb-2">
-                   {copy.settingsModal.activeApiKey}
-                </p>
-                <div className="text-[13px] font-mono text-white/80">
-                  {apiKey.slice(0, 8)}••••••••••••••••
-                </div>
-              </div>
+            <div className="space-y-4 mb-6">
+              <section aria-labelledby="settings-workspace-heading" className="bg-white/5 border border-white/[0.06] rounded-xl p-4">
+                <h3 id="settings-workspace-heading" className="text-xs font-semibold text-secondary mb-2">
+                  {copy.settingsModal.workspaceHeading}
+                </h3>
+                {isOpenGate ? (
+                  <>
+                    <p className="text-[13px] font-semibold text-white/90">{copy.settingsModal.openWorkspace}</p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-white/60">{copy.settingsModal.openWorkspaceNote}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="flex items-center gap-2 text-[13px] font-semibold text-white/90">
+                      <span className="w-2 h-2 rounded-full bg-brand flex-shrink-0" aria-hidden="true" />
+                      {copy.settingsModal.signedInWithCode}
+                    </p>
+                    {workspaceShort && (
+                      <p className="mt-1 text-[12px] font-mono text-white/70" data-testid="settings-workspace">
+                        {fillCopy(copy.settingsModal.workspaceId, { id: workspaceShort })}
+                      </p>
+                    )}
+                    <p className="mt-2 text-[12px] leading-relaxed text-white/60">{copy.settingsModal.sharedNote}</p>
+                  </>
+                )}
+              </section>
+
+              <section aria-labelledby="settings-budget-heading" className="bg-white/5 border border-white/[0.06] rounded-xl p-4">
+                <h3 id="settings-budget-heading" className="text-xs font-semibold text-secondary mb-2">
+                  {copy.settingsModal.budgetHeading}
+                </h3>
+                {budget ? (
+                  <>
+                    <p className="text-[13px] font-semibold text-white/90">{fillCopy(copy.shell.budgetToday, budgetValues)}</p>
+                    <div
+                      className="mt-2 h-1.5 w-full rounded-full bg-white/10 overflow-hidden"
+                      role="progressbar"
+                      aria-label={copy.settingsModal.budgetHeading}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={budget.percent}
+                      aria-valuetext={fillCopy(copy.shell.budgetToday, budgetValues)}
+                    >
+                      <div className={`h-full rounded-full ${budgetMeterClass}`} style={{ width: `${budget.percent}%` }} />
+                    </div>
+                    <p className="mt-2 text-[12px] leading-relaxed text-white/60">
+                      {budget.level === 'over' ? copy.shell.budgetUsedUp : copy.settingsModal.budgetNote}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-[12px] text-white/60">{copy.settingsModal.budgetUnavailable}</p>
+                )}
+              </section>
             </div>
 
+            {signOutError && (
+              <p role="alert" className="mb-3 text-[12px] font-medium text-red-400">{signOutError}</p>
+            )}
+
             <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={startKeyChange}
-                className="flex-1 h-10 rounded-md bg-brand text-on-brand hover:bg-brand-hover text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
-              >
-                {copy.settingsModal.changeKey}
-              </button>
+              {!isOpenGate && (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  aria-busy={signingOut}
+                  className="flex-1 h-10 rounded-md bg-white/5 text-white/80 hover:bg-white/10 hover:text-white text-xs font-semibold transition-all border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {signingOut ? copy.settingsModal.signingOut : copy.settingsModal.signOut}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={closeSettings}
                 autoFocus
-                className="flex-1 h-10 rounded-md bg-white/5 text-white/80 hover:bg-white/10 text-xs font-semibold transition-all border border-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                className="flex-1 h-10 rounded-md bg-brand text-on-brand hover:bg-brand-hover text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
               >
                 {copy.settingsModal.close}
               </button>
             </div>
-            <button
-              type="button"
-              onClick={handleKeyRemove}
-              className="mt-4 w-full text-center text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
-            >
-              {copy.settingsModal.removeKey}
-            </button>
           </div>
         </div>
       )}
 
-      {changingKey && !authPrompt && (
-        <ApiKeyModal
+      {/* The session ended while studios were open: sign back in without
+          leaving the studio (in-progress state survives). */}
+      {sessionPrompt && (
+        <AccessCodeModal
           overlay
           locale={locale}
-          title={copy.apiKeyModal.changeKeyTitle}
-          subtitle={copy.apiKeyModal.changeKeySubtitle}
-          onSave={handleChangedKeySave}
-          onClose={() => setChangingKey(false)}
-        />
-      )}
-
-      {/* MuAPI rejected the saved key: ask for a fresh one without leaving the studio. */}
-      {authPrompt && (
-        <ApiKeyModal
-          overlay
-          locale={locale}
-          title={copy.apiKeyModal.keyStoppedTitle}
-          subtitle={copy.apiKeyModal.keyStoppedSubtitle}
-          onSave={handleKeySave}
-          onClose={() => { setAuthPrompt(null); authPromptDismissedRef.current = true; }}
+          title={copy.accessCodeModal.sessionEndedTitle}
+          subtitle={copy.accessCodeModal.sessionEndedSubtitle}
+          onSubmit={handleSignIn}
+          onClose={() => setSessionPrompt(false)}
         />
       )}
     </div>

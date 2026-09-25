@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FiBox, FiArrowRight, FiZap } from "react-icons/fi";
+import { FiZap } from "react-icons/fi";
 
 /**
  * Renders a DAG (Directed Acyclic Graph) of plan nodes.
@@ -38,9 +38,6 @@ export default function PlanVisualizer({ plan, theme = "dark" }) {
           </p>
         </div>
         <div className="text-right">
-          <div className="text-[12px] font-bold text-primary-text">
-            {plan.total_credits} <span className="text-[10px] text-secondary-text font-normal">credits</span>
-          </div>
           <div className="text-[10px] text-secondary-text uppercase tracking-tight">
             {plan.nodes.length} steps
           </div>
@@ -59,12 +56,9 @@ export default function PlanVisualizer({ plan, theme = "dark" }) {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-primary opacity-70">#{node.id}</span>
-                    <span className="text-[10px] font-bold text-secondary-text bg-bg-page px-1.5 py-0.5 rounded border border-divider">
-                      {node.est_credits || 0} cr
-                    </span>
                   </div>
                   <div className="text-[12px] font-bold text-primary-text truncate group-hover:whitespace-normal group-hover:overflow-visible transition-all">
-                    {node.tool.replace(/_/g, " ")}
+                    {String(node.tool || "").replace(/_/g, " ")}
                   </div>
                   <div className="text-[11px] text-secondary-text mt-1.5 leading-tight line-clamp-2 italic">
                     {node.label || "Processing asset..."}

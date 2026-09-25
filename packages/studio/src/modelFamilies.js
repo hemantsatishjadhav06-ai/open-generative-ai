@@ -6,6 +6,7 @@ import {
   v2vModels,
 } from "./models.js";
 import { getModelMediaCapabilities } from "./modelCapabilities.js";
+import { isModelAvailable } from "./modelAvailability.js";
 import {
   getGroupedVideoConfiguration,
   resolveGroupedVideoVariant,
@@ -368,8 +369,8 @@ function buildCatalog(modeLists, config) {
       const family = familyMap.get(id) || {
         id,
         name: "",
-        provider: model.provider || "muapi",
-        provider_name: model.provider_name || "Muapi",
+        provider: model.provider || "aquora",
+        provider_name: model.provider_name || "Aquora",
         rawVariants: {},
         freshness: 0,
       };
@@ -488,10 +489,54 @@ function getPickerEntryByVariantId(catalog, variantId) {
     : videoModelPickerEntryByVariantId.get(variantId);
 }
 
+// ─── availability (GET /api/v1/models/available, see modelAvailability.js) ──
+// Until the list is loaded every variant counts as available.
+
+export function isVariantAvailable(variant) {
+  return Boolean(variant?.model) && isModelAvailable(variant.model);
+}
+
+// A picker entry's variant for `mode` that Aquora can run: its own variant
+// for that mode, else another runnable variant grouped under the same entry.
+export function getAvailableEntryVariant(catalog, entry, mode) {
+  const primary = entry?.variantsByMode?.[mode];
+  if (primary && isVariantAvailable(primary)) return primary;
+  for (const variantId of entry?.variantIds || []) {
+    const variant = catalog.variantById.get(variantId);
+    if (variant?.mode === mode && isVariantAvailable(variant)) return variant;
+  }
+  return null;
+}
+
+// Hidden from the pickers when none of an entry's variants can run.
+export function isPickerEntryAvailable(entry) {
+  if (!entry) return false;
+  if (Object.values(entry.variantsByMode || {}).some(isVariantAvailable)) return true;
+  for (const variantId of entry.variantIds || []) {
+    if (isModelAvailable(variantId)) return true;
+  }
+  return false;
+}
+
+// The first runnable variant for `mode`, trying the picker entries named in
+// `preferredEntryIds` first (e.g. the curated Picks), then `entries` in order.
+export function getFirstAvailableVariant(catalog, entries, mode, preferredEntryIds = []) {
+  for (const entryId of preferredEntryIds) {
+    const entry = entries.find((candidate) => candidate.id === entryId);
+    const variant = entry ? getAvailableEntryVariant(catalog, entry, mode) : null;
+    if (variant) return variant;
+  }
+  for (const entry of entries) {
+    const variant = getAvailableEntryVariant(catalog, entry, mode);
+    if (variant) return variant;
+  }
+  return null;
+}
+
 export function getFamilyVariant(catalog, familyOrId, mode, currentVariantId = null) {
   const family =
     typeof familyOrId === "string" ? catalog.familyById.get(familyOrId) : familyOrId;
-  const variants = family?.variants[mode] || [];
+  const variants = (family?.variants[mode] || []).filter(isVariantAvailable);
   if (variants.length === 0) return null;
 
   const currentFamily = currentVariantId
@@ -499,14 +544,16 @@ export function getFamilyVariant(catalog, familyOrId, mode, currentVariantId = n
     : null;
   if (currentFamily?.id === family.id) {
     const currentVariant = catalog.variantById.get(currentVariantId);
-    if (currentVariant?.mode === mode) return currentVariant;
+    if (currentVariant?.mode === mode && isVariantAvailable(currentVariant)) return currentVariant;
     const currentEntry = getPickerEntryByVariantId(catalog, currentVariantId);
-    return currentEntry?.variantsByMode[mode] || null;
+    if (!currentEntry?.variantsByMode[mode]) return null;
+    const entryVariant = getAvailableEntryVariant(catalog, currentEntry, mode);
+    if (entryVariant) return entryVariant;
   }
 
   const preferredId = catalog.preferredVariants[family.id]?.[mode];
   const preferred = preferredId ? catalog.variantById.get(preferredId) : null;
-  if (preferred) return preferred;
+  if (preferred && isVariantAvailable(preferred)) return preferred;
 
   return variants[0];
 }
@@ -518,6 +565,7 @@ export function getImageReferenceVariant(catalog, familyOrId, currentVariantId) 
   if (
     family &&
     catalog.familyByVariantId.get(currentVariantId)?.id === family.id &&
+    isVariantAvailable(currentVariant) &&
     getModelMediaCapabilities(currentVariant?.model).image.maxItems > 0
   ) {
     return currentVariant;

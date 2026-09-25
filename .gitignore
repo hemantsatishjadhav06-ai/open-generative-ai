@@ -36,3 +36,6 @@ out/
 .env
 .env.*
 !.env.example
+
+# Aquora gateway local data (JSON store)
+.aquora-data/

@@ -2,20 +2,32 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
+  DECOMPOSE_LAYERS_MODEL,
+  EXPAND_IMAGE_MODEL,
+  REMOVE_BACKGROUND_MODEL,
+  buildUpscalePayload,
   decomposeLayers,
+  formatUsd,
+  getUpscaleModelKey,
   uploadFile,
   generateI2I,
   upscaleImage,
   removeBackground,
   expandImage,
-} from "../muapi.js";
+} from "../gateway.js";
+import { isModelAvailable } from "../modelAvailability.js";
+import useModelAvailability from "../useModelAvailability.js";
+import useCostEstimate from "../useCostEstimate.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import en from "../messages/en/layersStudio.json";
 import zh from "../messages/zh/layersStudio.json";
 import { resolveCopy } from "../i18nUtils";
 import { notify, notifyError, notifySuccess } from "../utils/notify.js";
 
-// Upscale Models Definition from schema_data.json
+// The edit model behind the prompt bar, the one-click tools (enhance,
+// relight, angles, text) and region edits when layer splitting is off.
+const EDIT_MODEL = "nano-banana-pro-edit";
+
 const UPSCALE_MODELS = [
   {
     id: "topaz-image-upscale",
@@ -32,18 +44,6 @@ const UPSCALE_MODELS = [
     name: "AI Upscaler",
     subtitle: "Fast 1-click automatic super-resolution",
   },
-];
-
-// Sample initial image & decomposed layers for demonstration (Seedream Wild Beauty via CDN)
-const DEFAULT_SAMPLE_IMAGE =
-  "https://cdn.muapi.ai/assets/1786019968051_cKRYLHHu.png";
-
-const DEFAULT_SAMPLE_LAYERS = [
-  "https://cdn.muapi.ai/assets/1786021161819_iOe80bNR.webp",
-  "https://cdn.muapi.ai/assets/1786020452731_mB4m6NFR.webp",
-  "https://cdn.muapi.ai/assets/1786021169234_iyVccSAA.webp",
-  "https://cdn.muapi.ai/assets/1786021154170_Dx9snemT.webp",
-  "https://cdn.muapi.ai/assets/1786021150882_p9lgz4lY.webp",
 ];
 
 // Preset colors for Marker & Shapes tool
@@ -91,8 +91,17 @@ export default function LayersStudio({
 }) {
   const copy = resolveCopy(en, zh, locale);
 
+  // Which tools the gateway can run (everything counts as available until
+  // the list arrives). Color grading is local and always on.
+  useModelAvailability();
+  const canDecompose = isModelAvailable(DECOMPOSE_LAYERS_MODEL);
+  const canEdit = isModelAvailable(EDIT_MODEL);
+  const upscaleModels = UPSCALE_MODELS.filter((m) => isModelAvailable(getUpscaleModelKey(m.id)));
+  const canRemoveBg = isModelAvailable(REMOVE_BACKGROUND_MODEL);
+  const canExpand = isModelAvailable(EXPAND_IMAGE_MODEL);
+
   // Main canvas & image state
-  const [currentImageUrl, setCurrentImageUrl] = useState(DEFAULT_SAMPLE_IMAGE);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -104,6 +113,7 @@ export default function LayersStudio({
 
   // Upscale Clean Panel State
   const [upscaleModel, setUpscaleModel] = useState("topaz-image-upscale");
+  const upscaleModelAvailable = isModelAvailable(getUpscaleModelKey(upscaleModel));
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [topazFactor, setTopazFactor] = useState(1);
   const [seedvrResolution, setSeedvrResolution] = useState("4k");
@@ -166,6 +176,37 @@ export default function LayersStudio({
 
   // Right Inspector Panel State: 'layer-decomposition' | 'upscale' | 'color-grading' | 'remove-bg' | 'expand-crop' | 'menu' | etc.
   const [activeSideTab, setActiveSideTab] = useState("layer-decomposition");
+
+  // Leave a panel (or upscaler) the gateway can't run: open the tools menu
+  // instead, and keep the upscaler on one that can.
+  const sideTabAvailable = {
+    "layer-decomposition": canDecompose,
+    upscale: upscaleModels.length > 0,
+    "remove-bg": canRemoveBg,
+    "expand-crop": canExpand,
+    "edit-text": canEdit,
+    enhancer: canEdit,
+    relight: canEdit,
+    angles: canEdit,
+  }[activeSideTab];
+  useEffect(() => {
+    if (sideTabAvailable === false) setActiveSideTab("menu");
+  }, [sideTabAvailable]);
+  const firstUpscaleModelId = upscaleModels[0]?.id;
+  useEffect(() => {
+    if (!upscaleModelAvailable && firstUpscaleModelId) setUpscaleModel(firstUpscaleModelId);
+  }, [upscaleModelAvailable, firstUpscaleModelId]);
+
+  // Estimated cost of one run for the footer buttons (null → no badge).
+  const upscaleEstimate = useCostEstimate(
+    getUpscaleModelKey(upscaleModel),
+    buildUpscalePayload({ model: upscaleModel, resolution: seedvrResolution, upscale_factor: topazFactor }),
+    { enabled: activeSideTab === "upscale" && upscaleModelAvailable },
+  );
+  const removeBgEstimate = useCostEstimate(REMOVE_BACKGROUND_MODEL, {}, { enabled: activeSideTab === "remove-bg" && canRemoveBg });
+  const expandEstimate = useCostEstimate(EXPAND_IMAGE_MODEL, {}, { enabled: activeSideTab === "expand-crop" && canExpand });
+  const withEstimate = (label, estimate) =>
+    estimate === null ? label : copy.footer.withEstimate.replace("{label}", label).replace("{cost}", formatUsd(estimate));
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Tool Specific Inputs
@@ -275,10 +316,6 @@ export default function LayersStudio({
 
   // Upload File Helper
   const handleUploadFile = async (file) => {
-    if (!apiKey) {
-      notifyError(copy.toasts.enterApiKeyUpload);
-      return;
-    }
     setUploading(true);
     setUploadProgress(0);
     try {
@@ -712,12 +749,29 @@ export default function LayersStudio({
     notify(copy.toasts.viewReset);
   };
 
+  // The selected lasso / box area in words (percent of width and height),
+  // for edit models that don't take coordinates.
+  const describeRegion = () => {
+    let box = null;
+    if (activeTool === "lasso" && lassoPoints.length > 0) {
+      const xs = lassoPoints.map((p) => p.x / 10);
+      const ys = lassoPoints.map((p) => p.y / 10);
+      box = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+    } else if (activeTool === "regional-edit" && regionalBox.width > 0 && regionalBox.height > 0) {
+      box = {
+        x0: regionalBox.x,
+        x1: regionalBox.x + regionalBox.width,
+        y0: regionalBox.y,
+        y1: regionalBox.y + regionalBox.height,
+      };
+    }
+    if (!box) return "";
+    const pct = (value) => `${Math.round(Math.min(100, Math.max(0, value)))}%`;
+    return `from ${pct(box.x0)} to ${pct(box.x1)} across and ${pct(box.y0)} to ${pct(box.y1)} down`;
+  };
+
   // --- REGIONAL & LASSO EDIT AI SUBMIT WITH <bbox> BBOX TAGS ---
   const handleRunRegionalEdit = async () => {
-    if (!apiKey) {
-      notifyError(copy.toasts.enterApiKey);
-      return;
-    }
     if (!regionalPrompt) {
       notifyError(copy.toasts.enterRegionPrompt);
       return;
@@ -745,6 +799,29 @@ export default function LayersStudio({
         bboxTag = `<bbox>${minY} ${minX} ${maxY} ${maxX}</bbox>`;
       }
 
+      if (!canDecompose) {
+        // No layer model on this backend: edit the region in place with the
+        // edit model, describing the area in words (the <bbox> tags are
+        // specific to the layer model).
+        if (!canEdit) throw new Error(copy.toasts.toolUnavailable);
+        const region = describeRegion();
+        const result = await generateI2I(apiKey, {
+          model: EDIT_MODEL,
+          prompt: region
+            ? `Only change the area ${region} of the image: ${regionalPrompt}. Keep everything else exactly the same.`
+            : regionalPrompt,
+          image_url: currentImageUrl,
+        });
+        setProgress(100);
+        if (result?.url) {
+          setCurrentImageUrl(result.url);
+          setDecomposedLayers([]);
+          notifySuccess(copy.toasts.regionEditDone);
+          onGenerationComplete?.(result);
+        }
+        return;
+      }
+
       const formattedPrompt = bboxTag
         ? `Modify ${bboxTag}: ${regionalPrompt}`
         : regionalPrompt;
@@ -757,12 +834,7 @@ export default function LayersStudio({
       });
 
       setProgress(100);
-      const rawImages =
-        result.images ||
-        result.output?.images ||
-        result.outputs ||
-        (result.url ? [result.url] : []);
-      const layerUrls = Array.isArray(rawImages) ? rawImages : [rawImages];
+      const layerUrls = result.images || [];
 
       if (layerUrls.length > 0) {
         setDecomposedLayers(layerUrls);
@@ -772,9 +844,7 @@ export default function LayersStudio({
           initialVis[idx] = true;
         });
         setVisibleLayers(initialVis);
-        notifySuccess(
-          `Generated ${layerUrls.length} layer(s) with Seedream 5 Pro!`,
-        );
+        notifySuccess(copy.toasts.layersGenerated.replace("{count}", layerUrls.length));
         onGenerationComplete?.(result);
       }
     } catch (err) {
@@ -823,12 +893,12 @@ export default function LayersStudio({
     const rawPrompt = overridePrompt !== undefined ? overridePrompt : prompt;
     const finalSeedreamPrompt = buildSeedreamLayerPrompt(rawPrompt);
 
-    if (!apiKey) {
-      notifyError(copy.toasts.apiKeyMissingSet);
-      return;
-    }
     if (!currentImageUrl) {
       notifyError(copy.toasts.uploadOrSelectDecompose);
+      return;
+    }
+    if (!canDecompose) {
+      notifyError(copy.toasts.toolUnavailable);
       return;
     }
 
@@ -851,12 +921,8 @@ export default function LayersStudio({
       clearInterval(progressInterval);
       setProgress(100);
 
-      const rawImages =
-        result.images ||
-        result.output?.images ||
-        result.outputs ||
-        (result.url ? [result.url] : []);
-      const layerUrls = Array.isArray(rawImages) ? rawImages : [rawImages];
+      // decomposeLayers already returns the layer URLs as plain strings.
+      const layerUrls = result.images || [];
 
       setDecomposedLayers(layerUrls);
       setCarouselIndex(0);
@@ -881,12 +947,12 @@ export default function LayersStudio({
 
   // --- API CALL: UPSCALE IMAGE (seedvr2-image-upscale, topaz-image-upscale, ai-image-upscaler) ---
   const handleRunUpscale = async () => {
-    if (!apiKey) {
-      notifyError(copy.toasts.enterApiKey);
-      return;
-    }
     if (!currentImageUrl) {
       notifyError(copy.toasts.uploadOrSelectUpscale);
+      return;
+    }
+    if (!isModelAvailable(getUpscaleModelKey(upscaleModel))) {
+      notifyError(copy.toasts.toolUnavailable);
       return;
     }
 
@@ -940,12 +1006,12 @@ export default function LayersStudio({
 
   // --- API CALL: REMOVE BACKGROUND (ai-background-remover) ---
   const handleRunRemoveBg = async () => {
-    if (!apiKey) {
-      notifyError(copy.toasts.enterApiKey);
-      return;
-    }
     if (!currentImageUrl) {
       notifyError(copy.toasts.uploadOrSelectRemoveBg);
+      return;
+    }
+    if (!canRemoveBg) {
+      notifyError(copy.toasts.toolUnavailable);
       return;
     }
 
@@ -996,12 +1062,12 @@ export default function LayersStudio({
 
   // --- API CALL: EXPAND / OUTPAINT IMAGE (ai-image-extension) ---
   const handleRunExpand = async () => {
-    if (!apiKey) {
-      notifyError(copy.toasts.enterApiKey);
-      return;
-    }
     if (!currentImageUrl) {
       notifyError(copy.toasts.uploadOrSelectExpand);
+      return;
+    }
+    if (!canExpand) {
+      notifyError(copy.toasts.toolUnavailable);
       return;
     }
 
@@ -1150,29 +1216,8 @@ export default function LayersStudio({
     }
   };
 
-  // Load Seedream Wild Beauty 5-Layer Decomposition Example via CDN
-  const handleLoadSampleLayers = () => {
-    setCurrentImageUrl(
-      "https://cdn.muapi.ai/assets/1786019968051_cKRYLHHu.png",
-    );
-    setDecomposedLayers(DEFAULT_SAMPLE_LAYERS);
-    setCarouselIndex(0);
-    const initialVis = {};
-    DEFAULT_SAMPLE_LAYERS.forEach((_, idx) => {
-      initialVis[idx] = true;
-    });
-    setVisibleLayers(initialVis);
-    clearDrawingCanvas();
-    setMarkedRegions([]);
-    notifySuccess(copy.toasts.loadedSample);
-  };
-
   // Explicit Side Tool Execution Handler
   const handleExecuteSideTool = async (toolId) => {
-    if (!apiKey) {
-      notifyError(copy.toasts.apiKeyMissing);
-      return;
-    }
     if (!currentImageUrl) {
       notifyError(copy.toasts.uploadImageFirst);
       return;
@@ -1184,6 +1229,10 @@ export default function LayersStudio({
     if (toolId === "expand-crop") {
       return handleRunExpand();
     }
+    if (!canEdit) {
+      notifyError(copy.toasts.toolUnavailable);
+      return;
+    }
 
     setIsProcessing(true);
     setProgress(20);
@@ -1193,7 +1242,7 @@ export default function LayersStudio({
       let result;
       if (toolId === "enhancer") {
         result = await generateI2I(apiKey, {
-          model: "nano-banana-pro-edit",
+          model: EDIT_MODEL,
           prompt:
             "Enhance image contrast, color balance, exposure, and sharpness.",
           image_url: currentImageUrl,
@@ -1204,13 +1253,13 @@ export default function LayersStudio({
           prompt ||
           "Edit and sharpen text overlay on the image cleanly.";
         result = await generateI2I(apiKey, {
-          model: "nano-banana-pro-edit",
+          model: EDIT_MODEL,
           prompt: textPrompt,
           image_url: currentImageUrl,
         });
       } else {
         result = await generateI2I(apiKey, {
-          model: "nano-banana-pro-edit",
+          model: EDIT_MODEL,
           prompt: prompt || `Apply ${toolId} image transformation.`,
           image_url: currentImageUrl,
         });
@@ -1219,7 +1268,7 @@ export default function LayersStudio({
       setProgress(100);
       if (result?.url) {
         setCurrentImageUrl(result.url);
-        notifySuccess(copy.toasts.toolCompleted.replace('{tool}', toolId));
+        notifySuccess(copy.toasts.toolCompleted.replace('{tool}', copy.menuItems[toolId] || copy.toasts.editLabel));
         onGenerationComplete?.(result);
       }
     } catch (err) {
@@ -1230,6 +1279,20 @@ export default function LayersStudio({
       setIsProcessing(false);
       onGenerationEnd?.();
     }
+  };
+
+  // The prompt bar splits layers when the layer model is available, and
+  // otherwise edits the whole image with the edit model.
+  const handlePromptSubmit = () => {
+    if (canDecompose) {
+      handleDecompose();
+      return;
+    }
+    if (!prompt.trim()) {
+      notifyError(copy.toasts.enterEditPrompt);
+      return;
+    }
+    handleExecuteSideTool("prompt-edit");
   };
 
   const toggleLayerVisibility = (idx) => {
@@ -1271,17 +1334,18 @@ export default function LayersStudio({
     notifySuccess(copy.toasts.downloadingAll);
   };
 
+  // Tools whose model the gateway can't run are left out of the menu.
   const sideMenuItems = [
-    { id: "layer-decomposition", label: copy.menuItems["layer-decomposition"], isNew: true },
-    { id: "upscale", label: copy.menuItems.upscale, isNew: true },
-    { id: "color-grading", label: copy.menuItems["color-grading"], isNew: true },
-    { id: "remove-bg", label: copy.menuItems["remove-bg"], isNew: true },
-    { id: "expand-crop", label: copy.menuItems["expand-crop"], isNew: true },
-    { id: "edit-text", label: copy.menuItems["edit-text"], isNew: false },
-    { id: "enhancer", label: copy.menuItems.enhancer, isNew: false },
-    { id: "relight", label: copy.menuItems.relight, isNew: false },
-    { id: "angles", label: copy.menuItems.angles, isNew: false },
-  ];
+    { id: "layer-decomposition", label: copy.menuItems["layer-decomposition"], isNew: true, available: canDecompose },
+    { id: "upscale", label: copy.menuItems.upscale, isNew: true, available: upscaleModels.length > 0 },
+    { id: "color-grading", label: copy.menuItems["color-grading"], isNew: true, available: true },
+    { id: "remove-bg", label: copy.menuItems["remove-bg"], isNew: true, available: canRemoveBg },
+    { id: "expand-crop", label: copy.menuItems["expand-crop"], isNew: true, available: canExpand },
+    { id: "edit-text", label: copy.menuItems["edit-text"], isNew: false, available: canEdit },
+    { id: "enhancer", label: copy.menuItems.enhancer, isNew: false, available: canEdit },
+    { id: "relight", label: copy.menuItems.relight, isNew: false, available: canEdit },
+    { id: "angles", label: copy.menuItems.angles, isNew: false, available: canEdit },
+  ].filter((item) => item.available);
 
   const getLassoPathString = () => {
     if (lassoPoints.length < 2) return "";
@@ -1374,7 +1438,7 @@ export default function LayersStudio({
             <div className="flex flex-col items-center justify-center p-12 bg-surface-panel/80 backdrop-blur-md rounded-3xl border border-white/10">
               <div className="w-12 h-12 border-4 border-brand/20 border-t-brand rounded-full animate-spin mb-4" />
               <p className="text-sm font-semibold text-white/80">
-                Uploading image... {uploadProgress}%
+                {copy.canvas.uploading.replace("{progress}", uploadProgress)}
               </p>
             </div>
           ) : currentImageUrl ? (
@@ -1594,7 +1658,16 @@ export default function LayersStudio({
             </div>
           ) : (
             <div
+              role="button"
+              tabIndex={0}
+              aria-label={copy.canvas.dropHeading}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
               onDragEnter={handleDropzoneDragEnter}
               onDragLeave={handleDropzoneDragLeave}
               onDragOver={handleDropzoneDragOver}
@@ -1620,10 +1693,10 @@ export default function LayersStudio({
                 </svg>
               </div>
               <p className="text-base font-bold text-white mb-1">
-                Click or Drop Image Here
+                {copy.canvas.dropHeading}
               </p>
               <p className="text-xs text-white/50">
-                Supports PNG, JPEG, WEBP up to 20MB
+                {copy.canvas.dropHint}
               </p>
             </div>
           )}
@@ -2048,20 +2121,24 @@ export default function LayersStudio({
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleDecompose()}
+              onKeyDown={(e) => e.key === "Enter" && handlePromptSubmit()}
+              aria-label={copy.promptBar.label}
               placeholder={
-                markedRegions.length > 0
-                  ? `Describe layers for ${markedRegions.length} marked region(s)...`
-                  : "Describe how to edit image or split layers..."
+                !canDecompose
+                  ? copy.promptBar.placeholderEdit
+                  : markedRegions.length > 0
+                    ? copy.promptBar.placeholderRegions.replace("{count}", markedRegions.length)
+                    : copy.promptBar.placeholderSplit
               }
               className="flex-1 bg-transparent text-sm text-white placeholder-white/40 focus:outline-none px-2 font-medium min-w-0"
             />
 
             <button
-              onClick={() => handleDecompose()}
-              disabled={isProcessing}
+              onClick={handlePromptSubmit}
+              disabled={isProcessing || (!canDecompose && !canEdit)}
               className="w-10 h-10 rounded-full bg-brand hover:bg-brand-hover text-on-brand flex items-center justify-center shadow-[0_0_20px_rgba(46,230,214,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ml-2 flex-shrink-0"
-              title={copy.tools.runLayerDecomposition}
+              title={canDecompose ? copy.tools.runLayerDecomposition : copy.tools.runEdit}
+              aria-label={canDecompose ? copy.tools.runLayerDecomposition : copy.tools.runEdit}
             >
               <svg
                 width="18"
@@ -2078,9 +2155,9 @@ export default function LayersStudio({
         </div>
       </div>
 
-      {/* Right Inspector Panel */}
+      {/* Right Inspector Panel (full-screen on phones, above the floating composer) */}
       {isSidebarOpen && (
-        <div className="absolute inset-0 w-full md:static md:inset-auto md:w-[380px] md:shrink-0 h-full bg-surface-raised border-l border-white/10 flex flex-col justify-between z-30 md:z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] animate-fade-in">
+        <div className="absolute inset-0 w-full md:static md:inset-auto md:w-[380px] md:shrink-0 h-full bg-surface-raised border-l border-white/10 flex flex-col justify-between z-50 md:z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] animate-fade-in">
           {/* Top Header & Panel Content */}
           <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
             {/* Header with Back, Title & Close */}
@@ -2209,65 +2286,6 @@ export default function LayersStudio({
             {/* --- VIEW 1: LAYER DECOMPOSITION VIEW --- */}
             {activeSideTab === "layer-decomposition" && (
               <div className="space-y-4">
-                {/* Hero Feature Card with 5 CDN Layers */}
-                <div
-                  onClick={handleLoadSampleLayers}
-                  className="group w-full bg-[#f4f4f7] hover:bg-white rounded-3xl p-3 shadow-lg overflow-hidden border border-white/20 cursor-pointer transition-all duration-200 hover:scale-[1.01]"
-                  title={copy.sample.clickToLoad}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative w-28 h-36 rounded-2xl overflow-hidden bg-surface-card flex-shrink-0 shadow-md">
-                      <img
-                        src="https://cdn.muapi.ai/assets/1786019968051_cKRYLHHu.png"
-                        alt="Seedream original demo"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-y-0 left-1/2 w-5 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d8ff00]/90 to-transparent blur-[3px] animate-pulse" />
-                      <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-black/75 text-[8px] font-black text-white backdrop-blur-sm">
-                        {copy.sample.original}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 bg-[#0f1c2e] rounded-2xl p-2.5 flex flex-col justify-between h-36 shadow-inner overflow-hidden">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] font-black text-brand-300 uppercase tracking-wider">
-                          {copy.sample.layersCount}
-                        </span>
-                        <span className="text-[9px] font-bold text-white/50 group-hover:text-white transition-colors">
-                          {copy.sample.try}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                        {DEFAULT_SAMPLE_LAYERS.map((layerUrl, idx) => (
-                          <div
-                            key={idx}
-                            className="flex-shrink-0 w-11 h-16 rounded-xl overflow-hidden border border-white/10 relative flex items-center justify-center p-1 bg-surface-raised shadow-sm hover:border-brand/50 transition-all"
-                            style={{
-                              backgroundImage: `linear-gradient(45deg, #242733 25%, transparent 25%), linear-gradient(-45deg, #242733 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #242733 75%), linear-gradient(-45deg, transparent 75%, #242733 75%)`,
-                              backgroundSize: "6px 6px",
-                            }}
-                            title={`Layer ${idx + 1}`}
-                          >
-                            <img
-                              src={layerUrl}
-                              alt={`Layer ${idx + 1}`}
-                              className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-105"
-                            />
-                            <span className="absolute bottom-0.5 right-0.5 text-[8px] font-black text-white/90 bg-black/70 px-1 rounded">
-                              {idx + 1}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="text-[9px] text-center text-white/40 font-semibold group-hover:text-brand transition-colors">
-                        {copy.sample.clickToExplore}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Settings Section */}
                 <div className="bg-surface-raised rounded-3xl p-5 border border-white/5 space-y-4 shadow-sm">
                   <h4 className="text-sm font-bold text-white tracking-tight">
@@ -2469,7 +2487,7 @@ export default function LayersStudio({
               <div className="space-y-4 animate-fade-in">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/40">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/60">
                       {copy.common.model}
                     </span>
                     <button
@@ -2514,12 +2532,12 @@ export default function LayersStudio({
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-white leading-tight">
-                            {UPSCALE_MODELS.find((m) => m.id === upscaleModel)
-                              ?.name || "Topaz"}
+                            {upscaleModels.find((m) => m.id === upscaleModel)
+                              ?.name || upscaleModels[0]?.name || "Topaz"}
                           </h4>
                           <p className="text-[11px] text-white/50 truncate max-w-[200px]">
                             {
-                              UPSCALE_MODELS.find((m) => m.id === upscaleModel)
+                              upscaleModels.find((m) => m.id === upscaleModel)
                                 ?.subtitle
                             }
                           </p>
@@ -2540,7 +2558,7 @@ export default function LayersStudio({
 
                     {isModelDropdownOpen && (
                       <div className="absolute top-full left-0 right-0 mt-2 bg-[#1f222b] border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1">
-                        {UPSCALE_MODELS.map((opt) => (
+                        {upscaleModels.map((opt) => (
                           <button
                             key={opt.id}
                             onClick={() => {
@@ -2558,7 +2576,7 @@ export default function LayersStudio({
                                 {opt.name}
                               </span>
                             </div>
-                            <span className="text-[10px] text-white/40">
+                            <span className="text-[10px] text-white/60">
                               {opt.subtitle}
                             </span>
                           </button>
@@ -3687,7 +3705,7 @@ export default function LayersStudio({
                 {/* Model Selector Card */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/40">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/60">
                       {copy.common.model}
                     </span>
                   </div>
@@ -3720,7 +3738,7 @@ export default function LayersStudio({
                     <span className="text-xs font-bold text-white">
                       {copy.removeBg.targetPreview}
                     </span>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-[10px] text-white/60">
                       {copy.removeBg.alphaMatte}
                     </span>
                   </div>
@@ -3764,7 +3782,7 @@ export default function LayersStudio({
                 {/* Model Selector Card */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/40">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/60">
                       {copy.common.model}
                     </span>
                   </div>
@@ -3802,7 +3820,7 @@ export default function LayersStudio({
                     <span className="text-xs font-bold text-white">
                       {copy.expandCrop.canvasPreview}
                     </span>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-[10px] text-white/60">
                       {copy.expandCrop.boundaryOutpainting}
                     </span>
                   </div>
@@ -3994,12 +4012,7 @@ export default function LayersStudio({
                     >
                       <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
                     </svg>
-                    <span>
-                      {copy.footer.upscaleCost.replace(
-                        '{cost}',
-                        upscaleModel === "seedvr2-image-upscale" ? "0.02" : "1.0",
-                      )}
-                    </span>
+                    <span>{withEstimate(copy.footer.upscale, upscaleEstimate)}</span>
                   </>
                 )}
               </button>
@@ -4060,7 +4073,7 @@ export default function LayersStudio({
                     >
                       <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
                     </svg>
-                    <span>{copy.footer.removeBackgroundCost}</span>
+                    <span>{withEstimate(copy.footer.removeBackground, removeBgEstimate)}</span>
                   </>
                 )}
               </button>
@@ -4082,7 +4095,7 @@ export default function LayersStudio({
                     >
                       <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
                     </svg>
-                    <span>{copy.footer.expandImageCost}</span>
+                    <span>{withEstimate(copy.footer.expandImage, expandEstimate)}</span>
                   </>
                 )}
               </button>

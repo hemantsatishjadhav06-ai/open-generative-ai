@@ -1,4 +1,4 @@
-import { muapi } from '../lib/muapi.js';
+import { gateway, defaultModel as defaultCloudModel, hasSession, pickableModels, isCloudModelAvailable, onModelAvailability } from '../lib/gateway.js';
 import {
     t2iModels, getAspectRatiosForModel, getResolutionsForModel, getQualityFieldForModel,
     i2iModels, getAspectRatiosForI2IModel, getResolutionsForI2IModel, getQualityFieldForI2IModel,
@@ -7,10 +7,11 @@ import {
 import { localAI, isLocalAIAvailable } from '../lib/localInferenceClient.js';
 import { LOCAL_MODEL_CATALOG, getLocalModelById } from '../lib/localModels.js';
 import { ENHANCE_TAGS, QUICK_PROMPTS } from '../lib/promptUtils.js';
-import { AuthModal } from './AuthModal.js';
+import { requireSession } from './AccessCodeModal.js';
 import { t } from '../lib/i18n.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
+import { IMAGE_HISTORY_KEY } from '../lib/legacyStorage.js';
 import { downloadImage } from '../../packages/studio/src/utils/downloadImage.js';
 import { appendGenerationRefundNotice } from '../../packages/studio/src/utils/generationLifecycle.js';
 
@@ -30,7 +31,7 @@ export function ImageStudio() {
     container.className = 'w-full h-full flex flex-col items-center justify-center bg-app-bg relative p-4 md:p-6 overflow-y-auto custom-scrollbar overflow-x-hidden';
 
     // --- State ---
-    const defaultModel = t2iModels[0];
+    const defaultModel = defaultCloudModel(t2iModels);
     let selectedModel = defaultModel.id;
     let selectedModelName = defaultModel.name;
     let selectedAr = defaultModel.inputs?.aspect_ratio?.default || '1:1';
@@ -115,14 +116,15 @@ export function ImageStudio() {
     // --- Image Upload Picker (Image-to-Image) ---
     const picker = createUploadPicker({
         anchorContainer: container,
-        uploadFn: (file) => useLocalModel ? URL.createObjectURL(file) : muapi.uploadFile(file),
-        requireApiKey: () => !useLocalModel,
+        uploadFn: (file) => useLocalModel ? URL.createObjectURL(file) : gateway.uploadFile(file),
+        requiresSession: () => !useLocalModel,
         onSelect: ({ url, urls }) => {
             uploadedImageUrls = urls || [url];
             if (!imageMode) {
                 imageMode = true;
-                selectedModel = i2iModels[0].id;
-                selectedModelName = i2iModels[0].name;
+                const i2iDefault = defaultCloudModel(i2iModels);
+                selectedModel = i2iDefault.id;
+                selectedModelName = i2iDefault.name;
                 selectedAr = getAspectRatiosForI2IModel(selectedModel)[0];
                 document.getElementById('model-btn-label').textContent = selectedModelName;
                 document.getElementById('ar-btn-label').textContent = selectedAr;
@@ -138,8 +140,8 @@ export function ImageStudio() {
         onClear: () => {
             uploadedImageUrls = [];
             imageMode = false;
-            selectedModel = t2iModels[0].id;
-            selectedModelName = t2iModels[0].name;
+            selectedModel = defaultCloudModel(t2iModels).id;
+            selectedModelName = defaultCloudModel(t2iModels).name;
             selectedAr = getAspectRatiosForModel(selectedModel)[0];
             document.getElementById('model-btn-label').textContent = selectedModelName;
             document.getElementById('ar-btn-label').textContent = selectedAr;
@@ -776,7 +778,7 @@ export function ImageStudio() {
                 }
 
                 // ── Remote (API) model list ───────────────────────────────────
-                const filtered = getCurrentModels().filter(m => m.name.toLowerCase().includes(filter.toLowerCase()) || m.id.toLowerCase().includes(filter.toLowerCase()));
+                const filtered = pickableModels(getCurrentModels()).filter(m => m.name.toLowerCase().includes(filter.toLowerCase()) || m.id.toLowerCase().includes(filter.toLowerCase()));
 
                 filtered.forEach(m => {
                     const item = document.createElement('div');
@@ -937,7 +939,7 @@ export function ImageStudio() {
 
     // History sidebar
     const historySidebar = document.createElement('div');
-    historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
+    historySidebar.className = 'fixed right-0 top-16 bottom-0 w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
     historySidebar.id = 'history-sidebar';
 
     const historyLabel = document.createElement('div');
@@ -1006,7 +1008,7 @@ export function ImageStudio() {
         generationHistory.unshift(entry);
 
         // Save to localStorage
-        localStorage.setItem('muapi_history', JSON.stringify(generationHistory.slice(0, 50)));
+        localStorage.setItem(IMAGE_HISTORY_KEY, JSON.stringify(generationHistory.slice(0, 50)));
 
         // Show sidebar
         historySidebar.classList.remove('translate-x-full', 'opacity-0');
@@ -1032,7 +1034,7 @@ export function ImageStudio() {
 
             thumb.onclick = (e) => {
                 if (e.target.closest('.hist-download')) {
-                    downloadImage(entry.url, `muapi-${entry.id || idx}.jpg`);
+                    downloadImage(entry.url, `aquora-${entry.id || idx}.jpg`);
                     return;
                 }
                 showImageInCanvas(entry.url);
@@ -1051,7 +1053,7 @@ export function ImageStudio() {
 
     // --- Load history from localStorage ---
     try {
-        const saved = JSON.parse(localStorage.getItem('muapi_history') || '[]');
+        const saved = JSON.parse(localStorage.getItem(IMAGE_HISTORY_KEY) || '[]');
         if (saved.length > 0) {
             saved.forEach(e => generationHistory.push(e));
             historySidebar.classList.remove('translate-x-full', 'opacity-0');
@@ -1065,8 +1067,8 @@ export function ImageStudio() {
         const pending = getPendingJobs('image');
         if (!pending.length) return;
 
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) return; // can't poll without key; jobs remain for next time
+        // Signed out: leave the jobs for the next launch.
+        if (!(await hasSession())) return;
 
         const banner = document.createElement('div');
         banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[200] bg-[#111] border border-white/10 text-white text-sm px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3';
@@ -1078,7 +1080,7 @@ export function ImageStudio() {
             const elapsedAttempts = Math.floor((Date.now() - job.submittedAt) / job.interval);
             const attemptsLeft = Math.max(1, job.maxAttempts - elapsedAttempts);
             try {
-                const result = await muapi.pollForResult(job.requestId, apiKey, attemptsLeft, job.interval);
+                const result = await gateway.pollForResult(job.requestId, attemptsLeft, job.interval);
                 const url = result.outputs?.[0] || result.url || result.output?.url;
                 if (url) {
                     addToHistory({ id: job.requestId, url, ...job.historyMeta, timestamp: new Date().toISOString() });
@@ -1099,7 +1101,7 @@ export function ImageStudio() {
         const current = resultImg.src;
         if (current) {
             const entry = generationHistory.find(e => e.url === current);
-            downloadImage(current, `muapi-${entry?.id || 'image'}.jpg`);
+            downloadImage(current, `aquora-${entry?.id || 'image'}.jpg`);
         }
     };
 
@@ -1122,8 +1124,8 @@ export function ImageStudio() {
         picker.setMaxImages(1);
         // Reset to t2i mode
         imageMode = false;
-        selectedModel = t2iModels[0].id;
-        selectedModelName = t2iModels[0].name;
+        selectedModel = defaultCloudModel(t2iModels).id;
+        selectedModelName = defaultCloudModel(t2iModels).name;
         selectedAr = getAspectRatiosForModel(selectedModel)[0];
         document.getElementById('model-btn-label').textContent = selectedModelName;
         document.getElementById('ar-btn-label').textContent = selectedAr;
@@ -1220,11 +1222,7 @@ export function ImageStudio() {
         }
 
         // ── Remote API path ───────────────────────────────────────────────────
-        const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) {
-            AuthModal(() => generateBtn.click());
-            return;
-        }
+        if (!(await requireSession(() => generateBtn.click()))) return;
 
         hero.classList.add('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
         generateBtn.disabled = true;
@@ -1251,7 +1249,7 @@ export function ImageStudio() {
                 if (prompt) genParams.prompt = prompt;
                 const qualityField = getCurrentQualityField(selectedModel);
                 if (qualityField && qualityLabel) genParams[qualityField] = qualityLabel;
-                res = await muapi.generateI2I(genParams);
+                res = await gateway.generateI2I(genParams);
             } else {
                 const genParams = {
                     model: selectedModel,
@@ -1264,10 +1262,8 @@ export function ImageStudio() {
                 };
                 const qualityField = getCurrentQualityField(selectedModel);
                 if (qualityField && qualityLabel) genParams[qualityField] = qualityLabel;
-                res = await muapi.generateImage(genParams);
+                res = await gateway.generateImage(genParams);
             }
-
-            console.log('[ImageStudio] Full response:', res);
 
             if (res && res.url) {
                 if (capturedRequestId) removePendingJob(capturedRequestId);
@@ -1301,6 +1297,27 @@ export function ImageStudio() {
             if (!hadError) generateBtn.innerHTML = t('common.generate');
         }
     };
+
+    // Once the gateway's model list arrives, move off a cloud model it can't
+    // run (the default comes from the full catalog until then).
+    onModelAvailability(() => {
+        if (isCloudModelAvailable(selectedModel)) return;
+        const models = getCurrentModels();
+        const next = defaultCloudModel(models);
+        if (!next || next.id === selectedModel) return;
+        selectedModel = next.id;
+        selectedModelName = next.name;
+        selectedAr = getCurrentAspectRatios(selectedModel)[0] || selectedAr;
+        const modelLabel = container.querySelector('#model-btn-label');
+        if (modelLabel && !useLocalModel) modelLabel.textContent = selectedModelName;
+        const arLabel = container.querySelector('#ar-btn-label');
+        if (arLabel && !useLocalModel) arLabel.textContent = selectedAr;
+        const resolutions = getCurrentResolutions(selectedModel);
+        if (!useLocalModel) qualityBtn.style.display = resolutions.length > 0 ? 'flex' : 'none';
+        const qualityLabel = container.querySelector('#quality-btn-label');
+        if (qualityLabel && resolutions.length > 0) qualityLabel.textContent = resolutions[0];
+        if (imageMode) picker.setMaxImages(getMaxImagesForI2IModel(selectedModel));
+    });
 
     return container;
 }

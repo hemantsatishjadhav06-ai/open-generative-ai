@@ -58,7 +58,8 @@
     "missingImage": "Please upload a character image first.",
     "videoUploadFailed": "Video upload failed: {message}",
     "imageUploadFailed": "Image upload failed: {message}",
-    "generationFailed": "Body swap generation failed"
+    "generationFailed": "Body swap generation failed",
+    "modelUnavailable": "This model isn't available on Aquora yet. Pick another model."
   },
   "defaults": {
     "selectedVideo": "Selected Video",

@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import StandaloneShell from '@/components/StandaloneShell';
 import { buildStudioMetadata } from '@/lib/seo';
-import { isValidStudioSlug } from '@/lib/studioTabs';
+import { isRetiredStudioSlug, isValidStudioSlug } from '@/lib/studioTabs';
+import { localizeStudioPath } from '@/lib/locales';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }) {
 // locale repeats this file under app/<locale>/studio/[[...slug]]/page.js.
 export default async function ZhStudioPage({ params }) {
   const { slug } = await params;
+  if (isRetiredStudioSlug(slug)) redirect(localizeStudioPath('zh'));
   if (!isValidStudioSlug(slug)) notFound();
   return <StandaloneShell locale="zh" />;
 }

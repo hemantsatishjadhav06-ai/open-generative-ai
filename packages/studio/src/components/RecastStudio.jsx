@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { processRecast, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { processRecast, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
+import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
+import { useAvailableModels } from "../useModelAvailability.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
@@ -511,18 +513,20 @@ export default function RecastStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_recast_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  // Both keys are null until the signed-in workspace is known.
+  const PERSIST_KEY = usePersistKey("hg_recast_studio_persistent");
+  const ASSETS_KEY = usePersistKey("hg_recast_studio_assets");
 
   // ── Model state ───────────────────────────────────────────────────────────
-  const firstModel = recastModels[0];
+  const [firstModel] = useState(() => firstAvailableModel(recastModels));
   const [selectedModelId, setSelectedModelId] = useState(firstModel?.id ?? "");
   const [selectedAspectRatio, setSelectedAspectRatio] = useState(
     firstModel?.inputs?.aspect_ratio?.default ?? "16:9",
   );
+  const visibleModels = useAvailableModels(recastModels, selectedModelId, (model) => {
+    setSelectedModelId(model.id);
+    setSelectedAspectRatio(model.inputs?.aspect_ratio?.default ?? "16:9");
+  });
 
   // ── Upload state ──────────────────────────────────────────────────────────
   const [videoState, setVideoState] = useState(UPLOAD_STATE.IDLE);
@@ -542,44 +546,9 @@ export default function RecastStudio({
   const [characterOrientation, setCharacterOrientation] = useState("image");
 
   // ── Assets Library ────────────────────────────────────────────────────────
-  const [assetVideos, setAssetVideos] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_recast_studio_assets");
-        if (stored) {
-          const data = JSON.parse(stored);
-          return data.videos || [];
-        }
-      } catch (err) {}
-    }
-    return [];
-  });
-
-  const [assetImages, setAssetImages] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_recast_studio_assets");
-        if (stored) {
-          const data = JSON.parse(stored);
-          return data.images || [];
-        }
-      } catch (err) {}
-    }
-    return [];
-  });
-
-  const [assetResults, setAssetResults] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("hg_recast_studio_assets");
-        if (stored) {
-          const data = JSON.parse(stored);
-          return data.results || [];
-        }
-      } catch (err) {}
-    }
-    return [];
-  });
+  const [assetVideos, setAssetVideos] = useState([]);
+  const [assetImages, setAssetImages] = useState([]);
+  const [assetResults, setAssetResults] = useState([]);
 
   // ── Generation / UI state ─────────────────────────────────────────────────
   const [isGenerating, setIsGenerating] = useState(false);
@@ -604,6 +573,19 @@ export default function RecastStudio({
 
   // ── Persistence: Load ──────────────────────────────────────────────────────
   useEffect(() => {
+    if (!ASSETS_KEY) return;
+    try {
+      const data = JSON.parse(localStorage.getItem(ASSETS_KEY) || "{}");
+      setAssetVideos(Array.isArray(data.videos) ? data.videos : []);
+      setAssetImages(Array.isArray(data.images) ? data.images : []);
+      setAssetResults(Array.isArray(data.results) ? data.results : []);
+    } catch (err) {
+      console.warn("Failed to load RecastStudio assets:", err);
+    }
+  }, [ASSETS_KEY]);
+
+  useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -629,23 +611,28 @@ export default function RecastStudio({
     } finally {
       hasRestored.current = true;
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Save Assets ────────────────────────────────────────────────────────────
+  // Debounced like the main save, so the load above lands before any write.
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        "hg_recast_studio_assets",
-        JSON.stringify({
-          videos: assetVideos,
-          images: assetImages,
-          results: assetResults,
-        })
-      );
-    } catch (err) {
-      console.warn("Failed to save RecastStudio assets:", err);
-    }
-  }, [assetVideos, assetImages, assetResults]);
+    if (!ASSETS_KEY) return undefined;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          ASSETS_KEY,
+          JSON.stringify({
+            videos: assetVideos,
+            images: assetImages,
+            results: assetResults,
+          })
+        );
+      } catch (err) {
+        console.warn("Failed to save RecastStudio assets:", err);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [assetVideos, assetImages, assetResults, ASSETS_KEY]);
 
   const handleDeleteAsset = (tab, url) => {
     if (tab === "videos") {
@@ -659,6 +646,7 @@ export default function RecastStudio({
 
   // ── Persistence: Save ──────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(
@@ -690,6 +678,7 @@ export default function RecastStudio({
     imageName,
     prompt,
     internalHistory,
+    PERSIST_KEY,
   ]);
 
   // ── Derived model info ──────────────────────────────────────────────────────
@@ -807,6 +796,10 @@ export default function RecastStudio({
 
   // ── Generation ──────────────────────────────────────────────────────────────
   const handleGenerate = async () => {
+    if (!isModelAvailable(selectedModelId)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
     if (!videoUrl) {
       notifyError(copy.errors.missingVideo);
       return;
@@ -865,7 +858,7 @@ export default function RecastStudio({
         });
       }
     } catch (e) {
-      console.error("[RecastStudio]", e);
+      logStudioError("[RecastStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
@@ -994,7 +987,7 @@ export default function RecastStudio({
                 {copy.empty.titleLine2}
               </span>
             </h1>
-            <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
+            <p className="text-white/65 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
               {copy.empty.description}
             </p>
           </div>
@@ -1083,7 +1076,7 @@ export default function RecastStudio({
                 <Dropdown
                   isOpen={openDropdown === "model"}
                   title={copy.dropdowns.model}
-                  items={recastModels}
+                  items={visibleModels}
                   selectedId={selectedModelId}
                   onSelect={handleModelSelect}
                   onClose={() => setOpenDropdown(null)}

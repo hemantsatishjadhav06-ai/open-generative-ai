@@ -57,7 +57,6 @@ const translations = {
         'nav.cinema': 'Cinema Studio',
         'nav.workflows': 'Workflows',
         'nav.agents': 'Agents',
-        'nav.mcpcli': 'MCP & CLI',
         'nav.settings': 'Settings',
 
         // Sidebar
@@ -89,21 +88,50 @@ const translations = {
 
         // Settings Modal
         'settings.title': 'Settings',
-        'settings.apiKey': 'API Key',
+        'settings.account': 'Account',
         'settings.localModels': 'Local Models',
-        'settings.muapiKeyLabel': 'Muapi API Key',
-        'settings.keyPlaceholder': 'Enter your Muapi API key...',
-        'settings.keyNote': 'Your API key is stored locally and never sent anywhere except api.muapi.ai.',
-        'settings.invalidKey': 'Please enter a valid API key.',
+        'settings.accountNote': "Cloud models run on Aquora's own AI backend (fal.ai + OpenRouter). The provider keys stay on the server; this app never holds one.",
+        'settings.workspace': 'Workspace',
+        'settings.server': 'Server',
+        'settings.budgetToday': "Today's AI budget",
+        'settings.noBudgetCap': 'No daily cap',
+        'settings.signedOut': "You're signed out. Sign in with your access code to use cloud models.",
+        'settings.openAccess': "This server doesn't need an access code.",
+        'settings.setupRequired': "This Aquora server isn't set up yet, so cloud models are unavailable.",
+        'settings.checking': 'Checking…',
+        'settings.offline': "Couldn't reach Aquora. Check your connection and try again.",
+        'settings.signIn': 'Sign in',
+        'settings.signOut': 'Sign out',
+        'settings.signingOut': 'Signing out…',
+        'settings.close': 'Close',
 
-        // Auth Modal
-        'auth.title': 'Muapi API Key Required',
-        'auth.subtitle': 'Create a Muapi access key, then paste the key value here to start creating high-aesthetic images.',
-        'auth.keyLabel': 'Muapi Access Key',
-        'auth.keyPlaceholder': 'Paste your access key value...',
-        'auth.keyNote': 'Do not enter the key name or label; paste the generated key value from Muapi.',
-        'auth.initBtn': 'Initialize Studio',
-        'auth.createKey': 'Create or copy a Muapi access key →',
+        // Access-code dialog
+        'auth.title': 'Enter your access code',
+        'auth.subtitle': "Cloud models run on Aquora's own AI backend. Enter your access code to use them.",
+        'auth.sessionEndedTitle': 'Your session ended',
+        'auth.sessionEndedSubtitle': 'Enter your access code to pick up where you left off.',
+        'auth.label': 'Access code',
+        'auth.placeholder': 'Enter your access code',
+        'auth.showCode': 'Show code',
+        'auth.hideCode': 'Hide code',
+        'auth.submit': "Let's go",
+        'auth.checking': 'Checking…',
+        'auth.missingCode': 'Enter your access code first.',
+        'auth.invalidCode': "That access code isn't valid. Check it and try again.",
+        'auth.rateLimited': (seconds) => `Too many tries. Wait ${seconds}s and try again.`,
+        'auth.setupRequired': "This Aquora server isn't set up yet. The site owner needs to add access codes and a session secret on the server.",
+        'auth.unavailable': "Couldn't reach Aquora. Check your connection and try again.",
+        'auth.genericError': 'Something went wrong. Try again.',
+        'auth.setupTitle': 'Almost ready',
+        'auth.helpSummary': 'Where do I get one?',
+        'auth.help': 'Access codes come from whoever runs this Aquora. Ask them for yours.',
+        'auth.note': 'You stay signed in on this device for 30 days.',
+        'auth.close': 'Close',
+
+        // Budget + gateway
+        'budget.pill': (spent, cap) => `Today: ${spent} of ${cap}`,
+        'budget.pillTitle': 'Estimated AI spend today. Resets at 00:00 UTC.',
+        'gateway.modelUnavailable': "This model isn't available on Aquora right now. Pick another one.",
 
         // Image Studio
         'image.title': 'Image Studio',
@@ -155,6 +183,7 @@ const translations = {
         'video.regenerate': '↻ Regenerate',
         'video.download': '↓ Download',
         'video.extend': '↗ Extend',
+        'video.v2vReady': 'Video ready — pick a video tool and click Generate',
         'video.new': '+ New',
         'video.videoTools': 'Video Tools',
 
@@ -240,15 +269,10 @@ const translations = {
         'localModels.deleteConfirm': (name) => `Delete "${name}"? You'll need to re-download it to use it again.`,
 
         // Web shell
-        'web.settingsTitle': 'Settings — API key, local models, preferences',
+        'web.settingsTitle': 'Settings — account, local models, preferences',
         'web.switchToEn': 'Switch to English',
         'web.switchToZh': '切换为中文',
 
-        // MCP & CLI page
-        'mcp.tagline': 'For developers & AI agents',
-        'mcp.title': 'MCP & CLI',
-        'mcp.subtitle': 'Use Aquora from your terminal, your IDE or any MCP-compatible assistant. Make images, video and audio across 100+ models — without leaving your workflow.',
-        'mcp.quickStart': 'Quick start',
     },
     zh: {
         // Navigation
@@ -258,7 +282,6 @@ const translations = {
         'nav.cinema': '电影工作室',
         'nav.workflows': '工作流',
         'nav.agents': '智能体',
-        'nav.mcpcli': 'MCP & CLI',
         'nav.settings': '设置',
 
         // Sidebar
@@ -290,21 +313,50 @@ const translations = {
 
         // Settings Modal
         'settings.title': '设置',
-        'settings.apiKey': 'API 密钥',
+        'settings.account': '账户',
         'settings.localModels': '本地模型',
-        'settings.muapiKeyLabel': 'Muapi API 密钥',
-        'settings.keyPlaceholder': '输入您的 Muapi API 密钥...',
-        'settings.keyNote': '您的 API 密钥仅存储在本地，除 api.muapi.ai 外不会发送到任何地方。',
-        'settings.invalidKey': '请输入有效的 API 密钥。',
+        'settings.accountNote': '云端模型运行在 Aquora 自己的 AI 后端（fal.ai + OpenRouter）上。服务密钥只保存在服务器上，这个应用不会持有任何密钥。',
+        'settings.workspace': '工作区',
+        'settings.server': '服务器',
+        'settings.budgetToday': '今日 AI 预算',
+        'settings.noBudgetCap': '没有每日上限',
+        'settings.signedOut': '你已退出登录。输入访问码即可使用云端模型。',
+        'settings.openAccess': '这个服务器不需要访问码。',
+        'settings.setupRequired': '这个 Aquora 服务器还没有配置完成，暂时无法使用云端模型。',
+        'settings.checking': '正在检查…',
+        'settings.offline': '连不上 Aquora，请检查网络后重试。',
+        'settings.signIn': '登录',
+        'settings.signOut': '退出登录',
+        'settings.signingOut': '正在退出…',
+        'settings.close': '关闭',
 
-        // Auth Modal
-        'auth.title': '需要 Muapi API 密钥',
-        'auth.subtitle': '创建一个 Muapi 访问密钥，然后将密钥值粘贴到这里开始创建高质量图像。',
-        'auth.keyLabel': 'Muapi 访问密钥',
-        'auth.keyPlaceholder': '粘贴您的访问密钥值...',
-        'auth.keyNote': '请不要输入密钥名称或标签；粘贴从 Muapi 生成的密钥值。',
-        'auth.initBtn': '初始化工作室',
-        'auth.createKey': '创建或复制 Muapi 访问密钥 →',
+        // Access-code dialog
+        'auth.title': '输入你的访问码',
+        'auth.subtitle': '云端模型运行在 Aquora 自己的 AI 后端上。输入访问码即可使用。',
+        'auth.sessionEndedTitle': '登录已过期',
+        'auth.sessionEndedSubtitle': '输入访问码，从刚才的地方继续。',
+        'auth.label': '访问码',
+        'auth.placeholder': '输入你的访问码',
+        'auth.showCode': '显示访问码',
+        'auth.hideCode': '隐藏访问码',
+        'auth.submit': '开始吧',
+        'auth.checking': '正在检查…',
+        'auth.missingCode': '请先输入访问码。',
+        'auth.invalidCode': '这个访问码无效，检查一下再试。',
+        'auth.rateLimited': (seconds) => `尝试次数太多，请等 ${seconds} 秒后再试。`,
+        'auth.setupRequired': '这个 Aquora 还没有配置完成。站点所有者需要在服务器上添加访问码和会话密钥。',
+        'auth.unavailable': '连不上 Aquora，请检查网络后重试。',
+        'auth.genericError': '出了点问题，请重试。',
+        'auth.setupTitle': '马上就好',
+        'auth.helpSummary': '去哪里获取访问码？',
+        'auth.help': '访问码由运营这个 Aquora 的人发放，向他们索取即可。',
+        'auth.note': '登录后此设备保持 30 天。',
+        'auth.close': '关闭',
+
+        // Budget + gateway
+        'budget.pill': (spent, cap) => `今日：${spent} / ${cap}`,
+        'budget.pillTitle': '今日预估 AI 花费，每天 00:00 UTC 重置。',
+        'gateway.modelUnavailable': '这个模型目前在 Aquora 上不可用，请换一个。',
 
         // Image Studio
         'image.title': '图像工作室',
@@ -356,6 +408,7 @@ const translations = {
         'video.regenerate': '↻ 重新生成',
         'video.download': '↓ 下载',
         'video.extend': '↗ 延伸',
+        'video.v2vReady': '视频已就绪 — 选择一个视频工具，然后点击生成',
         'video.new': '+ 新建',
         'video.videoTools': '视频工具',
 
@@ -441,15 +494,10 @@ const translations = {
         'localModels.deleteConfirm': (name) => `删除"${name}"？您需要重新下载才能再次使用。`,
 
         // Web shell
-        'web.settingsTitle': '设置 — API 密钥、本地模型、偏好',
+        'web.settingsTitle': '设置 — 账户、本地模型、偏好',
         'web.switchToEn': 'Switch to English',
         'web.switchToZh': '切换为中文',
 
-        // MCP & CLI page
-        'mcp.tagline': '面向开发者与 AI 智能体',
-        'mcp.title': 'MCP & CLI',
-        'mcp.subtitle': '在终端、IDE 或任何兼容 MCP 的助手里使用 Aquora。跨 100+ 模型生成图像、视频和音频 — 不用离开你的工作流。',
-        'mcp.quickStart': '快速开始',
     },
 };
 

@@ -1,36 +1,19 @@
-import { proxyToMuapi, routeLabel, MUAPI_BASE } from '@/lib/muapiProxy';
+// /api/agents/* — Aquora's own agents API (agents, conversations, chat turns,
+// builder helpers). Handlers live in lib/gateway/agents/api.js; every call
+// needs a session and works on the caller's workspace.
+import { handleAgents } from '../../../../lib/gateway/agents/api.js';
+import { route } from '../../../../lib/gateway/http.js';
 
-// Build the target URL without a trailing slash when path is empty.
-// e.g. GET /api/agents?is_template=true  → https://api.muapi.ai/agents?is_template=true
-// e.g. GET /api/agents/by-slug/foo       → https://api.muapi.ai/agents/by-slug/foo
-function buildTargetUrl(pathSegments, search) {
-    const path = pathSegments.join('/');
-    const base = `${MUAPI_BASE}/agents`;
-    return path ? `${base}/${path}${search}` : `${base}${search}`;
-}
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+// The chat submit returns as soon as the turn is queued; the builder helpers
+// (suggest / realign) wait for one LLM reply.
+export const maxDuration = 120;
 
-async function forward(request, params, method) {
-    const slug = await params;
-    const pathSegments = slug.path || [];
-    const { search } = new URL(request.url);
-    return proxyToMuapi(request, buildTargetUrl(pathSegments, search), {
-        method,
-        route: routeLabel('agents', pathSegments),
-    });
-}
+const handler = route('agents', handleAgents, { session: true });
 
-export async function GET(request, { params }) {
-    return forward(request, params, 'GET');
-}
-
-export async function POST(request, { params }) {
-    return forward(request, params, 'POST');
-}
-
-export async function DELETE(request, { params }) {
-    return forward(request, params, 'DELETE');
-}
-
-export async function PUT(request, { params }) {
-    return forward(request, params, 'PUT');
-}
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;

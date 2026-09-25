@@ -71,7 +71,8 @@
     "uploadReferenceFirst": "Please upload a reference image first.",
     "uploadSwapFaceFirst": "Please upload a swap face image.",
     "enterPromptFirst": "Please enter a prompt to generate an image.",
-    "generationFailed": "Image generation failed"
+    "generationFailed": "Image generation failed",
+    "modelUnavailable": "This model isn't available on Aquora yet. Pick another model."
   },
   "fullscreen": {
     "previewAlt": "Fullscreen Preview"

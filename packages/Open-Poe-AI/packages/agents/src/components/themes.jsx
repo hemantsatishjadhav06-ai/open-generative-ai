@@ -16,7 +16,7 @@ export const themes = {
       agentBubble: 'rgba(30, 41, 59, 0.6)',
       agentText: '#cbd5e1',
       inputBg: 'rgba(30, 41, 59, 0.5)',
-      accent: '#3b82f6',
+      accent: '#2563eb',
       accentText: '#ffffff',
     }
   },
@@ -26,7 +26,7 @@ export const themes = {
     colors: {
       background: '#000000',
       foreground: '#ededed',
-      muted: '#737373',
+      muted: '#a3a3a3',
       border: '#262626',
       componentBg: '#171717',
       componentHover: '#262626',
@@ -46,7 +46,7 @@ export const themes = {
     colors: {
       background: 'linear-gradient(to bottom, #f8fafc, #ffffff)',
       foreground: '#1e293b',
-      muted: '#64748b',
+      muted: '#475569',
       border: '#e2e8f0',
       componentBg: '#f1f5f9',
       componentHover: '#e2e8f0',
@@ -66,12 +66,12 @@ export const themes = {
     colors: {
       background: 'linear-gradient(45deg, #050505 0%, #12031c 100%)',
       foreground: '#00ff41',
-      muted: '#d300c5',
+      muted: '#f472e6',
       border: '#00ff41',
       componentBg: 'rgba(255, 0, 187, 0.1)',
       componentHover: 'rgba(0, 255, 65, 0.1)',
       headerBg: 'rgba(5, 5, 5, 0.9)',
-      userBubble: 'linear-gradient(90deg, #ff00ea, #5500ff)',
+      userBubble: 'linear-gradient(90deg, #c026d3, #5b21b6)',
       userText: '#ffffff',
       agentBubble: '#000000',
       agentText: '#00ff41',
@@ -86,7 +86,7 @@ export const themes = {
     colors: {
       background: 'linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)',
       foreground: '#2d3748',
-      muted: '#64748b',
+      muted: '#334155',
       border: 'rgba(255, 255, 255, 0.4)',
       componentBg: 'rgba(255, 255, 255, 0.3)',
       componentHover: 'rgba(255, 255, 255, 0.5)',
@@ -97,7 +97,7 @@ export const themes = {
       agentText: '#2d3748',
       inputBg: 'rgba(255, 255, 255, 0.5)',
       accent: '#63b3ed',
-      accentText: '#ffffff',
+      accentText: '#0f172a',
     }
   },
   ocean: {
@@ -111,7 +111,7 @@ export const themes = {
       componentBg: '#0c4a6e',
       componentHover: '#075985',
       headerBg: 'rgba(12, 74, 110, 0.8)',
-      userBubble: '#0ea5e9',
+      userBubble: '#0369a1',
       userText: '#ffffff',
       agentBubble: '#164e63',
       agentText: '#e0f2fe',
@@ -132,7 +132,7 @@ export const themes = {
       componentHover: '#166534',
       headerBg: 'rgba(5, 46, 22, 0.9)',
       userBubble: '#22c55e',
-      userText: '#064e3b',
+      userText: '#022c22',
       agentBubble: '#064e3b',
       agentText: '#dcfce7',
       inputBg: '#064e3b',
@@ -151,7 +151,7 @@ export const themes = {
       componentBg: '#7c2d12',
       componentHover: '#9a3412',
       headerBg: 'rgba(124, 45, 18, 0.8)',
-      userBubble: 'linear-gradient(90deg, #f97316, #ea580c)',
+      userBubble: 'linear-gradient(90deg, #c2410c, #9a3412)',
       userText: '#ffffff',
       agentBubble: '#431407',
       agentText: '#ffedd5',
@@ -166,7 +166,7 @@ export const themes = {
     colors: {
       background: '#282a36',
       foreground: '#f8f8f2',
-      muted: '#6272a4',
+      muted: '#b4bce0',
       border: '#44475a',
       componentBg: '#44475a',
       componentHover: '#6272a4',
@@ -216,7 +216,7 @@ export const themes = {
       agentBubble: '#161b22',
       agentText: '#00ff00',
       inputBg: '#0d1117',
-      accent: '#2f81f7', // Blue accent for variety or keep green #2ea043
+      accent: '#1f6feb', // Blue accent for variety or keep green #2ea043
       accentText: '#ffffff',
     }
   },
@@ -226,7 +226,7 @@ export const themes = {
     colors: {
       background: '#1a0b2e',
       foreground: '#e9d5ff',
-      muted: '#a855f7',
+      muted: '#c9a0fb',
       border: '#4c1d95',
       componentBg: '#2e1065',
       componentHover: '#4c1d95',
@@ -246,7 +246,7 @@ export const themes = {
     colors: {
       background: '#ffffff',
       foreground: '#1e293b',
-      muted: '#64748b',
+      muted: '#475569',
       border: '#e2e8f0',
       componentBg: '#f1f5f9',
       componentHover: '#e2e8f0',

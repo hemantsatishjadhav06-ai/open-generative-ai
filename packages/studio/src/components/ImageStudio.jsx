@@ -6,9 +6,11 @@ import { downloadImage } from "../utils/downloadImage.js";
 import { buildResultFilename } from "../utils/resultFile.js";
 import { IMAGE_PICK_IDS, isHiddenEntry, isToolEntry, matchesSearch, resolvePicks } from "../modelPicks.js";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
-import { generateImage, generateI2I, uploadFile } from "../muapi.js";
-import { formatErrorMessage } from "../utils/formatError.js";
-import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
+import { generateImage, generateI2I, uploadFile } from "../gateway.js";
+import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
+import { usePersistKey } from "../persistKey.js";
+import useModelAvailability from "../useModelAvailability.js";
+import ProviderChip, { getProviderStyle } from "./ProviderChip.jsx";
 import DrawModal from "./DrawModal.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import MobileGenerationActions, {
@@ -29,11 +31,15 @@ import {
   getI2IModelById,
 } from "../models.js";
 import {
+  getAvailableEntryVariant,
   getFamilyVariant,
+  getFirstAvailableVariant,
   getImageReferenceVariant,
   imageModelCatalog,
   imageModelPickerEntries,
   imageModelPickerEntryByVariantId,
+  isPickerEntryAvailable,
+  isVariantAvailable,
 } from "../modelFamilies.js";
 import {
   buildReferenceParams,
@@ -243,7 +249,7 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
               }
             }
           } catch (err) {
-            console.error("[UploadButton] Upload failed for", file.name, err);
+            logStudioError("[UploadButton] Upload failed for", file.name, err);
             setUploadHistory((prev) => prev.filter((h) => h.id !== id));
             throw err;
           }
@@ -625,41 +631,28 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
 
 // ─── ModelDropdown ────────────────────────────────────────────────────────────
 
-const PROVIDER_LOGOS = {
-  openai: "https://cdn.muapi.ai/models/openai.png",
-  google: "https://cdn.muapi.ai/models/gemini.png",
-  kling: "https://cdn.muapi.ai/models/kling.png",
-  alibaba: "https://cdn.muapi.ai/models/alibaba.png",
-  bytedance: "https://cdn.muapi.ai/models/bytedance.png",
-  blackforest: "https://cdn.muapi.ai/models/bfl.png",
-  minimax: "https://cdn.muapi.ai/models/minimax.png",
-  suno: "https://cdn.muapi.ai/models/suno.png",
-  anthropic: "https://cdn.muapi.ai/models/claude.png",
-  meshy: "https://cdn.muapi.ai/models/meshy-3.png",
-  tripo3d: "https://cdn.muapi.ai/models/tripo3d.png",
-  grok: "https://cdn.muapi.ai/models/xai.png",
-  muapi: "https://cdn.muapi.ai/models/muapi.png",
-  midjourney: "https://cdn.muapi.ai/models/midjourney.png",
-  vidu: "https://cdn.muapi.ai/models/vidu.png",
-  runway: "https://cdn.muapi.ai/models/runway.png",
-  luma: "https://cdn.muapi.ai/models/luma.png",
-  ideogram: "https://cdn.muapi.ai/models/ideogram.png",
-  leonardoai: "https://cdn.muapi.ai/models/leonardoai.png",
-  hunyuan: "https://cdn.muapi.ai/models/hunyuan.png",
-  hidream: "https://cdn.muapi.ai/models/hidream.png",
-  lightricks: "https://cdn.muapi.ai/models/lightricks.png",
-  pixverse: "https://cdn.muapi.ai/models/pixverse.png",
-  reve: "https://cdn.muapi.ai/models/reve.png",
-  stability: "https://cdn.muapi.ai/models/stability.png"
-};
+// Picker entries that can run on Aquora right now (hidden utilities and
+// models the gateway has disabled are left out).
+function getVisibleImageEntries() {
+  return imageModelPickerEntries.filter((entry) => !isHiddenEntry(entry) && isPickerEntryAvailable(entry));
+}
 
-const invertLogos = ['openai', 'blackforest', 'runway', 'ideogram', 'lightricks', 'grok'];
+// Default model: the first runnable curated Pick, else the first runnable model.
+function getDefaultImageVariant(mode = "t2i") {
+  return getFirstAvailableVariant(
+    imageModelCatalog,
+    getVisibleImageEntries(),
+    mode,
+    IMAGE_PICK_IDS.map((pick) => pick.id),
+  ) || imageModelCatalog.variantById.get(t2iModels[0].id);
+}
 
 function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
   const t = copy.modelDropdown;
   const [search, setSearch] = useState("");
+  useModelAvailability();
   const selectedEntry = imageModelPickerEntryByVariantId.get(selectedModel);
-  const visibleEntries = imageModelPickerEntries.filter((entry) => !isHiddenEntry(entry));
+  const visibleEntries = getVisibleImageEntries();
   const modelEntriesNoTools = visibleEntries.filter((entry) => !isToolEntry(entry));
   const modelCategories = [
     {
@@ -670,12 +663,12 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
     {
       id: "t2i",
       label: t.categoryT2I,
-      entries: modelEntriesNoTools.filter((entry) => entry.variantsByMode.t2i),
+      entries: modelEntriesNoTools.filter((entry) => getAvailableEntryVariant(imageModelCatalog, entry, "t2i")),
     },
     {
       id: "i2i",
       label: t.categoryI2I,
-      entries: modelEntriesNoTools.filter((entry) => entry.variantsByMode.i2i),
+      entries: modelEntriesNoTools.filter((entry) => getAvailableEntryVariant(imageModelCatalog, entry, "i2i")),
     },
     {
       id: "tools",
@@ -703,49 +696,13 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
     }
   }, []);
 
-  const getProviderStyle = (provider) => {
-    switch (provider) {
-      case "grok":
-        return { text: "xI", bg: "bg-orange-500/10 text-orange-400 border-orange-500/25" };
-      case "openai":
-        return { text: "O", bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" };
-      case "google":
-        return { text: "G", bg: "bg-blue-500/10 text-blue-400 border-blue-500/25" };
-      case "blackforest":
-        return { text: "BF", bg: "bg-amber-500/10 text-amber-400 border-amber-500/25" };
-      case "bytedance":
-        return { text: "BD", bg: "bg-pop-500/10 text-pop-400 border-pop-500/25" };
-      case "midjourney":
-        return { text: "MJ", bg: "bg-pop-500/10 text-pop-400 border-pop-500/25" };
-      case "kling":
-        return { text: "KL", bg: "bg-rose-500/10 text-rose-400 border-rose-500/25" };
-      case "vidu":
-        return { text: "VD", bg: "bg-brand-500/10 text-brand-400 border-brand-500/25" };
-      case "minimax":
-        return { text: "MX", bg: "bg-pink-500/10 text-pink-400 border-pink-500/25" };
-      case "ideogram":
-        return { text: "ID", bg: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25" };
-      case "luma":
-        return { text: "LM", bg: "bg-teal-500/10 text-teal-400 border-teal-500/25" };
-      case "alibaba":
-        return { text: "AL", bg: "bg-sky-500/10 text-sky-400 border-sky-500/25" };
-      case "leonardoai":
-        return { text: "LE", bg: "bg-violet-500/10 text-violet-400 border-violet-500/25" };
-      case "stability":
-        return { text: "SD", bg: "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/25" };
-      default:
-        const name = provider ? provider.toUpperCase() : "AI";
-        return { text: name.substring(0, 2), bg: "bg-primary/10 text-primary border-primary/25" };
-    }
-  };
-
   // Dynamically compute list of providers from the input models list
   const availableProviders = [];
   const seenProviders = new Set();
   
   modelEntries.forEach(({ family }) => {
-    const pId = family.provider || 'muapi';
-    const pName = family.provider_name || 'Muapi';
+    const pId = family.provider || 'aquora';
+    const pName = family.provider_name || 'Aquora';
     if (!seenProviders.has(pId)) {
       seenProviders.add(pId);
       availableProviders.push({ id: pId, name: pName });
@@ -756,7 +713,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
     const { family } = entry;
     // 1. Filter by provider tab
     if (selectedProvider !== "all") {
-      const pId = family.provider || 'muapi';
+      const pId = family.provider || 'aquora';
       if (pId !== selectedProvider) return false;
     }
     // 2. Filter by search query (with task-word synonyms: "thumbnail", "logo"…)
@@ -791,6 +748,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
               type="button"
               onClick={() => setSelectedProvider(p.id)}
               aria-pressed={isSelected}
+              aria-label={p.name}
               className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-all cursor-pointer ${
                 isSelected
                   ? `${style.bg} scale-105 shadow-md shadow-black/10`
@@ -798,15 +756,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
               }`}
               title={p.name}
             >
-              {PROVIDER_LOGOS[p.id] ? (
-                <img
-                  src={PROVIDER_LOGOS[p.id]}
-                  alt={p.name}
-                  className={`w-full h-full rounded-full object-contain ${invertLogos.includes(p.id) ? "invert" : ""}`}
-                />
-              ) : (
-                style.text
-              )}
+              <span aria-hidden="true">{style.text}</span>
             </button>
           );
         })}
@@ -931,27 +881,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy }) {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {PROVIDER_LOGOS[family.provider] ? (
-                    <div className="w-8 h-8 rounded-full border border-white/5 overflow-hidden shrink-0 flex items-center justify-center bg-white/[0.02]">
-                      <img
-                        src={PROVIDER_LOGOS[family.provider]}
-                        alt={family.provider_name}
-                        className={`w-full h-full object-contain p-1 ${invertLogos.includes(family.provider) ? "invert" : ""}`}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`w-8 h-8 ${
-                        family.id.includes("kontext")
-                          ? "bg-blue-500/10 text-blue-400 border-blue-500/10"
-                          : family.id.includes("effects")
-                            ? "bg-pop-500/10 text-pop-400 border-pop-500/10"
-                            : "bg-primary/10 text-primary border-primary/10"
-                      } border rounded-full flex items-center justify-center font-bold text-xs shadow-inner uppercase`}
-                    >
-                      {entry.name.charAt(0)}
-                    </div>
-                  )}
+                  <ProviderChip provider={family.provider} />
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="text-xs font-bold text-white tracking-tight truncate">
                       {entry.name}
@@ -1028,27 +958,25 @@ export default function ImageStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
-  const LEGACY_PERSIST_KEY = "hg_image_studio_persistent";
-  const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
-  useEffect(() => {
-    migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
-  }, [PERSIST_KEY]);
+  const PERSIST_KEY = usePersistKey("hg_image_studio_persistent");
+  const availability = useModelAvailability();
 
   // ── Model state ─────────────────────────────────────────────────────────
-  const initialFamily = imageModelCatalog.familyByVariantId.get(t2iModels[0].id);
+  const [initialModel] = useState(() => getDefaultImageVariant("t2i").model);
+  const initialFamily = imageModelCatalog.familyByVariantId.get(initialModel.id);
   const [imageMode, setImageMode] = useState(false); // false=t2i, true=i2i
-  const [selectedModelId, setSelectedModelId] = useState(t2iModels[0].id);
+  const [selectedModelId, setSelectedModelId] = useState(initialModel.id);
   const [selectedFamilyId, setSelectedFamilyId] = useState(initialFamily.id);
   const [selectedAr, setSelectedAr] = useState(
-    t2iModels[0].inputs?.aspect_ratio?.default || "1:1",
+    initialModel.inputs?.aspect_ratio?.default || "1:1",
   );
   const [selectedQuality, setSelectedQuality] = useState(() => {
-    const resolutions = getResolutionsForModel(t2iModels[0].id);
+    const resolutions = getResolutionsForModel(initialModel.id);
     return resolutions[0] || null;
   });
   const [selectedEffect, setSelectedEffect] = useState("");
   const [modelParameterValues, setModelParameterValues] = useState(() =>
-    createModelParameterValues(t2iModels[0]),
+    createModelParameterValues(initialModel),
   );
 
   // ── Prompt / upload state ───────────────────────────────────────────────
@@ -1119,7 +1047,9 @@ export default function ImageStudio({
   }, [dropdownOpen]);
 
   // ── Persistence: Load ────────────────────────────────────────────────────
+  // PERSIST_KEY is null until the signed-in workspace is known.
   useEffect(() => {
+    if (!PERSIST_KEY) return;
     try {
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
@@ -1151,11 +1081,12 @@ export default function ImageStudio({
     } catch (err) {
       console.warn("Failed to load ImageStudio persistence:", err);
     }
-  }, []);
+  }, [PERSIST_KEY]);
 
   // ── Adjust height on load ────────────────────────────────────────────────
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!PERSIST_KEY) return undefined;
     const timer = setTimeout(() => {
       try {
         const state = {
@@ -1191,6 +1122,7 @@ export default function ImageStudio({
     uploadHistory,
     batchSize,
     localHistory,
+    PERSIST_KEY,
   ]);
 
   const processDroppedImages = async (files) => {
@@ -1227,7 +1159,7 @@ export default function ImageStudio({
           try {
             return await uploadFile(apiKey, file);
           } catch (err) {
-            console.error(
+            logStudioError(
               "[ImageStudio] Drop upload failed for",
               file.name,
               err
@@ -1373,16 +1305,37 @@ export default function ImageStudio({
 
   // ── Model selection ──────────────────────────────────────────────────────
   const handleModelSelect = (pickerEntry, category = "all") => {
-    const { family, variantsByMode, defaultVariant } = pickerEntry;
+    const { family } = pickerEntry;
+    const variantFor = (mode) => getAvailableEntryVariant(imageModelCatalog, pickerEntry, mode);
     const target = category !== "all"
-      ? variantsByMode[category]
-      : uploadedImageUrls.length > 0 && variantsByMode.i2i
-        ? variantsByMode.i2i
-        : variantsByMode[currentMode] || defaultVariant;
+      ? variantFor(category)
+      : (uploadedImageUrls.length > 0 && variantFor("i2i")) ||
+        variantFor(currentMode) ||
+        variantFor("t2i") ||
+        variantFor("i2i");
     if (!target) return;
 
     applyUserSelectedVariant(target, target.mode, family);
   };
+
+  // When the gateway's model list arrives (or a restored draft names a model
+  // it has since disabled), move off a model that can't run: another
+  // variant of the same family first, else the default model.
+  useEffect(() => {
+    if (!availability) return;
+    const current = imageModelCatalog.variantById.get(selectedModelId);
+    if (current && isVariantAvailable(current)) return;
+    const mode = imageMode ? "i2i" : "t2i";
+    const family = imageModelCatalog.familyById.get(selectedFamilyId);
+    const sameFamily = family ? getFamilyVariant(imageModelCatalog, family, mode, selectedModelId) : null;
+    const target = sameFamily || getDefaultImageVariant(mode) || getDefaultImageVariant("t2i");
+    if (!target) return;
+    applySelectedVariant(
+      target,
+      target.mode,
+      imageModelCatalog.familyByVariantId.get(target.model.id),
+    );
+  }, [availability, selectedModelId, selectedFamilyId, imageMode, applySelectedVariant]);
 
   // ── History helpers ──────────────────────────────────────────────────────
   const addToHistory = useCallback(
@@ -1403,7 +1356,7 @@ export default function ImageStudio({
     setPrompt("");
     setUploadedImageUrls([]);
     setImageMode(false);
-    const firstT2I = t2iModels[0];
+    const firstT2I = getDefaultImageVariant("t2i").model;
     const ars = getAspectRatiosForModel(firstT2I.id);
     const resolutions = getResolutionsForModel(firstT2I.id);
     const family = imageModelCatalog.familyByVariantId.get(firstT2I.id);
@@ -1418,6 +1371,10 @@ export default function ImageStudio({
   // ── Generation ───────────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (generating) return;
+    if (!isVariantAvailable(selectedVariant)) {
+      notifyError(copy.errors.modelUnavailable);
+      return;
+    }
 
     if (imageMode) {
       if (uploadedImageUrls.length === 0) {
@@ -1508,7 +1465,7 @@ export default function ImageStudio({
         }
       });
     } catch (e) {
-      console.error("[ImageStudio] Generation failed:", e);
+      logStudioError("[ImageStudio] Generation failed:", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
@@ -1644,7 +1601,7 @@ export default function ImageStudio({
                           </span>
                         );
                       })()}
-                      <span className="text-[10px] text-white/40">{entry.aspect_ratio}</span>
+                      <span className="text-[10px] text-white/60">{entry.aspect_ratio}</span>
                     </div>
                   </div>
                 </div>
@@ -1747,20 +1704,7 @@ export default function ImageStudio({
                     active: dropdownOpen === "model",
                   })}
                 >
-                  <div className="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
-                    {(() => {
-                      const selectedModelProvider = selectedFamily.provider || 'muapi';
-                      return PROVIDER_LOGOS[selectedModelProvider] ? (
-                        <img 
-                          src={PROVIDER_LOGOS[selectedModelProvider]} 
-                          alt="" 
-                          className={`w-full h-full object-contain ${invertLogos.includes(selectedModelProvider) ? "invert" : ""}`} 
-                        />
-                      ) : (
-                        <span className="text-[9px] font-bold text-black uppercase">G</span>
-                      );
-                    })()}
-                  </div>
+                  <ProviderChip provider={selectedFamily.provider || "aquora"} size="xs" />
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedModelDisplayName}
                   </span>

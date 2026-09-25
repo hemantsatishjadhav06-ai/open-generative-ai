@@ -1,0 +1,2372 @@
+[
+  {
+    "model_id": "ai-video-effects",
+    "key": "generate_wan_ai_effects",
+    "name": "AI Video Effects",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-effects",
+    "fallback_endpoint": "fal-ai/wan-i2v-lora",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "name": "effect_type",
+      "prompt": "subject",
+      "aspect_ratio": "aspect_ratio",
+      "quality": "turbo_mode",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "effect_type": "Legacy display name -> fal slug: {\"360 Rotation\": \"rotate\", \"Angry\": \"angry-face\", \"Assassin It\": \"assassin\", \"Baby It\": \"baby\", \"Bride It\": \"bride\", \"Cakeify\": \"cakeify\", \"Cartoon Jaw Drop\": \"cartoon-jaw-drop\", \"Crush It\": \"crush\", \"Crying\": \"crying\", \"Deflate It\": \"deflate\", \"Disney Princess It\": \"disney-princess\", \"Fire\": \"fire\", \"Hug Jesus\": \"hug-jesus\", \"Hulk Transformation\": \"hulk\", \"Inflate It\": \"inflate\", \"Jungle It\": \"jungle\", \"Jumpscare\": \"jumpscare\", \"Kissing\": \"kissing\", \"Laughing\": \"laughing\", \"Mona Lisa It\": \"mona-lisa\", \"Muscle Show Off\": \"muscle\", \"Pirate Captain\": \"pirate-captain\", \"Princess It\": \"princess\", \"Puppy it\": \"puppy\", \"Robotic Face Reveal\": \"robot-face-reveal\", \"Samurai It\": \"samurai\", \"Skyrim Fus-Ro-Dah\": \"fus-ro-dah\", \"Snow White It\": \"snow-white\", \"Squish It\": \"squish\", \"Super Saiyan Transformation\": \"super-saiyan\", \"Tsunami\": \"tsunami\", \"VIP It\": \"vip\", \"Warrior It\": \"warrior\", \"Younger Self Selfie\": \"selfie-younger-self\", \"Zen It\": \"zen\", \"Zoom Call\": \"zoom-call\", \"Gun Reveal\": \"gun-shooting (approx)\", \"Glamor\": \"classy (approx)\", \"Wind Blast\": \"blast (unverified semantics)\"}. No fal slug for: Abandoned Places, Animal Documentary, Boxing, Cats, Cyberpunk 2077, Dogs, Eye Close-Up, Fantasy Landscapes, Film Noir, Goblin, Kamehameha, Kiss Cam, Lego, Little Planet, Live Wallpaper, Looping Pixel Art, Melt It, Museum It, Orc, Pixar, POV Driving, Sharingan Eyes, Steamboat Willie, Ultra Wide, VHS Footage (most are Remade-AI T2V-only LoRAs; reject or hide these presets).",
+      "subject": "fal REQUIRES subject (short description of the subject); use Legacy prompt, else a generic 'the person in the image'",
+      "aspect_ratio": "pass-through (16:9, 9:16 both in fal enum)",
+      "turbo_mode": "quality 'medium' -> true, 'high' -> false (inferred)",
+      "num_frames": "duration 5 -> 81 (default, ~5s @16fps); duration 10 -> 100 (fal max, ~6.25s @16fps) - 10s not reachable"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-effects/api",
+    "notes": "Legacy app 'generate_wan_ai_effects' (models.js provider_name LegacyApp) applies the Remade-AI Wan2.1 I2V effect LoRAs (verified: hf.co/Remade-AI hosts Cakeify, Squish, Rotate, Inflate... with base Wan2.1-I2V-14B-480P). fal-ai/wan-effects wraps the same LoRA set as an effect_type enum (verified schema: required subject+image_url; aspect_ratio 16:9|9:16|1:1; num_frames 81-100; fps 5-24; lora_scale). 39/64 Legacy presets map (3 approximate). No resolution input on fal (drop). Fallback wan-i2v-lora with loras:[{path:<HF safetensors URL>}] for any I2V LoRA fal's enum lacks.",
+    "source": "packages/studio/src/models.js:12895"
+  },
+  {
+    "model_id": "motion-controls",
+    "key": "generate_wan_ai_effects",
+    "name": "Motion Controls",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-i2v-lora",
+    "fallback_endpoint": "fal-ai/pixverse/v4.5/image-to-video",
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "name": "loras",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "quality": "turbo_mode",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "loras": "name -> [{path:<url>, scale:1}] using Remade-AI I2V camera LoRAs (file names verified on HF): {\"360 Orbit\": \"https://huggingface.co/Remade-AI/360-Orbit/resolve/main/360_Orbit.safetensors\", \"Arc Shot\": \"https://huggingface.co/Remade-AI/Arc_shot/resolve/main/Arc_shot.safetensors\", \"Car Chase\": \"https://huggingface.co/Remade-AI/Car-chase/resolve/main/car_chase.safetensors\", \"Crash Zoom In\": \"https://huggingface.co/Remade-AI/Crash-zoom-in/resolve/main/crash_zoom_in.safetensors\", \"Crash Zoom Out\": \"https://huggingface.co/Remade-AI/Crash-zoom-out/resolve/main/crash_zoom_out.safetensors\", \"Crane Up\": \"https://huggingface.co/Remade-AI/Crane_up/resolve/main/crane_up.safetensors\", \"Crane Down\": \"https://huggingface.co/Remade-AI/Crane-down/resolve/main/crane_down.safetensors\", \"Crane Overhead\": \"https://huggingface.co/Remade-AI/Crane_over_the_head/resolve/main/crane_overhead.safetensors\", \"Hero Run\": \"https://huggingface.co/Remade-AI/Hero-run/resolve/main/Hero_run.safetensors\", \"Matrix Shot\": \"https://huggingface.co/Remade-AI/matrix-shot/resolve/main/matrix_shot.safetensors\", \"Dolly Zoom In\": \"https://huggingface.co/Remade-AI/Dolly-Effect/resolve/main/dolly_25_epochs.safetensors (approx: Remade 'Dolly-Effect')\"}; the other 36 presets have no public I2V LoRA -> use fallback",
+      "prompt": "prepend the LoRA trigger phrase from each HF model card (not verified per LoRA); fal requires prompt",
+      "aspect_ratio": "pass-through (16:9|9:16)",
+      "resolution": "pass-through (480p|720p)",
+      "turbo_mode": "quality 'medium' -> true, 'high' -> false (inferred)",
+      "num_frames": "duration 5 -> 81; 10 -> 100 (fal max)",
+      "fallback camera_movement (fal-ai/pixverse/v4.5/image-to-video)": "{\"Crash Zoom In\": \"quickly_zoom_in\", \"Crash Zoom Out\": \"quickly_zoom_out\", \"Crane Up\": \"crane_up\", \"Dolly Zoom In\": \"hitchcock\", \"Whip Pan\": \"whip_pan\", \"Robotic Cam\": \"robo_arm\", \"Zoom In\": \"zoom_in\", \"Zoom Out\": \"zoom_out\", \"360 Orbit\": \"camera_rotation\", \"Tilt Up\": \"vertical_up\", \"Tilt Down\": \"vertical_down\", \"Dolly Out\": \"super_dolly_out\", \"Dolly Left\": \"horizontal_left\", \"Dolly Right\": \"horizontal_right\", \"Dolly In\": \"smooth_zoom_in (approx)\", \"Head Tracking\": \"left_follow (approx)\"}"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-i2v-lora/api",
+    "notes": "Same engine as ai-video-effects (Remade-AI Wan2.1 camera LoRAs, e.g. hf.co/Remade-AI/360-Orbit, Crash-zoom-in, Arc_shot, Crane_up, matrix-shot). fal has no camera-preset enum for Wan, so only 11/47 presets are reproducible via wan-i2v-lora + HF LoRA URL. Pixverse v4.5 camera_movement (verified enum) covers ~16 presets natively; fal-ai/ltx-2-19b/image-to-video camera_lora (dolly_in/out/left/right, jib_up/down, static) and minimax/h3-max/camera-controls (camera_trajectory keyframes) are other native options. Presets like Dirty Lens, Lens Flare, Fisheye Lens, Snorricam, Rap Video Cam, Zoom Into Mouth have no fal equivalent -> prompt-only.",
+    "source": "packages/studio/src/models.js:13033"
+  },
+  {
+    "model_id": "vfx",
+    "key": "generate_wan_ai_effects",
+    "name": "VFX",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-i2v-lora",
+    "fallback_endpoint": "fal-ai/vidu/template-to-video",
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "name": "loras",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "quality": "turbo_mode",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "loras": "Car Explosion|Building Explosion|Huge Explosion -> [{path:'https://huggingface.co/Remade-AI/Explode/resolve/main/explode_30_epochs.safetensors'}] (approx); Electricity -> [{path:'https://huggingface.co/Remade-AI/Electrify/resolve/main/electrify_50_epochs.safetensors'}]; Flying -> use fal-ai/vidu/template-to-video template 'flying'; Disintegration -> fal-ai/pixverse/v5.5/effects effect 'Dust Me Away' (approx); Tornado (Remade LoRA is T2V-only), Levitate, Decay Time-Lapse -> no fal equivalent",
+      "turbo_mode": "quality 'medium' -> true, 'high' -> false (inferred)",
+      "num_frames": "duration 5 -> 81; 10 -> 100 (fal max)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-i2v-lora/api",
+    "notes": "Legacy VFX presets are LoRA effects on the same Wan effects app. Only 5/9 presets have a verified fal path (3 via one Explode LoRA). Treat as partially supported; hide unsupported presets.",
+    "source": "packages/studio/src/models.js:13154"
+  },
+  {
+    "model_id": "veo3-image-to-video",
+    "key": "veo3-image-to-video",
+    "name": "Veo 3",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url",
+      "aspect_ratio": "pass-through (16:9|9:16; fal also 'auto')"
+    },
+    "fixed_params": {
+      "duration": "8s",
+      "generate_audio": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3/image-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired. fal defaults resolution 720p (1080p available). generate_audio default true on fal (Legacy Veo3 always had audio).",
+    "source": "packages/studio/src/models.js:13237"
+  },
+  {
+    "model_id": "veo3-fast-image-to-video",
+    "key": "veo3-fast-image-to-video",
+    "name": "Veo 3 Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3/fast/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/fast/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {
+      "duration": "8s",
+      "generate_audio": true
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3/fast/image-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:13270"
+  },
+  {
+    "model_id": "runway-image-to-video",
+    "key": "runway-image-to-video",
+    "name": "Runway Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/pixverse/v5/image-to-video",
+    "confidence": "none",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string (e.g. 5 -> '5') (5|8 both valid on fallback)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v5/image-to-video/api",
+    "notes": "No Runway model exists on fal (not in the 235-entry image-to-video catalog; fal-ai/runway-gen3/turbo/image-to-video has no schema). Fallback pixverse v5 matches 5/8s and 720p/1080p but inherits aspect from the image.",
+    "source": "packages/studio/src/models.js:13303"
+  },
+  {
+    "model_id": "wan2.1-image-to-video",
+    "key": "wan2.1-image-to-video",
+    "name": "Wan2.1 Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-i2v",
+    "fallback_endpoint": "fal-ai/wan-pro/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "quality": "acceleration",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "acceleration": "quality 'medium' -> 'regular', 'high' -> 'none' (inferred)",
+      "num_frames": "duration 5 -> 81 (~5s @16fps); >5 -> 100 (fal max, ~6.25s) - Legacy 10s not reachable",
+      "aspect_ratio": "pass-through (fal also 'auto')",
+      "resolution": "pass-through (480p|720p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-i2v/api",
+    "notes": "Same model (Wan 2.1 I2V 14B). Duration range is the only real gap. wan-pro = Wan2.1 Pro 1080p (image_url+prompt+seed only).",
+    "source": "packages/studio/src/models.js:13360"
+  },
+  {
+    "model_id": "hunyuan-image-to-video",
+    "key": "hunyuan-image-to-video",
+    "name": "Hunyuan Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/hunyuan-video-image-to-video",
+    "fallback_endpoint": "fal-ai/hunyuan-video-v1.5/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "16:9|9:16 pass-through; Legacy '1:1' -> omit (fal enum has no 1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/hunyuan-video-image-to-video/api",
+    "notes": "Verified (HunyuanVideo I2V; prompt max 1000 chars; resolution default 720p).",
+    "source": "packages/studio/src/models.js:13426"
+  },
+  {
+    "model_id": "kling-v2.1-master-i2v",
+    "key": "kling-v2.1-master-i2v",
+    "name": "Kling v2.1 Master I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.1/master/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '5'|'10' (snap Legacy 6-9 to nearest)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.1/master/image-to-video/api",
+    "notes": "Same model; fal i2v inherits aspect from the image (no aspect_ratio). fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:13459"
+  },
+  {
+    "model_id": "kling-v2.1-standard-i2v",
+    "key": "kling-v2.1-standard-i2v",
+    "name": "Kling 2.1 Standard",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.1/standard/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v2.5-turbo/standard/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '5'|'10' (snap Legacy 6-9 to nearest)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.1/standard/image-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:13504"
+  },
+  {
+    "model_id": "kling-v2.1-pro-i2v",
+    "key": "kling-v2.1-pro-i2v",
+    "name": "Kling 2.1 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.1/pro/image-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "tail_image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '5'|'10' (snap Legacy 6-9 to nearest)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.1/pro/image-to-video/api",
+    "notes": "Same model; tail_image_url = end frame. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:13549"
+  },
+  {
+    "model_id": "wan2.2-image-to-video",
+    "key": "wan2.2-image-to-video",
+    "name": "Wan2.2 Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-a14b/image-to-video",
+    "fallback_endpoint": "fal-ai/wan/v2.2-a14b/image-to-video/turbo",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "quality": "video_quality",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "num_frames": "duration*16+1 at frames_per_second 16 (5s->81, 8s->129; fal range 17-161)",
+      "video_quality": "pass-through medium|high (fal enum low|medium|high|maximum; inferred equivalence)",
+      "aspect_ratio": "pass-through",
+      "resolution": "pass-through (480p|720p; fal also 580p)"
+    },
+    "fixed_params": {
+      "frames_per_second": 16
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-a14b/image-to-video/api",
+    "notes": "Verified. end_image_url supported (Legacy lastImageField last_image). Turbo variant is the cheap/fast option.",
+    "source": "packages/studio/src/models.js:13595"
+  },
+  {
+    "model_id": "runway-act-two-i2v",
+    "key": "runway-act-two-i2v",
+    "name": "Runway Act-Two",
+    "list": "i2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/wan/v2.2-14b/animate/move",
+    "confidence": "none",
+    "param_map": {},
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/move/api",
+    "notes": "Runway Act-Two (character performance transfer) is not on fal. Closest capability: Wan 2.2 Animate Move (required video_url driving performance + image_url character; resolution 480p|580p|720p). Legacy def exposes only image_url + aspect_ratio (models.js) so the driving video is not collected by the current UI.",
+    "source": "packages/studio/src/models.js:13661"
+  },
+  {
+    "model_id": "pixverse-v4.5-i2v",
+    "key": "pixverse-v4.5-i2v",
+    "name": "Pixverse v4.5 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v4.5/image-to-video",
+    "fallback_endpoint": "fal-ai/pixverse/v4.5/transition",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "1 image: images_list[0] -> image_url on fal-ai/pixverse/v4.5/image-to-video; 2 images (lastImageField=images_list): route to fal-ai/pixverse/v4.5/transition with images_list[0]->first_image_url, images_list[1]->end_image_url",
+      "aspect_ratio": "only sent on the transition route (i2v inherits aspect from the image)",
+      "resolution": "pass-through (360p|540p|720p|1080p)",
+      "duration": "int -> string '5'|'8' (1080p -> 5 only)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v4.5/image-to-video/api",
+    "notes": "Verified i2v + transition schemas. camera_movement/style/negative_prompt also available on fal.",
+    "source": "packages/studio/src/models.js:13688"
+  },
+  {
+    "model_id": "vidu-v2.0-i2v",
+    "key": "vidu-v2.0-i2v",
+    "name": "Vidu v2.0 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/image-to-video",
+    "fallback_endpoint": "fal-ai/vidu/start-end-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> fal-ai/vidu/image-to-video {image_url}; 2 images -> fal-ai/vidu/start-end-to-video {start_image_url: images_list[0], end_image_url: images_list[1]}"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio",
+      "resolution",
+      "duration"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/image-to-video/api",
+    "notes": "fal 'Vidu Image to Video' (non-Q) is the Vidu 2.0 generation (inferred from naming; Q1/Q2/Q3 have their own ids). fal exposes only prompt, image_url, movement_amplitude, seed - Legacy aspect/resolution/duration(4s) cannot be set.",
+    "source": "packages/studio/src/models.js:13759"
+  },
+  {
+    "model_id": "vidu-q1-reference",
+    "key": "vidu-q1-reference",
+    "name": "Vidu Q1 Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q1/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "reference_image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "reference_image_urls": "images_list (max 7)",
+      "aspect_ratio": "pass-through (16:9|9:16|1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q1/reference-to-video/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:13816"
+  },
+  {
+    "model_id": "minimax-hailuo-02-standard-i2v",
+    "key": "minimax-hailuo-02-standard-i2v",
+    "name": "Minimax Hailuo 02 Standard I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-02/standard/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "end_image_url": "end_image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int -> string '6'|'10'",
+      "resolution": "pass-through (512P|768P)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/image-to-video/api",
+    "notes": "Verified (fal default resolution 768P; prompt_optimizer default true).",
+    "source": "packages/studio/src/models.js:13852"
+  },
+  {
+    "model_id": "minimax-hailuo-02-pro-i2v",
+    "key": "minimax-hailuo-02-pro-i2v",
+    "name": "Minimax Hailuo 02 Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-02/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "end_image_url": "end_image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "duration",
+      "resolution"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/pro/image-to-video/api",
+    "notes": "Verified; pro is fixed 6s/1080P on fal (no duration/resolution inputs).",
+    "source": "packages/studio/src/models.js:13897"
+  },
+  {
+    "model_id": "video-effects",
+    "key": "video-effects",
+    "name": "Video Effects",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/template-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "input_image_urls",
+      "name": "template"
+    },
+    "value_transforms": {
+      "input_image_urls": "[image_url] (array)",
+      "template": "display name -> slug: {\"Balloon Flyaway\": \"balloon_flyaway\", \"Blow Kiss\": \"blow_kiss\", \"Body Shake\": \"bodyshake\", \"Break Glass\": \"break_glass\", \"Carry Me\": \"carry_me\", \"Cartoon Doll\": \"cartoon_doll\", \"Cheek Kiss\": \"cheek_kiss\", \"Child Memory\": \"child_memory\", \"Couple Arrival\": \"couple_arrival\", \"Fairy Me\": \"fairy_me\", \"Fashion Stride\": \"fashion_stride\", \"Fisherman\": \"fishermen\", \"Flower Receive\": \"flower_receive\", \"Flying\": \"flying\", \"French Kiss\": \"french_kiss_8s\", \"Gender Swap\": \"gender_swap\", \"Golden Epoch\": \"golden_epoch\", \"Hair Swap\": \"hair_swap\", \"Hugging\": \"hug\", \"Jiggle Up\": \"jiggle_up\", \"Kissing Pro\": \"kiss (approx)\", \"Live Memory\": \"live_memory\", \"Love Drop\": \"love_drop\", \"Minecraft\": \"minecraft\", \"Muscling\": \"muscling\", \"Nap Me 360p\": \"nap_me\", \"Paperman\": \"paperman\", \"Pilot\": \"pilot\", \"Pinch\": \"pinch\", \"Pixel Me\": \"pixel_me\", \"Romantic Lift\": \"romantic_lift\", \"Sexy Me\": \"sexy_me\", \"Slice Therapy\": \"slice_therapy\", \"Soul Depart\": \"soul_depart\", \"Split Stance Human\": \"split_stance_human\", \"Squid Game\": \"squid_game\", \"Walk Forward\": \"walk_forward\", \"Zoom In Fast\": \"zoom_in_fast\", \"Zoom Out\": \"zoom_out_image\"}; no slug for Melt, Toy Me"
+    },
+    "fixed_params": {
+      "aspect_ratio": "16:9"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/template-to-video/api",
+    "notes": "Legacy 'video-effects' preset names are Vidu template names (1:1 with fal's template enum, verified). 39/41 map. Some couple templates (e.g. hug, kiss, couple_arrival) may expect 2 input images in input_image_urls - UI currently sends one image. fal aspect_ratio 16:9|9:16 (Legacy exposes none; default 16:9).",
+    "source": "packages/studio/src/models.js:13940"
+  },
+  {
+    "model_id": "seedance-lite-i2v",
+    "key": "seedance-lite-i2v",
+    "name": "Seedance Lite I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/lite/image-to-video",
+    "fallback_endpoint": "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "camera_fixed": "camera_fixed"
+    },
+    "value_transforms": {
+      "duration": "int -> string (fal enum '2'..'12')",
+      "resolution": "pass-through (480p|720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/lite/image-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:14002"
+  },
+  {
+    "model_id": "seedance-pro-i2v",
+    "key": "seedance-pro-i2v",
+    "name": "Seedance Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "camera_fixed": "camera_fixed"
+    },
+    "value_transforms": {
+      "duration": "int -> string (fal enum '2'..'12')",
+      "resolution": "pass-through (480p|720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/image-to-video/api",
+    "notes": "Verified; active. fal also accepts end_image_url and aspect_ratio (default 'auto').",
+    "source": "packages/studio/src/models.js:14054"
+  },
+  {
+    "model_id": "pixverse-v5-i2v",
+    "key": "pixverse-v5-i2v",
+    "name": "Pixverse v5 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v5/image-to-video",
+    "fallback_endpoint": "fal-ai/pixverse/v5/transition",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "image_url": "1 image: images_list[0] -> image_url on fal-ai/pixverse/v5/image-to-video; 2 images (lastImageField=images_list): route to fal-ai/pixverse/v5/transition with images_list[0]->first_image_url, images_list[1]->end_image_url",
+      "aspect_ratio": "only sent on the transition route (i2v inherits aspect from the image)",
+      "resolution": "pass-through (360p|540p|720p|1080p)",
+      "duration": "int -> string '5'|'8' (Legacy 6-7 -> snap)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v5/image-to-video/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:14105"
+  },
+  {
+    "model_id": "seedance-lite-reference-video",
+    "key": "seedance-lite-reference-to-video",
+    "name": "Seedance 1.0 Lite Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/mini/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "reference_image_urls",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "reference_image_urls": "images_list (1-4)",
+      "duration": "int -> string",
+      "resolution": "pass-through (480p|720p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/lite/reference-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:14165"
+  },
+  {
+    "model_id": "wan2.1-reference-video",
+    "key": "wan2.1-reference-video",
+    "name": "Wan2.1 Reference Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-vace-14b",
+    "fallback_endpoint": "fal-ai/wan/v2.7/reference-to-video",
+    "confidence": "low",
+    "param_map": {
+      "images_list": "ref_image_urls",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "num_frames": "duration*16+1 (5->81, 10->161)",
+      "resolution": "pass-through (480p|720p)",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {
+      "frames_per_second": 16
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-vace-14b/api",
+    "notes": "Wan2.1 reference-to-video on fal = Wan VACE 14B with ref_image_urls and no video_url (inferred: VACE supports R2V but the endpoint's 'task' enum is depth|pose|inpainting|outpainting|reframe; fal-ai/wan-vace-14b/reference-to-video has no schema). Test before shipping; else use the Wan 2.7 R2V fallback.",
+    "source": "packages/studio/src/models.js:14209"
+  },
+  {
+    "model_id": "kling-v2.5-turbo-pro-i2v",
+    "key": "kling-v2.5-turbo-pro-i2v",
+    "name": "Kling v2.5 Turbo Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "last_image": "tail_image_url"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '5'|'10' (snap Legacy 6-9 to nearest)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/image-to-video/api",
+    "notes": "Verified; active. tail_image_url optional.",
+    "source": "packages/studio/src/models.js:14264"
+  },
+  {
+    "model_id": "wan2.5-image-to-video",
+    "key": "wan2.5-image-to-video",
+    "name": "Wan2.5 Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string (e.g. 5 -> '5') (fal enum '5'|'10'; snap 6-9 to nearest)",
+      "resolution": "pass-through (480p|720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/image-to-video/api",
+    "notes": "Verified (audio_url optional; output video.url).",
+    "source": "packages/studio/src/models.js:14297"
+  },
+  {
+    "model_id": "wan2.5-image-to-video-fast",
+    "key": "wan2.5-image-to-video-fast",
+    "name": "Wan2.5 Image To Video Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan-25-preview/image-to-video",
+    "fallback_endpoint": "wan/v2.6/image-to-video/flash",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string (e.g. 5 -> '5') (fal enum '5'|'10')",
+      "resolution": "pass-through (720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan-25-preview/image-to-video/api",
+    "notes": "fal has no Wan 2.5 'fast' endpoint; route to the standard 2.5 preview (slower/pricier) or the Wan 2.6 flash tier.",
+    "source": "packages/studio/src/models.js:14343"
+  },
+  {
+    "model_id": "openai-sora-2-image-to-video",
+    "key": "openai-sora-2-image-to-video",
+    "name": "Sora 2",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/sora-2/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url (maxImages 1)",
+      "duration": "int pass-through (4|8|12|16|20)",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sora-2/image-to-video/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired. No active Sora endpoint on fal.",
+    "source": "packages/studio/src/models.js:14388"
+  },
+  {
+    "model_id": "ovi-image-to-video",
+    "key": "ovi-image-to-video",
+    "name": "Ovi Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/ovi/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ovi/image-to-video/api",
+    "notes": "Verified; same Ovi prompt tags (<S>..<E> speech, <AUDCAP>..<ENDAUDCAP>). fal output video may be null on failure.",
+    "source": "packages/studio/src/models.js:14436"
+  },
+  {
+    "model_id": "openai-sora-2-pro-image-to-video",
+    "key": "openai-sora-2-pro-image-to-video",
+    "name": "Sora 2 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/sora-2/image-to-video/pro",
+    "fallback_endpoint": "fal-ai/veo3.1/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url",
+      "duration": "int pass-through",
+      "resolution": "pass-through (720p|1080p; fal also true_1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/sora-2/image-to-video/pro/api",
+    "notes": "Same model. fal lists this endpoint with status 'deprecated' (api.fal.ai/v1/models?category=image-to-video, fetched 2026-09-24); it still has a live OpenAPI schema but may be retired - keep the fallback wired.",
+    "source": "packages/studio/src/models.js:14457"
+  },
+  {
+    "model_id": "leonardoai-motion-2.0",
+    "key": "leonardoai-motion-2.0",
+    "name": "Motion 2.0",
+    "list": "i2vModels",
+    "fal_endpoint": null,
+    "fallback_endpoint": "fal-ai/ltx-2.3/image-to-video/fast",
+    "confidence": "none",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio"
+    },
+    "value_transforms": {
+      "aspect_ratio": "pass-through (16:9|9:16 in fallback enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3/image-to-video/fast/api",
+    "notes": "Leonardo Motion 2.0 is not on fal. Fallback LTX 2.3 fast supports prompt + aspect_ratio 16:9|9:16.",
+    "source": "packages/studio/src/models.js:14516"
+  },
+  {
+    "model_id": "veo3.1-image-to-video",
+    "key": "veo3.1-image-to-video",
+    "name": "Veo 3.1",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/first-last-frame-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "last_frame_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 8 -> '8s' (fal enum '4s'|'6s'|'8s')",
+      "aspect_ratio": "pass-through",
+      "resolution": "pass-through (720p|1080p|4k)",
+      "routing": "if last_image present -> <tier>/first-last-frame-to-video with image_url->first_frame_url, last_image->last_frame_url"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/image-to-video/api",
+    "notes": "Verified. First/last-frame variant fal-ai/veo3.1/first-last-frame-to-video (required prompt, first_frame_url, last_frame_url). fallback_endpoint here = the FLF route, not a different model.",
+    "source": "packages/studio/src/models.js:14548"
+  },
+  {
+    "model_id": "veo3.1-fast-image-to-video",
+    "key": "veo3.1-fast-image-to-video",
+    "name": "Veo 3.1 Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/fast/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "last_frame_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 8 -> '8s' (fal enum '4s'|'6s'|'8s')",
+      "aspect_ratio": "pass-through",
+      "resolution": "pass-through (720p|1080p|4k)",
+      "routing": "if last_image present -> <tier>/first-last-frame-to-video with image_url->first_frame_url, last_image->last_frame_url"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video/api",
+    "notes": "Verified; FLF route = fal-ai/veo3.1/fast/first-last-frame-to-video.",
+    "source": "packages/studio/src/models.js:14604"
+  },
+  {
+    "model_id": "veo3.1-lite-image-to-video",
+    "key": "veo3.1-lite-image-to-video",
+    "name": "Veo 3.1 Lite",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/lite/image-to-video",
+    "fallback_endpoint": "fal-ai/veo3.1/lite/first-last-frame-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "last_frame_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "resolution": "resolution"
+    },
+    "value_transforms": {
+      "duration": "int 8 -> '8s' (fal enum '4s'|'6s'|'8s')",
+      "aspect_ratio": "pass-through",
+      "resolution": "720p|1080p pass-through; Legacy '4k' -> '1080p' (lite has no 4k on fal)",
+      "routing": "if last_image present -> <tier>/first-last-frame-to-video with image_url->first_frame_url, last_image->last_frame_url"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/lite/image-to-video/api",
+    "notes": "Verified; lite enum is 720p|1080p only. FLF route = fal-ai/veo3.1/lite/first-last-frame-to-video.",
+    "source": "packages/studio/src/models.js:14660"
+  },
+  {
+    "model_id": "veo3.1-reference-to-video",
+    "key": "veo3.1-reference-to-video",
+    "name": "Veo 3.1 Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/veo3.1/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (max 3, Legacy maxImages 3)",
+      "duration": "8 -> '8s'",
+      "resolution": "pass-through (720p|1080p|4k)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/veo3.1/reference-to-video/api",
+    "notes": "Verified (required prompt+image_urls; aspect_ratio 16:9|9:16 default 16:9 - Legacy exposes none).",
+    "source": "packages/studio/src/models.js:14713"
+  },
+  {
+    "model_id": "seedance-pro-i2v-fast",
+    "key": "seedance-pro-i2v-fast",
+    "name": "Seedance Pro I2V Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "camera_fixed": "camera_fixed"
+    },
+    "value_transforms": {
+      "duration": "int -> string (fal enum '2'..'12')",
+      "resolution": "pass-through (480p|720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/fast/image-to-video/api",
+    "notes": "Verified; active (no end_image_url on fast).",
+    "source": "packages/studio/src/models.js:14765"
+  },
+  {
+    "model_id": "ltx-2-pro-image-to-video",
+    "key": "ltx-2-pro-image-to-video",
+    "name": "LTX 2 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/ltx-2/image-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3/image-to-video",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int pass-through (6|8|10)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2/image-to-video/api",
+    "notes": "Schema verified (resolution 1080p|1440p|2160p default 1080p, fps 25|50) but the id is absent from fal's active image-to-video listing - confirm it still serves, else LTX 2.3 Pro (same fields + aspect_ratio/end_image_url).",
+    "source": "packages/studio/src/models.js:14816"
+  },
+  {
+    "model_id": "ltx-2-fast-image-to-video",
+    "key": "ltx-2-fast-image-to-video",
+    "name": "LTX 2 Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/ltx-2/image-to-video/fast",
+    "fallback_endpoint": "fal-ai/ltx-2.3/image-to-video/fast",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int pass-through (6..20 even, identical enum)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2/image-to-video/fast/api",
+    "notes": "Same caveat as LTX 2 Pro.",
+    "source": "packages/studio/src/models.js:14851"
+  },
+  {
+    "model_id": "vidu-q2-reference",
+    "key": "vidu-q2-reference",
+    "name": "Vidu Q2 Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/reference-to-video",
+    "fallback_endpoint": "fal-ai/vidu/q2/reference-to-video/pro",
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "reference_image_urls",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "resolution": "360p|720p|1080p pass-through; '540p' -> '520p' (fal enum 360p|520p|720p|1080p)",
+      "aspect_ratio": "16:9|9:16|1:1 pass-through; 4:3|3:4 -> not supported (use pro fallback, free-form string)",
+      "duration": "int pass-through (1-8)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/reference-to-video/api",
+    "notes": "Schema verified but this id is absent from fal's active category listing (the /pro variant is listed active: resolution 540p|720p|1080p, aspect_ratio free string, duration 1-8, also reference_video_urls). Confirm with a live call; otherwise use /pro.",
+    "source": "packages/studio/src/models.js:14891"
+  },
+  {
+    "model_id": "vidu-q2-turbo-start-end-video",
+    "key": "vidu-q2-turbo-start-end-video",
+    "name": "Vidu Q2 Turbo Start End",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/image-to-video/turbo",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "duration": "int pass-through (fal enum 2-8)",
+      "resolution": "pass-through (720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/image-to-video/turbo/api",
+    "notes": "Verified; fal bgm default false (Legacy default true).",
+    "source": "packages/studio/src/models.js:14965"
+  },
+  {
+    "model_id": "vidu-q2-pro-start-end-video",
+    "key": "vidu-q2-pro-start-end-video",
+    "name": "Vidu Q2 Pro Start End",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/vidu/q2/image-to-video/pro",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "bgm": "bgm",
+      "movement_amplitude": "movement_amplitude"
+    },
+    "value_transforms": {
+      "duration": "int; Legacy 1 -> 2 (fal enum 2-8)",
+      "resolution": "720p|1080p pass-through; '540p' -> '720p'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/vidu/q2/image-to-video/pro/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:15029"
+  },
+  {
+    "model_id": "minimax-hailuo-2.3-pro-i2v",
+    "key": "minimax-hailuo-2.3-pro-i2v",
+    "name": "Minimax Hailuo 2.3 Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-2.3/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt"
+    },
+    "value_transforms": {},
+    "fixed_params": {},
+    "drop_params": [
+      "resolution"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/image-to-video/api",
+    "notes": "Verified; fixed 1080p/6s on fal (matches Legacy fixedParameters duration 6).",
+    "source": "packages/studio/src/models.js:15094"
+  },
+  {
+    "model_id": "minimax-hailuo-2.3-standard-i2v",
+    "key": "minimax-hailuo-2.3-standard-i2v",
+    "name": "Minimax Hailuo 2.3 Standard I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-2.3/standard/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int -> string '6'|'10'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/standard/image-to-video/api",
+    "notes": "Verified (768p tier).",
+    "source": "packages/studio/src/models.js:15127"
+  },
+  {
+    "model_id": "minimax-hailuo-2.3-fast",
+    "key": "minimax-hailuo-2.3-fast",
+    "name": "MiniMax Hailuo 2.3 Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/minimax/hailuo-2.3-fast/standard/image-to-video",
+    "fallback_endpoint": "fal-ai/minimax/hailuo-2.3-fast/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "int -> string '6'|'10'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "go_fast"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3-fast/standard/image-to-video/api",
+    "notes": "Verified. Legacy fixed 768p -> fast/standard; fast/pro is the 1080p variant. go_fast is Legacy-only.",
+    "source": "packages/studio/src/models.js:15161"
+  },
+  {
+    "model_id": "kling-v2.5-turbo-std-i2v",
+    "key": "kling-v2.5-turbo-std-i2v",
+    "name": "Kling 2.5 Turbo Standard",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.5-turbo/standard/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '5'|'10' (snap Legacy 6-9 to nearest)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/standard/image-to-video/api",
+    "notes": "Verified; active.",
+    "source": "packages/studio/src/models.js:15202"
+  },
+  {
+    "model_id": "grok-imagine-image-to-video",
+    "key": "grok-imagine-image-to-video",
+    "name": "Grok Imagine Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "xai/grok-imagine-video/image-to-video",
+    "fallback_endpoint": "xai/grok-imagine-video/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "1 image: images_list[0] -> image_url; 2-7 images -> xai/grok-imagine-video/reference-to-video {reference_image_urls, duration 1-10, resolution, aspect_ratio}",
+      "duration": "int, clamp to 1-15 (Legacy allows 6-30)",
+      "aspect_ratio": "pass-through (all 5 Legacy values in fal enum)",
+      "resolution": "pass-through (480p|720p)"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "mode"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/xai/grok-imagine-video/image-to-video/api",
+    "notes": "Verified. Legacy 'mode' (normal|fun) has no fal field. v1.5 (xai/grok-imagine-video/v1.5/image-to-video) adds 1080p but no aspect_ratio.",
+    "source": "packages/studio/src/models.js:15235"
+  },
+  {
+    "model_id": "kling-o1-image-to-video",
+    "key": "kling-o1-image-to-video",
+    "name": "Kling O1 Pro",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'10'"
+    },
+    "fixed_params": {},
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/image-to-video/api",
+    "notes": "Verified (Kling O1 FLF Pro). fal has no aspect_ratio on O1 i2v (inherits from image).",
+    "source": "packages/studio/src/models.js:15262"
+  },
+  {
+    "model_id": "kling-o1-reference-to-video",
+    "key": "kling-o1-reference-to-video",
+    "name": "Kling O1 Pro Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/reference-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/o1/video-to-video/reference",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "video_url": "video_url",
+      "keep_original_sound": "keep_audio"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'10'",
+      "routing": "if video_url present -> fal-ai/kling-video/o1/video-to-video/reference {video_url, image_urls, prompt, aspect_ratio ('auto' allowed), duration, keep_audio<-keep_original_sound}; else reference-to-video (no video/keep_audio fields)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/reference-to-video/api",
+    "notes": "Verified both endpoints. elements[] (frontal+reference images per character) is the richer fal alternative to flat image_urls.",
+    "source": "packages/studio/src/models.js:15308"
+  },
+  {
+    "model_id": "kling-v2.6-pro-i2v",
+    "key": "kling-v2.6-pro-i2v",
+    "name": "Kling v2.6 Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v2.6/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "start_image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "sound": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "int -> string '5'|'10'",
+      "generate_audio": "Legacy 'sound' boolean -> generate_audio"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/image-to-video/api",
+    "notes": "Verified (required prompt, start_image_url; end_image_url optional).",
+    "source": "packages/studio/src/models.js:15360"
+  },
+  {
+    "model_id": "pixverse-v5.5-i2v",
+    "key": "pixverse-v5.5-i2v",
+    "name": "Pixverse v5.5 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v5.5/image-to-video",
+    "fallback_endpoint": "fal-ai/pixverse/v5.5/transition",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "aspect_ratio": "aspect_ratio",
+      "style": "style",
+      "thinking": "thinking_type",
+      "audio": "generate_audio_switch",
+      "multi_clip": "generate_multi_clip_switch"
+    },
+    "value_transforms": {
+      "image_url": "1 image: images_list[0] -> image_url on fal-ai/pixverse/v5.5/image-to-video; 2 images (lastImageField=images_list): route to fal-ai/pixverse/v5.5/transition with images_list[0]->first_image_url, images_list[1]->end_image_url",
+      "aspect_ratio": "only sent on the transition route (i2v inherits aspect from the image)",
+      "resolution": "pass-through (360p|540p|720p|1080p)",
+      "duration": "int -> string '5'|'8'|'10'",
+      "style": "'none' -> omit; others pass-through",
+      "thinking_type": "pass-through auto|enabled|disabled",
+      "generate_multi_clip_switch": "i2v route only (transition has no multi-clip)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v5.5/image-to-video/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:15395"
+  },
+  {
+    "model_id": "wan2.2-spicy-image-to-video",
+    "key": "wan2.2-spicy-image-to-video",
+    "name": "Wan2.2 Spicy Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.2-a14b/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "low",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "num_frames": "duration*16+1 (5->81, 8->129)",
+      "resolution": "pass-through"
+    },
+    "fixed_params": {
+      "frames_per_second": 16,
+      "enable_safety_checker": false,
+      "aspect_ratio": "auto"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.2-a14b/image-to-video/api",
+    "notes": "'Spicy' is a Legacy NSFW-tuned Wan2.2 variant; fal has no dedicated NSFW finetune. Base Wan2.2 A14B with safety checker off (schema default false; fal docs say disabling needs account authorization on some models) is the nearest; output may differ and fal's content policy applies - product decision.",
+    "source": "packages/studio/src/models.js:15468"
+  },
+  {
+    "model_id": "wan2.6-image-to-video",
+    "key": "wan2.6-image-to-video",
+    "name": "Wan2.6 Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "wan/v2.6/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "shot_type": "multi_shots"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string (e.g. 5 -> '5') (5|10|15)",
+      "multi_shots": "shot_type 'multi' -> true, 'single' -> false",
+      "resolution": "pass-through (720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/wan/v2.6/image-to-video/api",
+    "notes": "Verified. Queue endpoint id is 'wan/v2.6/image-to-video' (OpenAPI POST path shows internal /fal-ai/wan-26-i2v; submit to queue.fal.run/wan/v2.6/image-to-video).",
+    "source": "packages/studio/src/models.js:15513"
+  },
+  {
+    "model_id": "kling-o1-standard-image-to-video",
+    "key": "kling-o1-standard-image-to-video",
+    "name": "Kling O1 Standard",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/standard/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'10'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/standard/image-to-video/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:15571"
+  },
+  {
+    "model_id": "kling-o1-standard-reference-to-video",
+    "key": "kling-o1-standard-reference-to-video",
+    "name": "Kling O1 Standard Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o1/standard/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'10'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o1/standard/reference-to-video/api",
+    "notes": "Verified.",
+    "source": "packages/studio/src/models.js:15606"
+  },
+  {
+    "model_id": "seedance-v1.5-pro-i2v",
+    "key": "seedance-v1.5-pro-i2v",
+    "name": "Seedance v1.5 Pro I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "camera_fixed": "camera_fixed"
+    },
+    "value_transforms": {
+      "duration": "int -> string (fal enum '4'..'12')",
+      "aspect_ratio": "pass-through; if absent send 'auto' (Legacy aspectRatioMode inherited; fal default is 16:9)",
+      "resolution": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video/api",
+    "notes": "Verified 1:1 (plus last_image->end_image_url).",
+    "source": "packages/studio/src/models.js:15657"
+  },
+  {
+    "model_id": "seedance-v1.5-pro-i2v-fast",
+    "key": "seedance-v1.5-pro-i2v-fast",
+    "name": "Seedance v1.5 Pro I2V Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "generate_audio": "generate_audio",
+      "camera_fixed": "camera_fixed"
+    },
+    "value_transforms": {
+      "duration": "int -> string (fal enum '4'..'12')",
+      "aspect_ratio": "pass-through; if absent send 'auto' (Legacy aspectRatioMode inherited; fal default is 16:9)",
+      "resolution": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video/api",
+    "notes": "fal has no Seedance 1.5 Pro 'fast' i2v (api.fal.ai returned 'OpenAPI schema not available' for fal-ai/bytedance/seedance/v1.5/pro/fast/image-to-video). Route to standard 1.5 Pro (slower/pricier) or v1 pro fast.",
+    "source": "packages/studio/src/models.js:15733"
+  },
+  {
+    "model_id": "ltx-2-19b-image-to-video",
+    "key": "ltx-2-19b-image-to-video",
+    "name": "LTX 2 19B",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/ltx-2-19b/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "resolution": "video_size",
+      "duration": "num_frames"
+    },
+    "value_transforms": {
+      "num_frames": "round(duration*25/8)*8+1 at fps 25 (5s->129, 10s->249), clamp 9-481 (481 ~= 19.2s; 20s not reachable)",
+      "video_size": "resolution -> {width,height} with long edge 854|1280|1920 at the input image aspect (inferred); or 'auto'"
+    },
+    "fixed_params": {
+      "fps": 25
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2-19b/image-to-video/api",
+    "notes": "Schema verified (open-weights LTX-2 19B; also end_image_url, camera_lora, seed). Id not in active listing - confirm.",
+    "source": "packages/studio/src/models.js:15808"
+  },
+  {
+    "model_id": "kling-v3.0-omni-standard-image-to-video",
+    "key": "kling-v3.0-omni-standard-image-to-video",
+    "name": "Kling v3.0 Omni Standard Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/standard/reference-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/o3/standard/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'15'",
+      "image_urls": "images_list (1-4 reference images)",
+      "aspect_ratio": "pass-through (16:9|9:16|1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/standard/reference-to-video/api",
+    "notes": "Kling 3.0 Omni is published on fal as 'Kling O3' (inferred naming equivalence; tiers standard/pro/4k match Legacy fixed resolution 720p). Legacy images_list is 'Reference images' (KLING_OMNI_REFERENCE_INPUT, models.js:177) + aspect_ratio -> O3 reference-to-video (verified: image_urls, aspect_ratio, duration '3'-'15', generate_audio default false, start/end_image_url optional). Fallback O3 image-to-video if the first image should be a start frame.",
+    "source": "packages/studio/src/models.js:15852"
+  },
+  {
+    "model_id": "kling-v3.0-omni-pro-image-to-video",
+    "key": "kling-v3.0-omni-pro-image-to-video",
+    "name": "Kling v3.0 Omni Pro Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/pro/reference-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/o3/pro/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'15'",
+      "image_urls": "images_list (1-4 reference images)",
+      "aspect_ratio": "pass-through (16:9|9:16|1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/pro/reference-to-video/api",
+    "notes": "Kling 3.0 Omni is published on fal as 'Kling O3' (inferred naming equivalence; tiers standard/pro/4k match Legacy fixed resolution 1080p). Legacy images_list is 'Reference images' (KLING_OMNI_REFERENCE_INPUT, models.js:177) + aspect_ratio -> O3 reference-to-video (verified: image_urls, aspect_ratio, duration '3'-'15', generate_audio default false, start/end_image_url optional). Fallback O3 image-to-video if the first image should be a start frame.",
+    "source": "packages/studio/src/models.js:15918"
+  },
+  {
+    "model_id": "kling-v3.0-omni-4k-image-to-video",
+    "key": "kling-v3.0-omni-4k-image-to-video",
+    "name": "Kling v3.0 Omni 4K Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/o3/4k/reference-to-video",
+    "fallback_endpoint": "fal-ai/kling-video/o3/4k/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'15'",
+      "image_urls": "images_list (1-4 reference images)",
+      "aspect_ratio": "pass-through (16:9|9:16|1:1)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/o3/4k/reference-to-video/api",
+    "notes": "Kling 3.0 Omni is published on fal as 'Kling O3' (inferred naming equivalence; tiers standard/pro/4k match Legacy fixed resolution 4K). Legacy images_list is 'Reference images' (KLING_OMNI_REFERENCE_INPUT, models.js:177) + aspect_ratio -> O3 reference-to-video (verified: image_urls, aspect_ratio, duration '3'-'15', generate_audio default false, start/end_image_url optional). Fallback O3 image-to-video if the first image should be a start frame.",
+    "source": "packages/studio/src/models.js:15984"
+  },
+  {
+    "model_id": "kling-v3.0-pro-image-to-video",
+    "key": "kling-v3.0-pro-image-to-video",
+    "name": "Kling v3.0 Pro Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/pro/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'15'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video/api",
+    "notes": "Verified (Kling 3.0 Pro = 1080p tier; Legacy fixedParameters resolution 1080p).",
+    "source": "packages/studio/src/models.js:16043"
+  },
+  {
+    "model_id": "kling-v3.0-standard-image-to-video",
+    "key": "kling-v3.0-standard-image-to-video",
+    "name": "Kling v3.0 Standard Image To Video",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/kling-video/v3/standard/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "start_image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "duration": "duration",
+      "generate_audio": "generate_audio"
+    },
+    "value_transforms": {
+      "duration": "duration int -> string; fal enum '3'..'15'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video/api",
+    "notes": "Verified (standard = 720p tier). 4K tier exists: fal-ai/kling-video/v3/4k/image-to-video.",
+    "source": "packages/studio/src/models.js:16079"
+  },
+  {
+    "model_id": "seedance-v2.0-i2v",
+    "key": "seedance-v2.0-i2v",
+    "name": "Seedance 2.0 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> bytedance/seedance-2.0/image-to-video {image_url: images_list[0]}; 2-9 images -> bytedance/seedance-2.0/reference-to-video {image_urls: images_list} (prompt keeps @image1..@imageN)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/<mode> (standard); 'basic' -> bytedance/seedance-2.0/fast/<mode> (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). Legacy maxImages 5.",
+    "source": "packages/studio/src/models.js:16115"
+  },
+  {
+    "model_id": "seedance-2-i2v",
+    "key": "seedance-v2.0-i2v",
+    "name": "Seedance 2 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> bytedance/seedance-2.0/image-to-video {image_url: images_list[0]}; 2-9 images -> bytedance/seedance-2.0/reference-to-video {image_urls: images_list} (prompt keeps @image1..@imageN)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/<mode> (standard); 'basic' -> bytedance/seedance-2.0/fast/<mode> (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). @character:<id> prompt tokens are Legacy-only (character store) - strip or reject.",
+    "source": "packages/studio/src/models.js:16172"
+  },
+  {
+    "model_id": "ltx-2.3-image-to-video",
+    "key": "ltx-2.3-image-to-video",
+    "name": "LTX 2.3",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/ltx-2.3-22b/image-to-video",
+    "fallback_endpoint": "fal-ai/ltx-2.3/image-to-video/fast",
+    "confidence": "medium",
+    "param_map": {
+      "image_url": "image_url",
+      "prompt": "prompt",
+      "duration": "num_frames",
+      "resolution": "video_size",
+      "seed": "seed"
+    },
+    "value_transforms": {
+      "num_frames": "round(duration*24/8)*8+1 at fps 24 (5s->121, 20s->481), clamp 9-481",
+      "video_size": "resolution 480p|720p|1080p -> {width,height} long edge 854|1280|1920 at input aspect (inferred)",
+      "seed": "-1 -> omit"
+    },
+    "fixed_params": {
+      "fps": 24
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/ltx-2.3-22b/image-to-video/api",
+    "notes": "Legacy exposes seed + 480p/720p (open-weights traits) -> LTX-2.3 22B (verified schema: seed, num_frames 9-481, video_size, generate_audio, end_image_url). Hosted LTX 2.3 Pro/Fast (verified) only offer 1080p+ and no seed; fast covers durations 6-20.",
+    "source": "packages/studio/src/models.js:16237"
+  },
+  {
+    "model_id": "seedance-2-new-first-last",
+    "key": "seedance-2.0-new-first-last",
+    "name": "Seedance 2 New First Last",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through; 'adaptive' -> 'auto'",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/image-to-video (standard); 'basic' -> bytedance/seedance-2.0/fast/image-to-video (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified: fal Seedance 2.0 image-to-video takes image_url + optional end_image_url. Legacy endpoint seedance-2.0-new-first-last.",
+    "source": "packages/studio/src/models.js:16299"
+  },
+  {
+    "model_id": "seedance-2-omni-reference",
+    "key": "seedance-2.0-omni-reference",
+    "name": "Seedance 2 Omni Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "video_files": "video_urls",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through",
+      "video_urls": "video_files (<=3)",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/reference-to-video (standard); 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. ",
+    "source": "packages/studio/src/models.js:16370"
+  },
+  {
+    "model_id": "pixverse-v6-i2v",
+    "key": "pixverse-v6-i2v",
+    "name": "Pixverse v6 I2V",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v6/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "thinking_type": "thinking_type",
+      "generate_audio_switch": "generate_audio_switch"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url (Legacy maxItems 1)",
+      "duration": "int pass-through (1-15)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v6/image-to-video/api",
+    "notes": "Verified 1:1 names.",
+    "source": "packages/studio/src/models.js:16466"
+  },
+  {
+    "model_id": "pixverse-v6-transition",
+    "key": "pixverse-v6-transition",
+    "name": "PixVerse V6 Transition",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/pixverse/v6/transition",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "first_image_url",
+      "last_image": "end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "thinking_type": "thinking_type",
+      "style": "style",
+      "negative_prompt": "negative_prompt",
+      "generate_audio_switch": "generate_audio_switch"
+    },
+    "value_transforms": {
+      "thinking_type": "Legacy boolean -> true:'enabled', false:'disabled'",
+      "duration": "int pass-through (1-15)",
+      "aspect_ratio": "pass-through (same 8 values)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/pixverse/v6/transition/api",
+    "notes": "Verified (required prompt, first_image_url, end_image_url).",
+    "source": "packages/studio/src/models.js:16544"
+  },
+  {
+    "model_id": "wan2.7-image-to-video",
+    "key": "wan2.7-image-to-video",
+    "name": "Wan2.7",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "image_url": "image_url",
+      "last_image": "end_image_url",
+      "audio_url": "audio_url",
+      "prompt": "prompt",
+      "resolution": "resolution",
+      "duration": "duration",
+      "negative_prompt": "negative_prompt"
+    },
+    "value_transforms": {
+      "duration": "int pass-through (2-15)",
+      "resolution": "pass-through (720p|1080p)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/image-to-video/api",
+    "notes": "Verified 1:1 field match except last_image->end_image_url.",
+    "source": "packages/studio/src/models.js:16663"
+  },
+  {
+    "model_id": "wan2.7-reference-to-video",
+    "key": "wan2.7-reference-to-video",
+    "name": "Wan 2.7 Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "fal-ai/wan/v2.7/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "reference_image_urls",
+      "videos_list": "reference_video_urls",
+      "image_url": "reference_image_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "resolution": "resolution",
+      "duration": "duration",
+      "negative_prompt": "negative_prompt"
+    },
+    "value_transforms": {
+      "reference_image_urls": "images_list (max 4); Legacy image_url (optional start-frame anchor) has no fal field -> prepend to reference_image_urls (approx)",
+      "duration": "int pass-through (fal 2-10)",
+      "aspect_ratio": "pass-through (16:9|9:16|1:1|4:3|3:4)"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/fal-ai/wan/v2.7/reference-to-video/api",
+    "notes": "Verified. Only gap: Legacy's optional image_url start frame.",
+    "source": "packages/studio/src/models.js:16736"
+  },
+  {
+    "model_id": "seedance-2-i2v-480p",
+    "key": "seedance-2.0-i2v-480p",
+    "name": "Seedance 2 I2V 480P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> bytedance/seedance-2.0/image-to-video {image_url: images_list[0]}; 2-9 images -> bytedance/seedance-2.0/reference-to-video {image_urls: images_list} (prompt keeps @image1..@imageN)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/<mode> (standard); 'basic' -> bytedance/seedance-2.0/fast/<mode> (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). Legacy 480p tier -> fixed resolution 480p.",
+    "source": "packages/studio/src/models.js:16834"
+  },
+  {
+    "model_id": "seedance-2-omni-reference-480p",
+    "key": "seedance-2.0-omni-reference-480p",
+    "name": "Seedance 2 Omni Reference 480P",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "video_files": "video_urls",
+      "quality": "(endpoint)"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through",
+      "video_urls": "video_files (<=3)",
+      "endpoint": "quality 'high' -> bytedance/seedance-2.0/reference-to-video (standard); 'basic' -> bytedance/seedance-2.0/fast/reference-to-video (Legacy models.js: 'high = standard model; basic = fast model')"
+    },
+    "fixed_params": {
+      "resolution": "480p"
+    },
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. 480p tier -> fixed resolution 480p; Legacy duration min 8.",
+    "source": "packages/studio/src/models.js:16903"
+  },
+  {
+    "model_id": "seedance-2-image-to-video",
+    "key": "seedance-2-image-to-video",
+    "name": "Seedance 2",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> bytedance/seedance-2.0/image-to-video {image_url: images_list[0]}; 2-9 images -> bytedance/seedance-2.0/reference-to-video {image_urls: images_list} (prompt keeps @image1..@imageN)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). Legacy def: 1 image = start frame, 2-9 = omni_reference (models.js:16997).",
+    "source": "packages/studio/src/models.js:16997"
+  },
+  {
+    "model_id": "seedance-2-image-to-video-fast",
+    "key": "seedance-2-image-to-video-fast",
+    "name": "Seedance 2 Image to Video Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "fallback_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "1 image -> bytedance/seedance-2.0/fast/image-to-video {image_url: images_list[0]}; 2-9 images -> bytedance/seedance-2.0/fast/reference-to-video {image_urls: images_list} (prompt keeps @image1..@imageN)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). ",
+    "source": "packages/studio/src/models.js:17059"
+  },
+  {
+    "model_id": "seedance-2-first-last-frame",
+    "key": "seedance-2-first-last-frame",
+    "name": "Seedance 2 First Last Frame",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through; 'adaptive' -> 'auto'",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified: fal Seedance 2.0 image-to-video takes image_url + optional end_image_url. ",
+    "source": "packages/studio/src/models.js:17121"
+  },
+  {
+    "model_id": "seedance-2-first-last-frame-fast",
+    "key": "seedance-2-first-last-frame-fast",
+    "name": "Seedance 2 First Last Frame Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through; 'adaptive' -> 'auto'",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+    "notes": "Verified: fal Seedance 2.0 image-to-video takes image_url + optional end_image_url. ",
+    "source": "packages/studio/src/models.js:17184"
+  },
+  {
+    "model_id": "seedance-2-omni-reference-no-video",
+    "key": "seedance-2-omni-reference-no-video",
+    "name": "Seedance 2 Omni Reference No Video",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. ",
+    "source": "packages/studio/src/models.js:17249"
+  },
+  {
+    "model_id": "seedance-2-omni-reference-no-video-fast",
+    "key": "seedance-2-omni-reference-no-video-fast",
+    "name": "Seedance 2 Omni Reference No Video Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. ",
+    "source": "packages/studio/src/models.js:17321"
+  },
+  {
+    "model_id": "seedance-2-vip-image-to-video",
+    "key": "seedance-2-vip-image-to-video",
+    "name": "Seedance 2 VIP",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). VIP = Legacy priority/premium tier with max 2 images (start+optional end): 2 images -> image-to-video with end_image_url=images_list[1] instead of reference. fal has no VIP tier; same model.",
+    "source": "packages/studio/src/models.js:17393"
+  },
+  {
+    "model_id": "seedance-2-vip-image-to-video-fast",
+    "key": "seedance-2-vip-image-to-video-fast",
+    "name": "Seedance 2 VIP Image to Video Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through ('adaptive' -> 'auto')",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+    "notes": "Verified both fal Seedance 2.0 schemas (image_url/end_image_url | image_urls<=9, video_urls<=3, audio_urls<=3; resolution 480p|720p|1080p|4k (fast: 480p|720p); generate_audio default true). VIP tier: 2 images = start/end -> end_image_url. No VIP tier on fal.",
+    "source": "packages/studio/src/models.js:17461"
+  },
+  {
+    "model_id": "seedance-2-vip-first-last-frame",
+    "key": "seedance-2-vip-first-last-frame",
+    "name": "Seedance 2 VIP First Last Frame",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through; 'adaptive' -> 'auto'",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+    "notes": "Verified: fal Seedance 2.0 image-to-video takes image_url + optional end_image_url. VIP tier has no fal equivalent; same model.",
+    "source": "packages/studio/src/models.js:17529"
+  },
+  {
+    "model_id": "seedance-2-vip-first-last-frame-fast",
+    "key": "seedance-2-vip-first-last-frame-fast",
+    "name": "Seedance 2 VIP First Last Frame Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/image-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_url + end_image_url",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url; images_list[1] (optional) -> end_image_url",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through; 'adaptive' -> 'auto'",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+    "notes": "Verified: fal Seedance 2.0 image-to-video takes image_url + optional end_image_url. VIP tier has no fal equivalent; same model.",
+    "source": "packages/studio/src/models.js:17600"
+  },
+  {
+    "model_id": "seedance-2-vip-omni-reference",
+    "key": "seedance-2-vip-omni-reference",
+    "name": "Seedance 2 VIP Omni Reference",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "video_files": "video_urls",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through",
+      "video_urls": "video_files (<=3)",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. VIP tier has no fal equivalent; same model.",
+    "source": "packages/studio/src/models.js:17671"
+  },
+  {
+    "model_id": "seedance-2-vip-omni-reference-fast",
+    "key": "seedance-2-vip-omni-reference-fast",
+    "name": "Seedance 2 VIP Omni Reference Fast",
+    "list": "i2vModels",
+    "fal_endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+    "fallback_endpoint": null,
+    "confidence": "medium",
+    "param_map": {
+      "images_list": "image_urls",
+      "audio_files": "audio_urls",
+      "prompt": "prompt",
+      "aspect_ratio": "aspect_ratio",
+      "duration": "duration",
+      "video_files": "video_urls",
+      "high_bitrate": "bitrate_mode"
+    },
+    "value_transforms": {
+      "image_urls": "images_list (<=9)",
+      "audio_urls": "audio_files (<=3)",
+      "duration": "int -> string (fal enum 'auto','4'..'15'); 5|10|15 valid",
+      "aspect_ratio": "pass-through",
+      "video_urls": "video_files (<=3)",
+      "bitrate_mode": "true -> 'high', false -> 'standard'"
+    },
+    "fixed_params": {},
+    "drop_params": [],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/reference-to-video/api",
+    "notes": "Verified fal Seedance 2.0 reference-to-video (image_urls/video_urls/audio_urls, @imageN/@videoN/@audioN prompt refs). @omni-character / @character tokens are Legacy-only. VIP tier has no fal equivalent; same model.",
+    "source": "packages/studio/src/models.js:17757"
+  },
+  {
+    "model_id": "happy-horse-1-image-to-video-1080p",
+    "key": "happy-horse-1-image-to-video-1080p",
+    "name": "Happy Horse 1 Image to Video 1080P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/image-to-video",
+    "fallback_endpoint": "alibaba/happy-horse/v1.1/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url",
+      "duration": "int pass-through (3-15)"
+    },
+    "fixed_params": {
+      "resolution": "1080p"
+    },
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/image-to-video/api",
+    "notes": "Verified (required image_url; prompt optional; resolution 720p|1080p). fal inherits aspect from the image (no aspect_ratio). v1.1 is the newer version.",
+    "source": "packages/studio/src/models.js:17843"
+  },
+  {
+    "model_id": "happy-horse-1-image-to-video-720p",
+    "key": "happy-horse-1-image-to-video-720p",
+    "name": "Happy Horse 1 Image to Video 720P",
+    "list": "i2vModels",
+    "fal_endpoint": "alibaba/happy-horse/image-to-video",
+    "fallback_endpoint": "alibaba/happy-horse/v1.1/image-to-video",
+    "confidence": "high",
+    "param_map": {
+      "images_list": "image_url",
+      "prompt": "prompt",
+      "duration": "duration"
+    },
+    "value_transforms": {
+      "image_url": "images_list[0] -> image_url",
+      "duration": "int pass-through (3-15)"
+    },
+    "fixed_params": {
+      "resolution": "720p"
+    },
+    "drop_params": [
+      "aspect_ratio"
+    ],
+    "output_path": "video.url",
+    "doc_url": "https://fal.ai/models/alibaba/happy-horse/image-to-video/api",
+    "notes": "Verified (required image_url; prompt optional; resolution 720p|1080p). fal inherits aspect from the image (no aspect_ratio). v1.1 is the newer version.",
+    "source": "packages/studio/src/models.js:17903"
+  }
+]
