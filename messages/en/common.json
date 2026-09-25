@@ -49,8 +49,8 @@
     "workspaceHeading": "Workspace",
     "signedInWithCode": "Signed in with an access code",
     "workspaceId": "Workspace {id}",
-    "openWorkspace": "Open workspace",
-    "openWorkspaceNote": "This server runs without access codes (local development).",
+    "openWorkspace": "Your workspace",
+    "openWorkspaceNote": "No sign-in needed. Your agents, workflows and designs stay private to this browser.",
     "sharedNote": "Everyone who signs in with the same access code shares this workspace: agents, workflows, designs and the daily budget.",
     "budgetHeading": "Today's budget",
     "budgetNote": "Estimated spend across every studio. Resets at 00:00 UTC.",
@@ -135,7 +135,7 @@
   "landing": {
     "eyebrow": "AI studio for creators",
     "h1": "Make anything. Ship everything.",
-    "sub": "Your whole creative team in one tab: images, video, audio, avatars and ads across 300+ AI models. One access code, nothing to install.",
+    "sub": "Your whole creative team in one tab: images, video, audio, avatars and ads across 300+ AI models. No sign-up, nothing to install.",
     "ctaPrimary": "Open the studio",
     "ctaSecondary": "See all studios",
     "chips": [
@@ -144,7 +144,7 @@
       "Reelty inside"
     ],
     "studiosHeading": "{count} studios",
-    "studiosSub": "Pick a lane. One access code opens every studio.",
+    "studiosSub": "Pick a lane. Every studio is one click away.",
     "blurbs": {
       "image": "Text or image in, 100+ image models out.",
       "layers": "Enhance, relight, re-angle and edit in layers.",
@@ -166,7 +166,7 @@
     "reeltyTitle": "Built for real-estate creators",
     "reeltyBody": "Listing videos, walkthrough edits and property ads — a whole studio, one tab over.",
     "reeltyCta": "Open Reelty",
-    "trust": "Sign in with an access code. The AI provider keys live on Aquora's server, never in your browser.",
+    "trust": "The AI provider keys live on Aquora's server, never in your browser.",
     "footerRuns": "Runs on Aquora's own AI backend (fal.ai + OpenRouter)",
     "footerOss": "Open source (MIT)",
     "footerGithub": "GitHub",

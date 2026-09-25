@@ -108,16 +108,16 @@ test('POST /api/v1/<pipeline> runs the pipeline with falCall, llm, emit, progres
     assert.deepEqual(done.body.outputs, [`${mock.url}/media/sample.png`, `${mock.url}/media/sample.png`]);
     assert.equal(done.body.caption, 'Mock reply: caption a lighthouse');
 
-    assert.equal(seen.cid, OPEN_WORKSPACE);
-    assert.deepEqual(await store.forWorkspace(OPEN_WORKSPACE).get('notes', 'last'), { caption: 'Mock reply: caption a lighthouse' });
-    const session = { sid: claims.sid, cid: OPEN_WORKSPACE };
+    assert.match(seen.cid, /^v_/, 'the open gate gives each visitor a private workspace');
+    assert.deepEqual(await store.forWorkspace(seen.cid).get('notes', 'last'), { caption: 'Mock reply: caption a lighthouse' });
+    const session = { sid: claims.sid, cid: seen.cid };
     const log = await jobEvents({ jobId: claims.r, session, since: 0 });
     assert.deepEqual(log.events.map((e) => e.type), ['info', 'tool_result']);
     assert.equal(log.done, true);
     assert.deepEqual((await jobEvents({ jobId: claims.r, session, since: 1 })).events.map((e) => e.type), ['tool_result']);
-    await assert.rejects(jobEvents({ jobId: claims.r, session: { sid: 'someone-else', cid: OPEN_WORKSPACE }, since: 0 }), (e) => e.status === 404);
+    await assert.rejects(jobEvents({ jobId: claims.r, session: { sid: 'someone-else', cid: seen.cid }, since: 0 }), (e) => e.status === 404);
     // Budget: two fal calls + the LLM cost were charged to the workspace.
-    const spent = (await budgetStatus(OPEN_WORKSPACE)).spentUsd;
+    const spent = (await budgetStatus(seen.cid)).spentUsd;
     assert.ok(spent >= 0.03 + 0.02, `spent ${spent}`);
     unregister('demo-pipe');
 });

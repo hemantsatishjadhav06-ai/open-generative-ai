@@ -13,7 +13,7 @@ import { applyMockEnv, startMockUpstream } from '../../scripts/mock-upstream.mjs
 import { setCatalogForTesting, getCatalog } from '../../lib/gateway/catalogLoader.js';
 import { budgetStatus, flushLedger, resetLimits } from '../../lib/gateway/limits.js';
 import { resetJobs } from '../../lib/gateway/jobs.js';
-import { OPEN_WORKSPACE } from '../../lib/gateway/session.js';
+import { OPEN_WORKSPACE, SESSION_COOKIE, createSessionCookie } from '../../lib/gateway/session.js';
 import * as store from '../../lib/gateway/store.js';
 import { handleWorkflow } from '../../lib/gateway/workflows/api.js';
 import { planWorkflow } from '../../lib/gateway/workflows/executor.js';
@@ -69,6 +69,8 @@ async function call(handler, { method = 'GET', url, body, cookie, params, header
 let cookie;
 async function wf(method, subpath, { body, headers } = {}) {
     const segments = subpath.split('/').filter(Boolean);
+    // The shared "open" workspace (a cookie-less call would get a private visitor one).
+    cookie ||= `${SESSION_COOKIE}=${createSessionCookie({ codeId: OPEN_WORKSPACE }).value}`;
     const res = await call(workflowRoute[method], { method, url: `/api/workflow/${segments.join('/')}`, body, cookie, headers, params: { path: segments } });
     if (res.cookie) cookie = res.cookie;
     return res;

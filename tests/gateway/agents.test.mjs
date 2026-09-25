@@ -12,7 +12,7 @@ import { applyMockEnv, startMockUpstream } from '../../scripts/mock-upstream.mjs
 import { setCatalogForTesting } from '../../lib/gateway/catalogLoader.js';
 import { budgetStatus, flushLedger, resetLimits } from '../../lib/gateway/limits.js';
 import { decodeJobToken, resetJobs } from '../../lib/gateway/jobs.js';
-import { OPEN_WORKSPACE } from '../../lib/gateway/session.js';
+import { OPEN_WORKSPACE, SESSION_COOKIE, createSessionCookie } from '../../lib/gateway/session.js';
 import { listTemplates } from '../../lib/gateway/agents/templates.js';
 
 import * as agentsRoute from '../../app/api/agents/[[...path]]/route.js';
@@ -76,10 +76,11 @@ async function finish(token, cookie, max = 400) {
     throw new Error('agent turn did not finish');
 }
 
-// One browser-like session for most tests (open gate mints the cookie).
+// One browser-like session for most tests, in the shared "open" workspace
+// (a cookie-less request would get a fresh private visitor workspace).
 let cookie;
 async function session() {
-    if (!cookie) cookie = (await agents('GET', 'skills')).cookie;
+    if (!cookie) cookie = `${SESSION_COOKIE}=${createSessionCookie({ codeId: OPEN_WORKSPACE }).value}`;
     return cookie;
 }
 

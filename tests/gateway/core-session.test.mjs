@@ -150,10 +150,28 @@ test('requireSession: 503 setup_required, 401 without cookie in codes mode, mint
     });
     withEnv({ NODE_ENV: 'development', AQUORA_ACCESS_CODES: undefined, AQUORA_SESSION_SECRET: SECRET_A }, () => {
         const s = requireSession(req('http://localhost:3000/api'));
-        assert.equal(s.cid, 'open');
+        assert.match(s.cid, /^v_[A-Za-z0-9_-]{16}$/, 'each visitor gets a private workspace');
         assert.equal(s.minted, true);
         assert.match(s.setCookie, /^aquora_session=/);
         assert.doesNotMatch(s.setCookie, /Secure/, 'no Secure flag in dev');
+    });
+});
+
+test('AQUORA_PUBLIC_ACCESS: open in production (codes ignored), still needs a session secret', () => {
+    withEnv({ NODE_ENV: 'production', AQUORA_PUBLIC_ACCESS: 'true', AQUORA_ACCESS_CODES: 'alpha-code-123', AQUORA_SESSION_SECRET: SECRET_A }, () => assert.equal(gateMode(), 'open'));
+    withEnv({ NODE_ENV: 'production', AQUORA_PUBLIC_ACCESS: '1', AQUORA_ACCESS_CODES: undefined, AQUORA_SESSION_SECRET: SECRET_A }, () => assert.equal(gateMode(), 'open'));
+    withEnv({ NODE_ENV: 'production', AQUORA_PUBLIC_ACCESS: 'true', AQUORA_SESSION_SECRET: undefined }, () => assert.equal(gateMode(), 'setup_required'));
+    withEnv({ NODE_ENV: 'production', AQUORA_PUBLIC_ACCESS: 'false', AQUORA_ACCESS_CODES: 'alpha-code-123', AQUORA_SESSION_SECRET: SECRET_A }, () => assert.equal(gateMode(), 'codes'));
+    withEnv({ NODE_ENV: 'production', AQUORA_PUBLIC_ACCESS: 'true', AQUORA_ACCESS_CODES: undefined, AQUORA_SESSION_SECRET: SECRET_A }, () => {
+        const a = requireSession(req('https://app.example/api'));
+        const b = requireSession(req('https://app.example/api'));
+        assert.equal(a.minted, true);
+        assert.match(a.setCookie, /; Secure/);
+        assert.match(a.cid, /^v_/);
+        assert.notEqual(a.cid, b.cid, 'two visitors never share a workspace');
+        const again = requireSession(req('https://app.example/api', { cookie: cookieOf(a.setCookie) }));
+        assert.equal(again.cid, a.cid, 'the cookie keeps the visitor in their workspace');
+        assert.equal(again.setCookie, undefined);
     });
 });
 

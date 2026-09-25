@@ -7,13 +7,13 @@ import { GatewayError, errors } from '../../../lib/gateway/errors.js';
 import { json, readJson, route } from '../../../lib/gateway/http.js';
 import { assertLoginAllowed, budgetStatus, clientIp, enforceRate, recordLoginFailure } from '../../../lib/gateway/limits.js';
 import {
-    OPEN_WORKSPACE,
     clearSessionCookie,
     cookieSecure,
     createSessionCookie,
     getSession,
     loadRevocations,
     matchAccessCode,
+    newVisitorWorkspace,
     revokeSession,
 } from '../../../lib/gateway/session.js';
 import { logGateway } from '../../../lib/gateway/log.js';
@@ -43,7 +43,7 @@ export const GET = route('session', async (request, { ip, setCookie }) => {
         return json({ authenticated: true, gate, workspace: session.cid, budget: await budgetFor(session.cid), features: features() });
     }
     if (gate === 'open') {
-        const fresh = createSessionCookie({ codeId: OPEN_WORKSPACE, secure: cookieSecure(request) });
+        const fresh = createSessionCookie({ codeId: newVisitorWorkspace(), secure: cookieSecure(request) });
         setCookie(fresh.header);
         return json({ authenticated: true, gate, workspace: fresh.session.cid, budget: await budgetFor(fresh.session.cid), features: features() });
     }
@@ -62,7 +62,8 @@ export const POST = route('session-login', async (request, { setCookie }) => {
     const body = await readJson(request, { maxBytes: 4096 });
     let cid;
     if (gate === 'open') {
-        cid = OPEN_WORKSPACE;
+        // Keep the visitor's own workspace when they already have one.
+        cid = getSession(request).session?.cid || newVisitorWorkspace();
     } else {
         cid = matchAccessCode(body.code);
         if (!cid) {
