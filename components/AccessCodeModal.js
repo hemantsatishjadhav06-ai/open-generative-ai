@@ -4,22 +4,18 @@ import { useEffect, useRef, useState } from 'react';
 import { fillCopy, getCommonCopy } from '@/lib/locales';
 import { STUDIO_TAB_IDS } from '@/lib/studioTabs';
 
-const SPARK_PATH = 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z';
-
-// Soft radial brand -> pop glow that sits behind the card.
+// Quiet tonal background for workspace access and service notices.
 const GLOW_STYLE = {
-  background:
-    'radial-gradient(60% 55% at 50% 0%, rgba(46, 230, 214, 0.18) 0%, rgba(46, 230, 214, 0) 70%),' +
-    'radial-gradient(55% 50% at 100% 100%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 70%)',
+  background: 'linear-gradient(160deg, rgba(123, 217, 200, 0.035), transparent 60%)',
 };
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
 function SparkMark() {
   return (
-    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
-      <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={SPARK_PATH} className="fill-on-brand" />
+    <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-on-brand">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d="M5 18 12 4l7 14M8 13h8M4 21h16" />
       </svg>
     </div>
   );
@@ -231,12 +227,13 @@ export default function AccessCodeModal({ onSubmit, onClose, onOpenReelty, overl
           type="submit"
           disabled={busy}
           aria-busy={busy}
-          className="w-full rounded-xl bg-brand py-3 text-sm font-semibold text-on-brand shadow-[0_8px_30px_rgba(46,230,214,0.25)] transition-all hover:bg-brand-hover hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full rounded-xl bg-brand py-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {busy ? copy.checking : copy.submit}
         </button>
 
         <ReeltyLink onOpenReelty={onOpenReelty} label={copy.reeltyOnly} />
+        {!overlay && <p className="text-center"><a href={locale === 'zh' ? '/zh' : '/'} className="text-xs text-secondary hover:text-brand">{copy.backHome}</a></p>}
       </form>
     </GateFrame>
   );
@@ -282,6 +279,7 @@ export function GateNotice({ kind = 'offline', onRetry, onOpenReelty, locale = '
           </button>
         )}
         <ReeltyLink onOpenReelty={onOpenReelty} label={copy.reeltyOnly} />
+        <p className="text-center"><a href={locale === 'zh' ? '/zh' : '/'} className="text-xs text-secondary hover:text-brand">{copy.backHome}</a></p>
       </div>
     </GateFrame>
   );

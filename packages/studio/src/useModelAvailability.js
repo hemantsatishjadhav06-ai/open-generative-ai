@@ -13,7 +13,7 @@ const getServerSnapshot = () => null;
 /**
  * Starts the once-per-page GET /api/v1/models/available and re-renders when
  * it arrives. Returns the availability snapshot, or null while it is unknown
- * (then every model counts as available).
+ * (then no model is advertised as available).
  */
 export default function useModelAvailability() {
   const snapshot = useSyncExternalStore(subscribeModelAvailability, getModelAvailability, getServerSnapshot);
@@ -34,7 +34,7 @@ export function useAvailableModels(models, selectedId, onFallback, preferredIds 
   fallbackRef.current = onFallback;
   const preferredKey = preferredIds.join("\u0000");
   const visible = useMemo(
-    () => (snapshot ? filterAvailableModels(models) : models),
+    () => snapshot ? filterAvailableModels(models) : [],
     [models, snapshot],
   );
   useEffect(() => {

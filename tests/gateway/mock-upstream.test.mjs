@@ -55,11 +55,13 @@ test('result shape follows the endpoint family', async () => {
     assert.equal(familyOf('fal-ai/sync-lipsync/v2'), 'video');
     assert.equal(familyOf('fal-ai/stable-audio'), 'audio_file');
     assert.equal(familyOf('fal-ai/minimax/speech-2.8-hd'), 'audio');
+    assert.equal(familyOf('fal-ai/mmaudio-v2/text-to-audio'), 'audio');
     assert.equal(familyOf('fal-ai/wizper'), 'transcript');
     const run = async (endpoint) => (await (await fetch(`${mock.env.FAL_RUN_BASE}/${endpoint}`, { method: 'POST', headers: FAL, body: '{}' })).json());
     assert.match((await run('fal-ai/kling-video/v2/master/image-to-video')).video.url, /sample\.mp4$/);
     assert.match((await run('fal-ai/stable-audio')).audio_file.url, /sample\.mp3$/);
     assert.match((await run('xai/tts/v1')).audio.url, /sample\.mp3$/);
+    assert.match((await run('fal-ai/mmaudio-v2/text-to-audio')).audio.url, /sample\.mp3$/);
     assert.match((await run('fal-ai/birefnet')).image.url, /sample\.png$/);
     assert.ok(Array.isArray((await run('fal-ai/whisper')).chunks));
 });

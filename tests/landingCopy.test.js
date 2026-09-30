@@ -27,15 +27,30 @@ test('every studio tab has a landing blurb in en and zh', () => {
     }
 });
 
-test('brand is Aquora in both locales, with the new hero tagline', () => {
+test('brand is Aquora in both locales and metadata agrees with the hero', () => {
     for (const copy of [en, zh]) {
         assert.equal(copy.shell.brand, 'Aquora');
         assert.equal(copy.accessCodeModal.title, 'Aquora');
         assert.match(copy.meta.siteTitle, /^Aquora — /);
         assert.doesNotMatch(JSON.stringify(copy), /Creator Agency/);
     }
-    assert.equal(en.landing.h1, 'Make anything. Ship everything.');
-    assert.match(en.meta.description, /^Make anything\. Ship everything\./);
+    assert.ok(en.landing.h1.trim().length > 10, 'hero needs a useful product heading');
+    assert.ok(en.meta.description.startsWith(en.landing.h1), 'search description and hero use the same positioning');
+});
+
+test('landing explains access, configured availability and device-only history', () => {
+    assert.match(en.landing.sub, /images, video and audio/i);
+    assert.match(en.landing.sub, /agents and workflows/i);
+    assert.match(en.landing.accessNote, /administrator/i);
+    assert.match(en.landing.availabilityNote, /workspace configuration/i);
+    assert.match(en.landing.availabilityNote, /daily AI budget/i);
+    assert.match(en.landing.trust, /stored on this device/i);
+    assert.match(en.landing.reeltyNote, /own access and availability/i);
+    assert.doesNotMatch(en.landing.sub, /no sign-up|free|unlimited/i);
+    assert.doesNotMatch(en.landing.blurbs.cinema, /real camera|physical camera/i);
+    for (const copy of [en, zh]) {
+        for (const key of ['accessNote', 'availabilityNote', 'reeltyNote']) assert.ok(copy.landing[key], `landing.${key} missing`);
+    }
 });
 
 test('package metadata carries the Aquora identity', () => {
@@ -82,24 +97,20 @@ test('retired tabs (Explore Apps, Vibe Motion) have no copy left', () => {
     }
 });
 
-test('model-count claims never exceed what the gateway catalog enables', () => {
+test('any advertised model-count claims stay within the enabled catalog', () => {
     const enabled = catalog.entries.filter((entry) => entry.enabled);
     const falEndpoints = new Set(enabled.map((entry) => entry.fal));
     const imageEndpoints = new Set(enabled.filter((entry) => entry.kind === 'image').map((entry) => entry.fal));
-    let claims = 0;
     for (const copy of [en, zh]) {
         for (const text of strings(copy)) {
             for (const [, n] of text.matchAll(/(\d+)\+\s*(?:个\s*)?(?:AI\s*)?(?:models|模型)/gi)) {
-                claims += 1;
                 assert.ok(Number(n) <= falEndpoints.size, `"${text}" claims ${n}+ models; ${falEndpoints.size} enabled`);
             }
             for (const [, n] of text.matchAll(/(\d+)\+\s*(?:image models|图像模型)/gi)) {
-                claims += 1;
                 assert.ok(Number(n) <= imageEndpoints.size, `"${text}" claims ${n}+ image models; ${imageEndpoints.size} enabled`);
             }
         }
     }
-    assert.ok(claims > 0, 'the regexes found no claims to check');
 });
 
 test('studio counts come from the tab registry, not hard-coded numbers', async () => {

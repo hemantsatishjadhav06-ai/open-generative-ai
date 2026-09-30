@@ -20,12 +20,22 @@ COPY . .
 # AQUORA_SESSION_SECRET as ARG/ENV here: build args persist in image layers.
 # They are runtime service variables, read by the server when it starts.
 ARG NEXT_PUBLIC_REELTY_URL
-ENV NEXT_PUBLIC_REELTY_URL=$NEXT_PUBLIC_REELTY_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_ANALYTICS_ENDPOINT
+ARG RAILWAY_PUBLIC_DOMAIN
+ENV NEXT_PUBLIC_REELTY_URL=$NEXT_PUBLIC_REELTY_URL \
+    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_PUBLIC_ANALYTICS_ENDPOINT=$NEXT_PUBLIC_ANALYTICS_ENDPOINT \
+    RAILWAY_PUBLIC_DOMAIN=$RAILWAY_PUBLIC_DOMAIN
 RUN npm run build
 
 # Production runner: standalone server only, no devDependencies
 FROM base AS runner
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000
+# Non-secret immutable release identity, supplied by Railway's GitHub build.
+# Runtime provider keys and sessions remain service variables only.
+ARG RAILWAY_GIT_COMMIT_SHA
+ENV AQUORA_BUILD_SHA=$RAILWAY_GIT_COMMIT_SHA
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

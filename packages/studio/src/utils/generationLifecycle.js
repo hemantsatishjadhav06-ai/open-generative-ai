@@ -55,11 +55,14 @@ export async function pollForGenerationResult({
   onAuthRequired,
   credentials = "same-origin",
   fetchImpl = fetch,
+  signal,
 }) {
   const pollUrl = `${baseUrl}/api/v1/predictions/${encodeURIComponent(requestId)}/result`;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    signal?.throwIfAborted();
     await wait(interval);
+    signal?.throwIfAborted();
 
     let response;
     try {
@@ -67,8 +70,10 @@ export async function pollForGenerationResult({
         headers: { Accept: "application/json" },
         credentials,
         cache: "no-store",
+        ...(signal ? { signal } : {}),
       });
     } catch (error) {
+      if (signal?.aborted) throw error;
       if (attempt === maxAttempts) throw error;
       continue;
     }

@@ -74,6 +74,29 @@ const t2i = t2iModels.find((m) => m.endpoint && !m.inputs?.image_url) || t2iMode
 const t2iKey = t2i.endpoint || t2i.id;
 const OUT = 'https://v3.fal.media/files/out/result.png';
 
+test('each deliberate generation carries its own non-secret idempotency key', async () => {
+  handler = () => json(200, { status: 'completed', outputs: [OUT] });
+  const result = await gateway.generateImage(null, { model: t2i.id, prompt: 'test' });
+  assert.equal(result.url, OUT);
+  assert.equal(calls.length, 1);
+  const firstKey = calls[0].init.headers['Idempotency-Key'];
+  assert.ok(firstKey && firstKey.length >= 16);
+  await gateway.generateImage(null, { model: t2i.id, prompt: 'test' });
+  assert.notEqual(calls[1].init.headers['Idempotency-Key'], firstKey, 'a deliberate new generation uses its own key');
+});
+
+test('a lost paid acknowledgement is not automatically resubmitted across a possible restart', async () => {
+  handler = () => { throw new TypeError('Network response lost'); };
+  await assert.rejects(gateway.generateImage(null, { model: t2i.id, prompt: 'test' }), /Network response lost/);
+  assert.equal(calls.length, 1);
+});
+
+test('HTTP errors are not automatically resubmitted', async () => {
+  handler = () => json(502, { error: 'upstream_error', message: 'Provider unavailable' });
+  await assert.rejects(gateway.generateImage(null, { model: t2i.id, prompt: 'test' }), (error) => error.status === 502);
+  assert.equal(calls.length, 1);
+});
+
 // ─── media generation ──────────────────────────────────────────────────────
 
 test('generateImage posts to /api/v1/<key> with the session cookie and polls the job token', async () => {
@@ -254,9 +277,11 @@ test('signIn surfaces status, code and retryAfter; signOut clears the workspace'
 
 // ─── model availability ────────────────────────────────────────────────────
 
-test('model availability: everything runs until the list arrives, then disabled models hide', async () => {
+test('model availability: unknown and disabled models are not advertised as available', async () => {
   availability.setModelAvailability(null);
-  assert.equal(availability.isModelAvailable('anything'), true);
+  assert.equal(availability.isModelAvailable('anything'), false);
+  assert.equal(availability.isEndpointAvailable('anything'), false);
+  assert.deepEqual(availability.filterAvailableModels(t2iModels), []);
   const [first, second] = t2iModels.filter((m) => m.endpoint);
   availability.setModelAvailability({ enabled: [second.endpoint], disabled: [first.endpoint], disabled_models: [] });
   assert.equal(availability.isModelAvailable(first), false);

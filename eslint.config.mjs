@@ -8,6 +8,7 @@ export default [
   {
     ignores: [
       ".next/**", "out/**", "dist/**", "release/**", "build/**",
+      "playwright-report/**", "test-results/**",
       "electron/**", "src/**", "public/**", "**/dist/**", "**/node_modules/**",
       "packages/Vibe-Workflow/**", "packages/Open-Poe-AI/**", "packages/Open-AI-Design-Agent/**",
     ],

@@ -1,0 +1,184 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 prebuild
+> npm run build:packages
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 build:packages
+> npm run build:workflow && npm run build:agent && npm run build:design && npm run build:studio
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 build:workflow
+> npm run build -w workflow-builder
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> workflow-builder@1.0.0 build
+> npm run clean && npm run build:css && babel src --out-dir dist --extensions .js,.jsx
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> workflow-builder@1.0.0 clean
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> workflow-builder@1.0.0 build:css
+> tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+Done in 2562ms.
+Successfully compiled 22 files with Babel (9845ms).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 build:agent
+> npm run build -w ai-agent
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ai-agent@1.0.0 build
+> npm run build:css && babel src --out-dir dist --extensions .js,.jsx
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ai-agent@1.0.0 build:css
+> tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+Done in 958ms.
+Successfully compiled 11 files with Babel (3583ms).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 build:design
+> npm run build -w design-agent
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> design-agent@1.0.0 build
+> npm run build:css && babel src --out-dir dist --extensions .js,.jsx
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> design-agent@1.0.0 build:css
+> tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+Done in 613ms.
+Successfully compiled 6 files with Babel (3921ms).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 build:studio
+> npm run build -w studio
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> studio@1.0.0 build
+> npm run clean && npm run build:css && babel src --out-dir dist --extensions .js,.jsx
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> studio@1.0.0 clean
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> studio@1.0.0 build:css
+> tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+Done in 2123ms.
+[BABEL] Note: The code generator has deoptimised the styling of /workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/models.js as it exceeds the max of 500KB.
+Successfully compiled 78 files with Babel (18042ms).
+
+> aquora@2.0.0 build
+> next build
+
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 70s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/16) ...
+   Generating static pages (4/16)
+   Generating static pages (8/16)
+   Generating static pages (12/16)
+ ✓ Generating static pages (16/16)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size  First Load JS
+┌ ƒ /                                          173 B         107 kB
+├ ƒ /_not-found                                197 B         104 kB
+├ ƒ /agents                                    197 B         104 kB
+├ ƒ /agents/[agent_id]                         859 B         214 kB
+├ ƒ /agents/[agent_id]/[conversation_id]       859 B         214 kB
+├ ƒ /agents/create                             402 B         206 kB
+├ ƒ /agents/edit/[id]                          404 B         206 kB
+├ ƒ /api/agents/[[...path]]                    197 B         104 kB
+├ ƒ /api/app/calculate_dynamic_cost            197 B         104 kB
+├ ƒ /api/health                                197 B         104 kB
+├ ƒ /api/llm/chat                              197 B         104 kB
+├ ƒ /api/session                               197 B         104 kB
+├ ƒ /api/v1/[...path]                          197 B         104 kB
+├ ƒ /api/v1/creative-agent/[[...path]]         197 B         104 kB
+├ ƒ /api/v1/estimate                           197 B         104 kB
+├ ƒ /api/v1/models/available                   197 B         104 kB
+├ ƒ /api/v1/predictions/[token]/cancel         197 B         104 kB
+├ ƒ /api/v1/predictions/[token]/result         197 B         104 kB
+├ ƒ /api/v1/upload_file                        197 B         104 kB
+├ ƒ /api/workflow/[[...path]]                  197 B         104 kB
+├ ○ /apple-icon.png                              0 B            0 B
+├ ƒ /assistant                                 197 B         104 kB
+├ ○ /icon.svg                                    0 B            0 B
+├ ○ /manifest.webmanifest                      197 B         104 kB
+├ ○ /opengraph-image                           197 B         104 kB
+├ ƒ /robots.txt                                197 B         104 kB
+├ ƒ /sitemap.xml                               197 B         104 kB
+├ ƒ /studio/[[...slug]]                        129 B         130 kB
+├ ƒ /workflow                                  197 B         104 kB
+├ ƒ /workflow/[id]                             129 B         130 kB
+├ ƒ /workflow/[id]/[tab]                       129 B         130 kB
+├ ƒ /zh                                        173 B         107 kB
+├ ƒ /zh/agents                                 197 B         104 kB
+├ ƒ /zh/agents/[agent_id]                      859 B         214 kB
+├ ƒ /zh/agents/[agent_id]/[conversation_id]    859 B         214 kB
+├ ƒ /zh/agents/create                          402 B         206 kB
+├ ƒ /zh/agents/edit/[id]                       404 B         206 kB
+├ ƒ /zh/assistant                              197 B         104 kB
+├ ƒ /zh/studio/[[...slug]]                     129 B         130 kB
+├ ƒ /zh/workflow                               197 B         104 kB
+├ ƒ /zh/workflow/[id]                          129 B         130 kB
+└ ƒ /zh/workflow/[id]/[tab]                    129 B         130 kB
++ First Load JS shared by all                 104 kB
+  ├ chunks/1255-0046eeb68b7d2d4d.js          46.1 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js      54.2 kB
+  └ other shared chunks (total)              3.39 kB
+
+
+ƒ Middleware                                   43 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

@@ -9,6 +9,7 @@ import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import { generateImage, generateI2I, uploadFile } from "../gateway.js";
 import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
 import { usePersistKey } from "../persistKey.js";
+import usePendingGeneration, { persistGenerationResult } from "../usePendingGeneration.js";
 import useModelAvailability from "../useModelAvailability.js";
 import { ModelThumb, getProviderStyle, servedByFor } from "./ProviderChip.jsx";
 import DrawModal from "./DrawModal.jsx";
@@ -993,6 +994,7 @@ export default function ImageStudio({
   // ── UI state ────────────────────────────────────────────────────────────
   const [dropdownOpen, setDropdownOpen] = useState(null); // 'model' | 'ar' | 'quality' | null
   const [generating, setGenerating] = useState(false);
+  const generationRunningRef = useRef(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
   const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
@@ -1346,13 +1348,31 @@ export default function ImageStudio({
   const addToHistory = useCallback(
     (entry) => {
       if (!historyItems) {
-        setLocalHistory((prev) => [entry, ...prev.slice(0, 49)]);
+        setLocalHistory((prev) => [entry, ...prev.filter((item) => item.id !== entry.id && item.url !== entry.url)].slice(0, 50));
       }
       setActiveHistoryIdx(0);
       setCurrentImageUrl(entry.url);
     },
     [historyItems],
   );
+
+  const acceptGenerationResult = useCallback((res, job) => {
+    if (!res?.url) throw new Error(copy.errors.generationFailed);
+    const entry = { ...job, id: job.requestId || res.id || Math.random().toString(36).slice(2), url: res.url };
+    persistGenerationResult(PERSIST_KEY, entry, "localHistory");
+    addToHistory(entry);
+    onGenerationComplete?.({ url: res.url, model: job.model, prompt: job.prompt, type: "image" });
+  }, [PERSIST_KEY, addToHistory, onGenerationComplete, copy.errors.generationFailed]);
+  const pending = usePendingGeneration({
+    persistKey: PERSIST_KEY,
+    onStart: () => { generationRunningRef.current = true; setGenerating(true); setGenerateError(null); onGenerationStart?.(); },
+    onEnd: () => { generationRunningRef.current = false; setGenerating(false); onGenerationEnd?.(); },
+    onResult: acceptGenerationResult,
+    onError: (error) => {
+      const message = formatErrorMessage(error, copy.errors.generationFailed);
+      if (onGenerationError) onGenerationError(message); else notifyError(message);
+    },
+  });
 
   // ── View state ─────────────────────────────────────
 
@@ -1375,7 +1395,8 @@ export default function ImageStudio({
 
   // ── Generation ───────────────────────────────────────────────────────────
   const handleGenerate = async () => {
-    if (generating) return;
+    if (generating || generationRunningRef.current) return;
+    if (pending.hasPending) { void pending.resume(); return; }
     if (!isVariantAvailable(selectedVariant)) {
       notifyError(copy.errors.modelUnavailable);
       return;
@@ -1403,15 +1424,22 @@ export default function ImageStudio({
       }
     }
 
+    generationRunningRef.current = true;
     onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
 
     try {
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         Array.from({ length: batchSize }).map(async () => {
+          let requestId;
+          const metadata = { model: selectedModelId, prompt: prompt.trim(), aspect_ratio: selectedAr, timestamp: new Date().toISOString() };
+          const onRequestId = (id) => { requestId = id; pending.remember(id, metadata); };
+          let result;
+          try {
           if (imageMode) {
             const genParams = {
+              onRequestId,
               model: selectedModelId,
               ...buildSupplementalInputPayload(
                 selectedVariant?.model,
@@ -1427,12 +1455,13 @@ export default function ImageStudio({
               genParams[currentQualityField] = selectedQuality;
             }
             if (showEffectBtn && selectedEffect) genParams.name = selectedEffect;
-            return await generateI2I(apiKey, genParams);
+            result = await generateI2I(apiKey, genParams);
           } else {
             const referenceParams = buildReferenceParams(selectedVariant?.model, {
               imageUrls: uploadedImageUrls,
             });
             const genParams = {
+              onRequestId,
               model: selectedModelId,
               ...buildSupplementalInputPayload(
                 selectedVariant?.model,
@@ -1445,36 +1474,26 @@ export default function ImageStudio({
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
-            return await generateImage(apiKey, genParams);
+            result = await generateImage(apiKey, genParams);
+          }
+          acceptGenerationResult(result, { ...metadata, requestId });
+          if (requestId) pending.complete(requestId);
+          return result;
+          } catch (error) {
+            pending.fail(requestId, error);
+            throw error;
           }
         })
       );
-
-      results.forEach((res) => {
-        if (res && res.url) {
-          const entry = {
-            id: res.id || Math.random().toString(36).substring(7),
-            url: res.url,
-            prompt: prompt.trim(),
-            model: selectedModelId,
-            aspect_ratio: selectedAr,
-            timestamp: new Date().toISOString(),
-          };
-          addToHistory(entry);
-          onGenerationComplete?.({
-            url: res.url,
-            model: selectedModelId,
-            prompt: prompt.trim(),
-            type: "image",
-          });
-        }
-      });
+      const failure = results.find((result) => result.status === "rejected");
+      if (failure) throw failure.reason;
     } catch (e) {
       logStudioError("[ImageStudio] Generation failed:", e);
       const errMsg = formatErrorMessage(e, copy.errors.generationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
     } finally {
+      generationRunningRef.current = false;
       setGenerating(false);
       onGenerationEnd?.();
     }
@@ -1490,7 +1509,7 @@ export default function ImageStudio({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative p-4 md:p-6 overflow-hidden">
-      
+      {pending.hasPending && <div role="status" className="w-full max-w-7xl mb-3 flex items-center justify-between gap-3 rounded-lg border border-brand/20 bg-brand/5 px-3 py-2 text-xs text-secondary"><span>{copy.pending.note}</span>{!generating && <button type="button" onClick={pending.resume} className="shrink-0 rounded-md bg-brand px-3 py-2 text-on-brand font-semibold">{copy.pending.resume}</button>}</div>}
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {history.length > 0 ? (
@@ -1615,14 +1634,17 @@ export default function ImageStudio({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
-            {/* Overlapping floating cards */}
+            {/* Small previews introduce the blank canvas. */}
             <HeroCollage />
 
-            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white text-center px-4 mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl font-semibold tracking-tight text-white text-center px-4 mb-3">
               {copy.emptyState.heading}
             </h1>
-            <p className="text-white/60 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4 mb-4">
+            <p className="text-white/70 text-sm text-center max-w-lg leading-relaxed px-4 mb-2">
               {copy.emptyState.subtitle}
+            </p>
+            <p className="text-white/50 text-xs text-center max-w-lg leading-relaxed px-4 mb-5">
+              {copy.emptyState.nextSteps}
             </p>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/60">
               <span className="text-white/60">{copy.emptyState.modelLabel}</span>
@@ -1644,6 +1666,7 @@ export default function ImageStudio({
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
+                    aria-label={copy.uploadButton.removeReferenceImage.replace("{index}", idx + 1)}
                     onClick={() => {
                       const next = uploadedImageUrls.filter((_, i) => i !== idx);
                       setUploadedImageUrls(next);
@@ -1687,6 +1710,7 @@ export default function ImageStudio({
             {/* Input prompt text area */}
             <PromptTextarea
               ref={textareaRef}
+              aria-label={copy.promptBar.promptLabel}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={placeholderText}

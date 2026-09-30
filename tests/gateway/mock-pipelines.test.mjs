@@ -201,8 +201,8 @@ test('cancel stops a running pipeline (signal aborted) and the poller sees "canc
 test('startPipelineJob is usable by other routes; the job survives a registry wipe once finished', async () => {
     register('quick', async (ctx) => ({ echo: ctx.input.value }));
     const session = { sid: 'route-session-1', cid: 'wsx' };
-    const { token } = await startPipelineJob({ name: 'quick', input: { value: 42 }, session });
-    await new Promise((r) => setTimeout(r, 30));
+    const { token, job } = await startPipelineJob({ name: 'quick', input: { value: 42 }, session });
+    assert.equal(await job.persistence, true);
     resetJobs();
     const claims = decodeJobToken(token);
     const { pollPipelineJob } = await import('../../lib/gateway/pipelines/index.js');

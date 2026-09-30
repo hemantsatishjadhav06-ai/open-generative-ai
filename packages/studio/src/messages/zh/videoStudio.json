@@ -67,6 +67,7 @@
     "runsOn": "由 {model} 运行"
   },
   "controls": {
+    "promptLabel": "视频提示词",
     "draw": "绘制",
     "generate": "生成",
     "generating": "生成中..."
@@ -86,8 +87,9 @@
     "linkCopied": "链接已复制"
   },
   "empty": {
-    "heading": "让它动起来。",
-    "subtitle": "让图片动起来，变成带动态效果的 AI 视频",
+    "heading": "创建你的第一个视频",
+    "subtitle": "从文字描述、图片或现有视频开始。",
+    "nextSteps": "选择下方模型或工具，填写所需内容，然后点击生成。",
     "modelLabel": "模型"
   },
   "errors": {
@@ -582,5 +584,9 @@
         "description": "描述不希望出现的内容。"
       }
     }
+  },
+  "pending": {
+    "note": "已提交的任务保存在此设备上。刷新后继续查询进度，不会提交新请求。",
+    "resume": "继续查询生成进度"
   }
 }

@@ -43,6 +43,7 @@ const StudioLoading = () => (
 
 // Each studio is its own async chunk and only mounts once its tab is opened.
 const ImageStudio = dynamic(() => import('studio/ImageStudio'), { ssr: false, loading: StudioLoading });
+const ModelAvailabilityGate = dynamic(() => import('studio/ModelAvailabilityGate'), { ssr: false, loading: StudioLoading });
 const VideoStudio = dynamic(() => import('studio/VideoStudio'), { ssr: false, loading: StudioLoading });
 const ClippingStudio = dynamic(() => import('studio/ClippingStudio'), { ssr: false, loading: StudioLoading });
 const MotionControlStudio = dynamic(() => import('studio/MotionControlStudio'), { ssr: false, loading: StudioLoading });
@@ -59,8 +60,6 @@ const DesignAgentStudio = dynamic(() => import('studio/DesignAgentStudio'), {
   ssr: false,
   loading: () => <div className="h-full w-full bg-surface-app flex items-center justify-center text-secondary">Loading design studio…</div>
 });
-
-const SPARK_PATH = 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z';
 
 // Reelty is a separate app embedded in the Reelty tab. NEXT_PUBLIC_* is
 // inlined at build time (middleware.js derives the CSP frame-src from the
@@ -191,12 +190,12 @@ const persistNotifications = (notifications) => {
 };
 
 function BrandMark({ size = 'md' }) {
-  const box = size === 'sm' ? 'w-6 h-6 rounded-lg' : 'w-8 h-8 rounded-xl shadow-glow';
+  const box = size === 'sm' ? 'w-6 h-6 rounded-lg' : 'w-8 h-8 rounded-lg';
   const icon = size === 'sm' ? 13 : 18;
   return (
     <div className={`${box} bg-brand-gradient flex items-center justify-center flex-shrink-0`} aria-hidden="true">
-      <svg width={icon} height={icon} viewBox="0 0 24 24" focusable="false">
-        <path d={SPARK_PATH} className="fill-on-brand" />
+      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-on-brand" focusable="false">
+        <path d="M5 18 12 4l7 14M8 13h8M4 21h16" />
       </svg>
     </div>
   );
@@ -726,6 +725,27 @@ export default function StandaloneShell({ locale = 'en' }) {
     setSession((prev) => ({ status: 'signed_out', gate: prev.gate }));
   }, [copy, refreshSession]);
   useEscapeKey(showSettings, closeSettings);
+  // Modal dialogs keep keyboard focus inside until closed. Without this,
+  // Tab reached the live generation controls behind the settings overlay.
+  const settingsDialogRef = useRef(null);
+  useEffect(() => {
+    if (!showSettings) return undefined;
+    const trapFocus = (event) => {
+      if (event.key !== 'Tab') return;
+      const items = Array.from(settingsDialogRef.current?.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])
+        .filter((element) => element.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !settingsDialogRef.current.contains(document.activeElement))) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener('keydown', trapFocus);
+    return () => document.removeEventListener('keydown', trapFocus);
+  }, [showSettings]);
 
   // Reelty: after 8s without a load event, offer to open it in a new tab.
   useEffect(() => {
@@ -849,12 +869,13 @@ export default function StandaloneShell({ locale = 'en' }) {
 
   return (
     <div 
-      className="h-screen bg-surface-app flex flex-col overflow-hidden text-white relative"
+      className="aquora-workspace h-screen bg-surface-app flex flex-col overflow-hidden text-white relative"
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      <a href="#workspace-content" className="workspace-skip-link">{copy.shell.skipLink}</a>
       {/* Drag Overlay */}
       {isDragging && (
         <div className="fixed inset-0 z-[100] bg-brand/10 backdrop-blur-md border-4 border-dashed border-brand/50 flex items-center justify-center pointer-events-none transition-all duration-300">
@@ -874,7 +895,7 @@ export default function StandaloneShell({ locale = 'en' }) {
 
       {/* Header */}
       {isHeaderVisible && (
-        <header className="flex-shrink-0 h-14 border-b border-white/[0.05] flex items-center justify-between px-4 bg-surface-panel/80 backdrop-blur-md z-50 gap-2 sm:gap-4">
+        <header className="flex-shrink-0 h-14 border-b border-surface-border flex items-center justify-between px-4 bg-surface-panel z-50 gap-2 sm:gap-4">
           {/* Left: Mobile menu toggle + Logo + Desktop Sidebar Toggle */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile drawer toggle */}
@@ -928,8 +949,8 @@ export default function StandaloneShell({ locale = 'en' }) {
           </div>
 
           {/* Active Tab Breadcrumb Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.05] text-xs text-white/60">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+          <div className="hidden lg:flex items-center gap-2 text-xs text-secondary">
+            <span aria-hidden="true" className="text-secondary">/</span>
             <span className="font-medium text-white/80">
               {tabLabel(activeTab) || copy.shell.studioFallback}
             </span>
@@ -1001,11 +1022,17 @@ export default function StandaloneShell({ locale = 'en' }) {
         {isHeaderVisible && (
           <aside
             className={`
-              fixed top-14 bottom-0 left-0 md:static md:h-full z-30 bg-surface-panel/95 backdrop-blur-md border-r border-white/[0.06] flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 select-none
+              fixed top-14 bottom-0 left-0 md:static md:h-full z-30 bg-surface-panel border-r border-surface-border flex flex-col transition-all duration-200 ease-in-out flex-shrink-0 select-none
               ${isMobileOpen ? 'translate-x-0 w-60 z-50' : '-translate-x-full md:translate-x-0'}
-              ${isSidebarCollapsed ? 'md:w-16' : 'md:w-52'}
+              ${isSidebarCollapsed ? 'md:w-16' : 'md:w-60'}
             `}
           >
+            {(!isSidebarCollapsed || isMobileOpen) && (
+              <div className="flex items-center justify-between px-4 pt-5 pb-3">
+                <div><p className="text-[11px] font-semibold text-white/75">{copy.shell.workspaceTools}</p><p className="mt-1 text-[10px] leading-relaxed text-secondary">{copy.shell.workspaceHint}</p></div>
+                {isMobileOpen && <button type="button" aria-label={copy.shell.closeNavigation} onClick={closeMobileNav} className="md:hidden h-9 w-9 rounded-md text-secondary hover:bg-white/5">✕</button>}
+              </div>
+            )}
             <nav aria-label={copy.shell.studioNavigation} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none py-2 px-2">
               <div className="space-y-1">
                 {NAVIGATION_CATEGORIES.map((category) => {
@@ -1018,7 +1045,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                           group relative flex items-center rounded-xl transition-all duration-150 font-semibold
                           ${isCollapsed ? 'h-11 w-11 justify-center mx-auto' : 'px-3 py-2.5 w-full gap-3 text-left'}
                           ${isCategoryActive
-                            ? 'bg-gradient-to-r from-brand/15 to-pop/10 text-brand border border-brand/20 shadow-[0_0_15px_rgba(46,230,214,0.08)]'
+                            ? 'bg-brand/10 text-brand border border-brand/15'
                             : isCategoryOpen
                               ? 'bg-white/[0.06] text-white border border-white/[0.08]'
                               : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
@@ -1042,13 +1069,13 @@ export default function StandaloneShell({ locale = 'en' }) {
                           className={categoryItemClass}
                         >
                           {isCategoryActive && (
-                            <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(46,230,214,0.6)]" />
+                            <span className="absolute left-0 top-2 bottom-2 w-0.5 bg-brand rounded-r-full" />
                           )}
                           <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-brand' : 'text-white/55 group-hover:text-white'}`}>
                             {category.icon}
                           </span>
                           {!isCollapsed && (
-                            <span className="flex-1 min-w-0 text-[12px] leading-4 tracking-tight">
+                            <span className="flex-1 min-w-0 text-[13px] leading-4 tracking-tight">
                               {categoryLabelText}
                             </span>
                           )}
@@ -1069,7 +1096,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                         className={categoryItemClass}
                       >
                         {isCategoryActive && (
-                          <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-brand to-pop rounded-r-full shadow-[0_0_8px_rgba(46,230,214,0.6)]" />
+                          <span className="absolute left-0 top-2 bottom-2 w-0.5 bg-brand rounded-r-full" />
                         )}
 
                         <span className={`flex-shrink-0 transition-colors ${isCategoryActive ? 'text-brand' : 'text-white/55 group-hover:text-white'}`}>
@@ -1078,7 +1105,7 @@ export default function StandaloneShell({ locale = 'en' }) {
 
                         {!isCollapsed && (
                           <>
-                            <span className="flex-1 min-w-0 text-[12px] leading-4 tracking-tight">
+                            <span className="flex-1 min-w-0 text-[13px] leading-4 tracking-tight">
                               {categoryLabelText}
                             </span>
                             <svg
@@ -1118,7 +1145,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                                 onClick={(event) => handleNavigationItemClick(event, tab.id)}
                                 aria-current={isActive ? 'page' : undefined}
                                 className={`
-                                  group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12px] font-medium transition-all duration-150
+                                  group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-[12px] font-medium transition-all duration-150
                                   ${isActive
                                     ? 'bg-brand/10 text-brand border border-brand/20'
                                     : 'text-white/55 hover:text-white hover:bg-white/[0.04] border border-transparent'
@@ -1126,7 +1153,7 @@ export default function StandaloneShell({ locale = 'en' }) {
                                 `}
                               >
                                 {isActive && (
-                                  <span className="absolute -left-[11px] top-2 bottom-2 w-0.5 rounded-full bg-brand shadow-[0_0_7px_rgba(46,230,214,0.7)]" />
+                                  <span className="absolute -left-[11px] top-2 bottom-2 w-0.5 rounded-full bg-brand" />
                                 )}
                                 <span className={`flex-shrink-0 ${isActive ? 'text-brand' : 'text-white/45 group-hover:text-white/80'}`}>
                                   {tab.icon}
@@ -1161,7 +1188,8 @@ export default function StandaloneShell({ locale = 'en' }) {
 
         {/* Studio Content. Keyed by workspace: signing in with a different
             access code remounts the studios so no state crosses workspaces. */}
-        <div key={studioIdentity} className="flex-1 min-h-0 h-full relative overflow-hidden bg-surface-app">
+        <main id="workspace-content" tabIndex={-1} key={studioIdentity} aria-label={tabLabel(activeTab)} className="flex-1 min-w-0 min-h-0 h-full relative overflow-hidden bg-surface-app">
+        <ModelAvailabilityGate locale={locale} required={!['agents', 'workflows', 'design-agent', 'reelty'].includes(activeTab)}>
         <div className={activeTab === 'image' ? "h-full w-full" : "hidden"}>
           {shouldMount('image') && <ImageStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('image')} />}
         </div>
@@ -1277,7 +1305,8 @@ export default function StandaloneShell({ locale = 'en' }) {
             )}
           </div>
         </div>
-      </div>
+        </ModelAvailabilityGate>
+      </main>
     </div>
 
       {/* Global generation activity and notification stack */}
@@ -1420,6 +1449,7 @@ export default function StandaloneShell({ locale = 'en' }) {
       {/* Settings Modal */}
       {showSettings && (
         <div
+          ref={settingsDialogRef}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-fade-in-up"
           onClick={(e) => { if (e.target === e.currentTarget) closeSettings(); }}
           role="dialog"

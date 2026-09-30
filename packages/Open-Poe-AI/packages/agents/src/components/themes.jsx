@@ -2,22 +2,22 @@
 export const themes = {
   cosmic: {
     id: 'cosmic',
-    name: 'Cosmic',
+    name: 'Aquora',
     colors: {
-      background: 'radial-gradient(circle at 50% -20%, #1e293b 0%, #0b0f1a 80%)',
+      background: '#0b141c',
       foreground: '#ffffff',
-      muted: '#94a3b8',
+      muted: '#a8bac5',
       border: 'rgba(255, 255, 255, 0.1)',
       componentBg: 'rgba(255, 255, 255, 0.05)',
       componentHover: 'rgba(255, 255, 255, 0.1)',
-      headerBg: 'rgba(19, 24, 38, 0.8)',
-      userBubble: 'linear-gradient(135deg, #2563eb 0%, #4338ca 100%)',
+      headerBg: '#111e28',
+      userBubble: '#244c43',
       userText: '#ffffff',
-      agentBubble: 'rgba(30, 41, 59, 0.6)',
-      agentText: '#cbd5e1',
-      inputBg: 'rgba(30, 41, 59, 0.5)',
-      accent: '#2563eb',
-      accentText: '#ffffff',
+      agentBubble: '#162630',
+      agentText: '#edf3f6',
+      inputBg: '#162630',
+      accent: '#7bd9c8',
+      accentText: '#102721',
     }
   },
   midnight: {
