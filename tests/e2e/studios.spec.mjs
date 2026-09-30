@@ -29,8 +29,14 @@ for (const [id, content] of studios) {
       await expect(handoff).toBeVisible();
       await expect(handoff).toHaveAttribute('href', /^https:\/\/web-production-0e433\.up\.railway\.app\//);
     } else {
-      await expect(page.locator('main')).toContainText(content);
-      await expect(page.locator('main').getByRole('button').first()).toBeVisible();
+      const workspace = page.locator('#workspace-content');
+      if (id === 'design-agent') {
+        await expect(workspace.getByRole('heading', { name: 'New canvas', exact: true })).toBeVisible();
+        await expect(workspace.getByRole('textbox', { name: 'Message the design agent', exact: true })).toBeVisible();
+        await expect(page.getByRole('main')).toHaveCount(1);
+      }
+      await expect(workspace).toContainText(content);
+      await expect(workspace.getByRole('button').first()).toBeVisible();
     }
     expect(errors, `${id}: ${errors.join('\n')}`).toEqual([]);
   });

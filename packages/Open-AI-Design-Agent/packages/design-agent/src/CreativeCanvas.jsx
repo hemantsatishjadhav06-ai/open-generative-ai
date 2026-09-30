@@ -80,6 +80,7 @@ export default function CreativeCanvas({
   // mark rendered next to it.
   backHref = "/",
   brandSlot = null,
+  embedded = false,
   // Host callbacks: 401 (show sign-in), 402 (refresh the budget display) and
   // the generation lifecycle the host uses for notifications.
   onAuthRequired,
@@ -867,6 +868,7 @@ export default function CreativeCanvas({
     : t.composer.placeholder;
 
   if (!mounted) return null;
+  const Content = embedded ? 'div' : 'main';
 
   return (
     <div className="h-dvh w-full text-sm flex flex-col bg-bg-page text-primary-text overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -875,7 +877,7 @@ export default function CreativeCanvas({
         reverseOrder={false}
         toastOptions={{ style: { background: "var(--bg-elevated, #0f1c2e)", color: "var(--text-primary, #eef6ff)", border: "1px solid var(--border-default, rgba(148,197,255,0.16))", fontSize: "13px" } }}
       />
-      <main className="flex h-full w-full overflow-hidden">
+      <Content className="flex h-full w-full overflow-hidden">
         {/* Left Sidebar: canvas list. `showLeftSidebar` true means the list is
             collapsed; `inert` keeps the zero-width list out of the tab order. */}
         <nav
@@ -1583,7 +1585,7 @@ export default function CreativeCanvas({
             </div>
           </div>
         </aside>
-      </main>
+      </Content>
     </div>
   );
 }

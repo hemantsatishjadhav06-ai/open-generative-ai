@@ -34,6 +34,7 @@ export default function DesignAgentStudio({
   return (
     <div className="h-full w-full bg-app-bg overflow-hidden design-agent-studio">
       <CreativeCanvas
+        embedded
         theme="dark"
         locale={locale}
         onAuthRequired={notifySessionRequired}
