@@ -3,36 +3,36 @@
 @tailwind utilities;
 
 /*
-  Aquora theme tokens (turquoise primary, electric-blue accent, deep navy). Fonts are self-hosted through next/font in
+  Aquora theme tokens (restrained turquoise primary, muted-blue accent, ink surfaces). Fonts are self-hosted through next/font in
   app/layout.js, which exposes --font-inter and --font-display on <body>.
   Keep the color values in sync with tailwind.config.js.
 */
 :root {
-  --color-primary: #2ee6d6;
-  --color-primary-hover: #57f0dc;
-  --color-accent: #3b82f6;
-  --color-accent-hover: #2563eb;
-  --color-accent-text: #60a5fa;
-  --color-on-brand: #04121a;
+  --color-primary: #7bd9c8;
+  --color-primary-hover: #96e2d4;
+  --color-accent: #608fc8;
+  --color-accent-hover: #3e6c9f;
+  --color-accent-text: #94b7dd;
+  --color-on-brand: #102721;
 
-  --bg-app: #050b14;
-  --bg-panel: #0a1422;
-  --bg-card: #0f1c2e;
-  --bg-raised: #15253b;
+  --bg-app: #0b141c;
+  --bg-panel: #111e28;
+  --bg-card: #162630;
+  --bg-raised: #1d303c;
 
-  --text-primary: #eef6ff;
-  --text-secondary: #9fb3c8;
-  --text-muted: #5b7089;
+  --text-primary: #edf3f6;
+  --text-secondary: #a8bac5;
+  --text-muted: #849aa9;
 
-  --border-color: rgba(148, 197, 255, 0.10);
+  --border-color: rgba(181, 202, 216, 0.14);
   --border-radius-xl: 0.75rem;
 
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
 
-  --brand-gradient: linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%);
-  --shadow-glow: 0 0 20px rgba(46, 230, 214, 0.4);
-  --shadow-glow-accent: 0 0 20px rgba(59, 130, 246, 0.4);
+  --brand-gradient: linear-gradient(135deg, #96e2d4 0%, #7bd9c8 100%);
+  --shadow-glow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  --shadow-glow-accent: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -102,50 +102,184 @@ h2,
 /* ── Design Agent: brand palette ─────────────────────────────────────────
    The vendored design-agent package ships its own neutral-grey tokens.
    Remap its variables and the handful of utilities it uses onto the
-   Aquora deep-navy surfaces, scoped to the studio wrapper. Plain CSS
+   Aquora ink surfaces, scoped to the studio wrapper. Plain CSS
    (outside @layer) so Tailwind never purges it. */
 .design-agent-studio {
-  --bg-page: #050b14;
-  --bg-card: #0a1422;
-  --bg-card-hover: #15253b;
-  --bg-elevated: #0f1c2e;
-  --text-primary: #eef6ff;
-  --text-secondary: #9fb3c8;
-  --text-muted: #5b7089;
-  --border-subtle: rgba(148, 197, 255, 0.10);
+  --bg-page: #0b141c;
+  --bg-card: #111e28;
+  --bg-card-hover: #1d303c;
+  --bg-elevated: #162630;
+  --text-primary: #edf3f6;
+  --text-secondary: #a8bac5;
+  --text-muted: #849aa9;
+  --border-subtle: rgba(181, 202, 216, 0.14);
   --border-default: rgba(148, 197, 255, 0.16);
-  --primary: #2ee6d6;
-  --secondary: #3b82f6;
+  --primary: #7bd9c8;
+  --secondary: #608fc8;
   --color-success: #34d399;
   --color-success-bg: rgba(52, 211, 153, 0.12);
   --color-warning: #fbbf24;
   --color-warning-bg: rgba(251, 191, 36, 0.12);
   --color-error: #ff5c7a;
   --color-error-bg: rgba(255, 92, 122, 0.12);
-  color: #eef6ff;
+  color: #edf3f6;
 }
-.design-agent-studio .bg-bg-page { background-color: #050b14; }
+.design-agent-studio .bg-bg-page { background-color: #0b141c; }
 .design-agent-studio .bg-bg-page\/20 { background-color: rgb(5 11 20 / 0.2); }
 .design-agent-studio .bg-bg-page\/30 { background-color: rgb(5 11 20 / 0.3); }
 .design-agent-studio .bg-bg-page\/50 { background-color: rgb(5 11 20 / 0.5); }
-.design-agent-studio .bg-bg-card { background-color: #0a1422; }
+.design-agent-studio .bg-bg-card { background-color: #111e28; }
 .design-agent-studio .bg-bg-card\/50 { background-color: rgb(10 20 34 / 0.5); }
 .design-agent-studio .bg-bg-card\/90 { background-color: rgb(10 20 34 / 0.9); }
-.design-agent-studio .bg-bg-card-hover { background-color: #15253b; }
-.design-agent-studio .hover\:bg-bg-page:hover { background-color: #050b14; }
-.design-agent-studio .hover\:bg-bg-card:hover { background-color: #0f1c2e; }
-.design-agent-studio .hover\:bg-bg-card-hover:hover { background-color: #15253b; }
+.design-agent-studio .bg-bg-card-hover { background-color: #1d303c; }
+.design-agent-studio .hover\:bg-bg-page:hover { background-color: #0b141c; }
+.design-agent-studio .hover\:bg-bg-card:hover { background-color: #162630; }
+.design-agent-studio .hover\:bg-bg-card-hover:hover { background-color: #1d303c; }
 .design-agent-studio .text-primary-text,
 .design-agent-studio .text-text-main,
-.design-agent-studio .hover\:text-primary-text:hover { color: #eef6ff; }
-.design-agent-studio .text-secondary-text { color: #9fb3c8; }
+.design-agent-studio .hover\:text-primary-text:hover { color: #edf3f6; }
+.design-agent-studio .text-secondary-text { color: #a8bac5; }
 .design-agent-studio .border-divider,
 .design-agent-studio .border-border-main { border-color: rgba(255, 255, 255, 0.08); }
 .design-agent-studio .bg-divider,
 .design-agent-studio .bg-border-main { background-color: rgba(255, 255, 255, 0.08); }
-.design-agent-studio .bg-primary-text { background-color: #eef6ff; }
+.design-agent-studio .bg-primary-text { background-color: #edf3f6; }
 .design-agent-studio .from-divider {
   --tw-gradient-from: rgba(255, 255, 255, 0.08) var(--tw-gradient-from-position);
   --tw-gradient-to: rgba(255, 255, 255, 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
+
+/* Shared interaction standards for the shell and every bundled studio. */
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+:where(button, input, textarea, select) { font: inherit; }
+::selection { background: rgba(123, 217, 200, 0.25); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Light public overview; the workspace stays dark for media review. */
+.aquora-landing { --landing-ink: #17272d; --landing-secondary: #52666c; --landing-line: #dce4e3; background: #f5f7f7; color: var(--landing-ink); min-height: 100vh; }
+.aquora-landing a:focus-visible { outline-color: #28645b; }
+.landing-container { width: min(1200px, 100% - 64px); margin-inline: auto; }
+.landing-header { min-height: 92px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--landing-line); }
+.landing-wordmark { display: inline-flex; align-items: center; gap: 10px; font-size: 23px; font-weight: 700; letter-spacing: -.04em; }
+.landing-brand-mark { display: inline-flex; width: 34px; height: 34px; align-items: center; justify-content: center; border-radius: 10px; color: #173b32; background: #b6e6d9; flex-shrink: 0; }
+.landing-language { color: var(--landing-secondary); font-size: 12px; font-weight: 600; }
+.landing-nav-cta { padding: 11px 17px; background: #172f2d; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 600; }
+.landing-hero { padding: 85px 0 72px; display: grid; grid-template-columns: 1fr 1fr; gap: 52px; align-items: center; }
+.landing-eyebrow { display: flex; gap: 8px; align-items: center; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: .15em; color: #44736b; }
+.landing-eyebrow > span { width: 7px; height: 7px; background: #4b8d7d; border-radius: 50%; }
+.landing-hero h1 { font-size: clamp(38px, 4.4vw, 61px); line-height: 1.07; letter-spacing: -.052em; font-weight: 600; max-width: 540px; margin-top: 20px; }
+.landing-hero-sub { font-size: 16px; line-height: 1.8; color: var(--landing-secondary); margin-top: 23px; max-width: 510px; }
+.landing-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.landing-primary, .landing-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 20px; font-size: 13px; font-weight: 600; padding: 14px 20px; border-radius: 10px; transition: background .15s, border-color .15s; }
+.landing-primary { background: #173b32; color: #fff; border: 1px solid #173b32; }
+.landing-primary:hover, .landing-nav-cta:hover { background: #285346; }
+.landing-secondary { border: 1px solid #cfdad7; color: #27473f; background: transparent; }
+.landing-secondary:hover { border-color: #6a9d8c; background: #e6efeb; }
+.landing-access-note { margin-top: 20px; font-size: 11px; line-height: 1.6; color: #697b80; }
+.landing-preview { border-radius: 18px; background: #111e28; overflow: hidden; border: 1px solid #233741; color: #edf3f6; box-shadow: 0 22px 45px -22px rgba(25, 46, 40, .3); }
+.landing-preview-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 15px 18px; font-size: 14px; border-bottom: 1px solid #2c3b44; }
+.landing-preview-top .landing-brand-mark { width: 23px; height: 23px; border-radius: 6px; }
+.landing-preview-top .landing-brand-mark svg { width: 15px; }
+.landing-preview-label { font-size: 10px; color: #a8bac5; }
+.landing-preview-body { padding: 17px; display: grid; gap: 14px; grid-template-columns: 1.1fr 1fr; }
+.landing-preview-art { background: #dfebe7; min-height: 271px; border-radius: 10px; overflow: hidden; position: relative; }
+.landing-art-caption { position: absolute; bottom: 12px; left: 12px; background: rgba(13,35,27,.72); color: #edf3f6; border-radius: 6px; padding: 5px 8px; font-size: 10px; }
+.landing-preview-form { display: flex; flex-direction: column; gap: 14px; padding: 8px 0; }
+.landing-preview-step { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; color: #7bd9c8; }
+.landing-preview-prompt { font-size: 12px; line-height: 1.6; padding: 12px; min-height: 104px; border: 1px solid #31454f; border-radius: 8px; background: #162630; color: #bacbd3; }
+.landing-preview-button { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border-radius: 8px; background: #7bd9c8; color: #102721; font-size: 11px; font-weight: 600; margin-top: auto; }
+.landing-preview-caption { padding: 10px 17px 14px; font-size: 9px; line-height: 1.6; color: #a8bac5; }
+.landing-capabilities { display: flex; align-items: center; flex-wrap: wrap; gap: 26px; padding: 22px 0; border-block: 1px solid var(--landing-line); color: #52666c; font-size: 12px; font-weight: 500; }
+.landing-capabilities > span:last-child { margin-left: auto; font-size: 11px; color: #77878a; }
+.landing-section { padding: 72px 0; }
+.landing-section h2, .landing-reelty h2 { font-size: clamp(26px, 3vw, 35px); font-weight: 600; letter-spacing: -.04em; line-height: 1.2; margin-top: 14px; }
+.landing-section-heading { display: flex; gap: 32px; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+.landing-section-heading > p { max-width: 370px; color: var(--landing-secondary); font-size: 13px; line-height: 1.8; }
+.landing-goals { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; list-style: none; }
+.landing-goal-card { border: 1px solid #dce4e3; border-radius: 14px; padding: 24px; background: #fff; }
+.landing-goal-title { display: flex; gap: 13px; align-items: center; font-size: 19px; font-weight: 600; letter-spacing: -.02em; }
+.landing-goal-title > span:last-child { margin-left: auto; font-size: 17px; color: #73978a; }
+.landing-goal-icon { display: flex; align-items: center; justify-content: center; background: #edf4f0; color: #366955; border-radius: 10px; width: 38px; height: 38px; flex-shrink: 0; }
+.landing-goal-card > p { color: var(--landing-secondary); font-size: 13px; line-height: 1.8; margin-top: 14px; }
+.landing-tool-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding-top: 17px; border-top: 1px solid #e9eeec; }
+.landing-tool-links a { font-size: 10px; line-height: 1.4; color: #49615b; background: #f1f5f3; border: 1px solid transparent; padding: 7px 9px; border-radius: 6px; }
+.landing-tool-links a:hover { color: #1d5440; border-color: #b9d8c8; background: #e7f2ec; }
+.landing-availability-note { margin-top: 19px; font-size: 11px; line-height: 1.8; color: #697b80; }
+.landing-process { border-top: 1px solid var(--landing-line); display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
+.landing-process-intro { margin-top: 20px; max-width: 420px; font-size: 14px; line-height: 1.8; color: var(--landing-secondary); }
+.landing-steps { list-style: none; display: flex; flex-direction: column; gap: 24px; }
+.landing-steps li { display: flex; gap: 16px; align-items: flex-start; }
+.landing-step-number { display: flex; align-items: center; justify-content: center; min-width: 33px; height: 33px; border-radius: 50%; border: 1px solid #c7d8ce; color: #41735b; font-size: 11px; font-weight: 600; }
+.landing-steps h3 { font-size: 14px; font-weight: 600; }
+.landing-steps p { font-size: 12px; line-height: 1.7; color: var(--landing-secondary); margin-top: 6px; }
+.landing-reelty { display: flex; align-items: center; justify-content: space-between; gap: 32px; background: #e7efeb; border: 1px solid #d8e5dd; border-radius: 16px; padding: 34px; }
+.landing-reelty > div { max-width: 720px; }
+.landing-reelty h2 { font-size: 25px; }
+.landing-reelty p:not(.landing-eyebrow) { font-size: 13px; line-height: 1.8; color: var(--landing-secondary); margin-top: 14px; }
+.landing-reelty p.landing-reelty-note { font-size: 11px; margin-top: 7px; }
+.landing-reelty > a { white-space: nowrap; flex-shrink: 0; background: #f8fbf9; }
+.landing-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 64px; padding: 32px 0; border-top: 1px solid var(--landing-line); }
+.landing-footer-brand { font-size: 18px; font-weight: 600; }
+.landing-footer p { max-width: 520px; margin-top: 8px; color: #697b80; font-size: 11px; line-height: 1.7; }
+.landing-footer-links { display: flex; align-items: center; gap: 22px; font-size: 11px; color: #52666c; }
+.landing-skip-link { position: absolute; top: -60px; left: 20px; z-index: 100; padding: 12px 18px; background: #173b32; color: white; border-radius: 8px; }
+.landing-skip-link:focus { top: 10px; }
+@media (max-width: 1000px) {
+  .landing-container { width: min(1200px, 100% - 48px); }
+  .landing-hero { gap: 30px; }
+  .landing-preview-body { grid-template-columns: 1fr; }
+  .landing-preview-art { min-height: 145px; height: 145px; }
+  .landing-preview-form { padding-top: 0; gap: 9px; }
+  .landing-preview-prompt { min-height: unset; }
+  .landing-process { gap: 40px; }
+}
+@media (max-width: 640px) {
+  .landing-container { width: calc(100% - 36px); }
+  .landing-header { min-height: 76px; gap: 12px; }
+  .landing-wordmark { font-size: 20px; gap: 7px; }
+  .landing-brand-mark { width: 30px; height: 30px; }
+  .landing-header nav { gap: 12px; }
+  .landing-nav-cta { font-size: 11px; padding: 10px 12px; }
+  .landing-hero { grid-template-columns: 1fr; gap: 34px; padding: 48px 0 36px; }
+  .landing-hero h1 { font-size: 42px; max-width: 420px; }
+  .landing-hero-sub { font-size: 14px; }
+  .landing-preview-body { grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; }
+  .landing-preview-art { height: auto; min-height: 250px; }
+  .landing-preview-form { gap: 12px; }
+  .landing-preview-form .text-lg { font-size: 16px; }
+  .landing-preview-prompt { font-size: 11px; }
+  .landing-capabilities { gap: 15px 20px; font-size: 11px; }
+  .landing-capabilities > span:last-child { width: 100%; margin-left: 0; }
+  .landing-section { padding: 46px 0; }
+  .landing-section-heading { display: block; margin-bottom: 22px; }
+  .landing-section-heading > p { margin-top: 14px; }
+  .landing-goals, .landing-process { grid-template-columns: 1fr; }
+  .landing-goal-card { padding: 20px; }
+  .landing-goal-title { font-size: 18px; }
+  .landing-process { gap: 28px; }
+  .landing-reelty { display: block; padding: 24px; }
+  .landing-reelty > a { margin-top: 22px; }
+  .landing-footer { align-items: flex-start; flex-direction: column; margin-top: 42px; }
+}
+@media (max-width: 370px) {
+  .landing-preview-body { grid-template-columns: 1fr; }
+  .landing-preview-art { min-height: 155px; height: 155px; }
+  .landing-language { display: none; }
+  .landing-hero h1 { font-size: 37px; }
+}
+
+.workspace-skip-link { position: fixed; top: -60px; left: 12px; z-index: 300; padding: 12px 16px; border-radius: 8px; background: var(--color-primary); color: var(--color-on-brand); font-size: 13px; font-weight: 600; }
+.workspace-skip-link:focus { top: 8px; }
+.aquora-workspace { height: 100dvh; }
+/* Neutral legacy UI packages share the Aquora surfaces and action hierarchy. */
+.aquora-workspace button { cursor: pointer; }
+.aquora-workspace button:disabled { cursor: not-allowed; }
+.aquora-workspace .bg-primary-bg { background-color: #0b141c; }
+.aquora-workspace .bg-secondary-bg { background-color: #111e28; }
+.aquora-workspace .bg-card-bg { background-color: #162630; }

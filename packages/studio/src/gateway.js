@@ -91,17 +91,21 @@ async function responseError(response, prefix, { withStatusText = false, silent 
     return error;
 }
 
-async function gatewayRequest(path, { method = 'GET', body, signal, failure, withStatusText = false, silent = false } = {}) {
+async function gatewayRequest(path, { method = 'GET', body, signal, failure, withStatusText = false, silent = false, idempotencyKey } = {}) {
     const headers = { Accept: 'application/json' };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
-    const response = await fetch(path, {
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+    const options = {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
         credentials: 'same-origin',
         cache: 'no-store',
         signal,
-    });
+    };
+    // Do not automatically retry a paid submit: the server's replay cache
+    // is process-local and cannot guarantee deduplication across a restart.
+    const response = await fetch(path, options);
     if (!response.ok) throw await responseError(response, failure, { withStatusText, silent });
     return response;
 }
@@ -151,11 +155,14 @@ function normalizePredictionResult(submitData, result) {
 }
 
 async function submitAndPoll(endpoint, payload, onRequestId, maxAttempts = 60) {
+    const idempotencyKey = globalThis.crypto?.randomUUID?.()
+        || `submit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
     const submitData = await gatewayJson(`${API_V1}/${segment(endpoint)}`, {
         method: 'POST',
         body: payload,
         failure: 'API Request Failed',
         withStatusText: true,
+        idempotencyKey,
     });
     const requestId = submitData.request_id || submitData.id;
     // A synchronous tool answers with the finished result straight away.

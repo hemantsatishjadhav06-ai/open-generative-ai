@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react"
 import HeroCollage from "./HeroCollage";
 import useEscapeKey, { useFocusReturn } from "./prompt/useEscapeKey";
 import { generateVideo, generateI2V, processV2V, uploadFile } from "../gateway.js";
+import usePendingGeneration, { persistGenerationResult } from "../usePendingGeneration.js";
 import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
 import { usePersistKey } from "../persistKey.js";
 import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
@@ -805,6 +806,7 @@ export default function VideoStudio({
 
   // ── generation / canvas ──
   const [generating, setGenerating] = useState(false);
+  const generationRunningRef = useRef(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
   const closeFullscreen = useCallback(() => setFullscreenUrl(null), []);
@@ -2047,7 +2049,7 @@ export default function VideoStudio({
 
   // ── add to local history ──────────────────────────────────────────────────
   const addToLocalHistory = useCallback((entry) => {
-    setLocalHistory((prev) => [entry, ...prev].slice(0, 30));
+    setLocalHistory((prev) => [entry, ...prev.filter((item) => item.id !== entry.id && item.url !== entry.url)].slice(0, 30));
     setActiveHistoryIdx(0);
   }, []);
 
@@ -2058,8 +2060,28 @@ export default function VideoStudio({
     setShowCanvas(true);
   }, []);
 
+  const pending = usePendingGeneration({
+    persistKey: PERSIST_KEY,
+    onStart: () => { generationRunningRef.current = true; setGenerating(true); setGenerateError(null); onGenerationStart?.(); },
+    onEnd: () => { generationRunningRef.current = false; setGenerating(false); onGenerationEnd?.(); },
+    onResult: (res, job) => {
+      const entry = { ...job, id: job.requestId, url: res.url };
+      persistGenerationResult(PERSIST_KEY, entry, "localHistory", { canvasUrl: res.url, canvasModel: job.model, showCanvas: true });
+      addToLocalHistory(entry);
+      showVideoInCanvas(res.url, job.model);
+      if (job.canContinue && job.familyId) setGenerationSources((sources) => recordGenerationSource(sources, job.familyId, job.requestId, job.model));
+      onGenerationComplete?.({ url: res.url, model: job.model, prompt: job.prompt, type: "video" });
+    },
+    onError: (error) => {
+      const message = formatErrorMessage(error, copy.errors.videoGenerationFailed);
+      if (onGenerationError) onGenerationError(message); else notifyError(message);
+    },
+  });
+
   // ── generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
+    if (generating || generationRunningRef.current) return;
+    if (pending.hasPending) { void pending.resume(); return; }
     if (mediaUploading || workflowUploadSlotRef.current) {
       notifyError(copy.errors.waitForCurrentUpload);
       return;
@@ -2155,9 +2177,18 @@ export default function VideoStudio({
       }
     }
 
+    generationRunningRef.current = true;
     onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
+
+    let requestId;
+    const onRequestId = (id) => {
+      requestId = id;
+      pending.remember(id, { model: selectedModel, prompt: trimmedPrompt, familyId: selectedFamily.id,
+        canContinue: !v2vMode, aspect_ratio: selectedAr, duration: selectedDuration,
+        ...groupedHistorySettings, timestamp: new Date().toISOString() });
+    };
 
     try {
       let res;
@@ -2173,6 +2204,7 @@ export default function VideoStudio({
         // V2V: dedicated processV2V handles single-input tools (e.g. watermark
         // remover) and motion-control models (which take video + image + prompt)
         const v2vParams = {
+          onRequestId,
           model: selectedModel,
           ...buildSupplementalInputPayload(currentModel, generationParameterValues),
           ...commonParams,
@@ -2193,6 +2225,7 @@ export default function VideoStudio({
           ...groupedHistorySettings,
           timestamp: new Date().toISOString(),
         };
+        persistGenerationResult(PERSIST_KEY, entry, "localHistory", { canvasUrl: res.url, canvasModel: selectedModel, showCanvas: true });
         addToLocalHistory(entry);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
@@ -2204,6 +2237,7 @@ export default function VideoStudio({
           });
       } else if (imageMode) {
         const i2vParams = {
+          onRequestId,
           model: selectedModel,
           ...buildSupplementalInputPayload(currentModel, generationParameterValues),
           ...commonParams,
@@ -2238,6 +2272,7 @@ export default function VideoStudio({
           ...groupedHistorySettings,
           timestamp: new Date().toISOString(),
         };
+        persistGenerationResult(PERSIST_KEY, entry, "localHistory", { canvasUrl: res.url, canvasModel: selectedModel, showCanvas: true });
         addToLocalHistory(entry);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
@@ -2250,6 +2285,7 @@ export default function VideoStudio({
       } else {
         // T2V (including extend mode)
         const params = {
+          onRequestId,
           model: selectedModel,
           ...buildSupplementalInputPayload(currentModel, generationParameterValues),
           ...commonParams,
@@ -2288,6 +2324,7 @@ export default function VideoStudio({
           ...groupedHistorySettings,
           timestamp: new Date().toISOString(),
         };
+        persistGenerationResult(PERSIST_KEY, entry, "localHistory", { canvasUrl: res.url, canvasModel: selectedModel, showCanvas: true });
         addToLocalHistory(entry);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
@@ -2298,17 +2335,23 @@ export default function VideoStudio({
             type: "video",
           });
       }
+      if (requestId) pending.complete(requestId);
     } catch (e) {
+      pending.fail(requestId, e);
       logStudioError("[VideoStudio]", e);
       const errMsg = formatErrorMessage(e, copy.errors.videoGenerationFailed);
       if (onGenerationError) onGenerationError(errMsg);
       else notifyError(errMsg);
     } finally {
+      generationRunningRef.current = false;
       setGenerating(false);
       onGenerationEnd?.();
     }
   }, [
     apiKey,
+    PERSIST_KEY,
+    generating,
+    pending,
     copy,
     prompt,
     promptDisabled,
@@ -2485,6 +2528,7 @@ export default function VideoStudio({
       ref={containerRef}
       className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative overflow-hidden"
     >
+      {pending.hasPending && <div role="status" className="w-full shrink-0 flex items-center justify-between gap-3 border-b border-brand/20 bg-brand/5 px-4 py-3 text-xs text-secondary"><span>{copy.pending.note}</span>{!generating && <button type="button" onClick={pending.resume} className="shrink-0 rounded-md bg-brand px-3 py-2 text-on-brand font-semibold">{copy.pending.resume}</button>}</div>}
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {history.length > 0 ? (
@@ -2645,19 +2689,22 @@ export default function VideoStudio({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
-            {/* Overlapping floating cards */}
+            {/* Small previews introduce the blank canvas. */}
             <HeroCollage />
 
-            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white text-center px-4 mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl font-semibold tracking-tight text-white text-center px-4 mb-3">
               {selectedTool || selectedVeoTool ? selectedPickerLabel : copy.empty.heading}
             </h1>
             {!selectedTool && !selectedVeoTool && (
-              <p className="text-white/60 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4 mb-4">
+              <p className="text-white/70 text-sm text-center max-w-lg leading-relaxed px-4 mb-2">
                 {groupedConfiguration
                   ? getVideoModeDescription(selectedVariant.model, selectedWorkflowId, groupCopy)
                   : copy.empty.subtitle}
               </p>
             )}
+            <p className="text-white/50 text-xs text-center max-w-lg leading-relaxed px-4 mb-5">
+              {copy.empty.nextSteps}
+            </p>
             {!selectedTool && !selectedVeoTool && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/60">
                 <span className="text-white/60">{copy.empty.modelLabel}</span>
@@ -2876,6 +2923,7 @@ export default function VideoStudio({
               {!(selectedVeoTool && promptDisabled) && (
               <PromptTextarea
                 ref={textareaRef}
+                aria-label={copy.controls.promptLabel}
                 value={prompt}
                 onChange={handlePromptInput}
                 placeholder={promptPlaceholder}

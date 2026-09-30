@@ -21,7 +21,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const SITE_TITLE = 'Aquora — AI studio for creators';
-const SITE_DESCRIPTION = 'Make anything. Ship everything. Images, video, audio, avatars and edits with 300+ AI models in one studio.';
+const SITE_DESCRIPTION = 'Your ideas. One creative workspace. Create images, video and audio, and connect your process with AI agents and workflows in Aquora.';
 
 // Plain-string title (no `%s` template): app/agents/layout.js and the studio
 // pages export fully suffixed titles of their own. og:image/twitter:image
@@ -51,7 +51,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#050b14',
+  themeColor: '#0b141c',
   colorScheme: 'dark',
 };
 

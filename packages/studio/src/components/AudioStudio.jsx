@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { generateAudio, uploadFile } from "../gateway.js";
 import { formatErrorMessage, logStudioError } from "../utils/formatError.js";
 import { usePersistKey } from "../persistKey.js";
+import usePendingGeneration, { persistGenerationResult } from "../usePendingGeneration.js";
 import { audioModels, getAudioModelById } from "../models.js";
 import { firstAvailableModel, isModelAvailable } from "../modelAvailability.js";
 import { useAvailableModels } from "../useModelAvailability.js";
@@ -544,6 +545,7 @@ export default function AudioStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, zh, locale);
+  const fieldIdPrefix = useId();
   const PERSIST_KEY = usePersistKey("hg_audio_studio_persistent");
 
   // ── Mode & model state ──────────────────────────────────────────────────
@@ -573,6 +575,7 @@ export default function AudioStudio({
   const [activeResultUrl, setActiveResultUrl] = useState(null);
   const [activeResultTitle, setActiveResultTitle] = useState("");
   const [view, setView] = useState("input"); // 'input' | 'result'
+  const generationRunningRef = useRef(false);
 
   // ── History state ────────────────────────────────────────────────────
   const [internalHistory, setInternalHistory] = useState([]);
@@ -677,8 +680,66 @@ export default function AudioStudio({
 
   // ── History helpers ─────────────────────────────────────────────────────
   const addToInternalHistory = useCallback((entry) => {
-    setInternalHistory((prev) => [entry, ...prev].slice(0, 30));
+    setInternalHistory((prev) => [entry, ...prev.filter((item) => item.id !== entry.id)].slice(0, 30));
   }, []);
+
+  const acceptAudioResult = (res, job) => {
+    if (!res?.url) throw new Error(copy.generate.noUrlError);
+    const model = job.model || selectedModelId;
+    const title = job.title || job.prompt || `Generated ${getAudioModelById(model)?.name || model}`;
+    const entry = {
+      id: job.requestId || res.request_id || res.id || Date.now().toString(),
+      url: res.url,
+      title,
+      prompt: job.prompt || "",
+      model,
+      timestamp: job.timestamp || new Date().toISOString(),
+    };
+
+    // Preserve the completed preview before its pending token is removed.
+    persistGenerationResult(PERSIST_KEY, entry, "internalHistory", {
+      activeResultUrl: entry.url,
+      activeResultTitle: entry.title,
+      view: "result",
+    });
+    if (!historyItems) addToInternalHistory(entry);
+    setActiveResultUrl(entry.url);
+    setActiveResultTitle(entry.title);
+    setView("result");
+    setActiveHistoryIdx(0);
+    setGenerateError(null);
+    onGenerationComplete?.({
+      url: entry.url,
+      model: entry.model,
+      prompt: entry.prompt,
+      type: "audio",
+    });
+  };
+
+  const reportAudioError = (error) => {
+    logStudioError("[AudioStudio]", error);
+    const errMsg = formatErrorMessage(error, copy.generate.genericError);
+    setGenerateError(errMsg);
+    if (onGenerationError) onGenerationError(errMsg);
+    else notifyError(errMsg);
+  };
+
+  const pending = usePendingGeneration({
+    persistKey: PERSIST_KEY,
+    onStart: () => {
+      generationRunningRef.current = true;
+      onGenerationStart?.();
+      setIsGenerating(true);
+      setGenerateError(null);
+    },
+    onEnd: () => {
+      generationRunningRef.current = false;
+      setIsGenerating(false);
+      onGenerationEnd?.();
+    },
+    onResult: acceptAudioResult,
+    onError: reportAudioError,
+  });
 
   const handleSelectHistory = (entry, index) => {
     setActiveResultUrl(entry.url);
@@ -688,6 +749,7 @@ export default function AudioStudio({
   };
 
   const handleGenerate = async () => {
+    if (generationRunningRef.current || pending.hasPending) return;
     if (!selectedModel) return;
     if (!isModelAvailable(selectedModel)) {
       notifyError(copy.generate.modelUnavailable);
@@ -704,54 +766,39 @@ export default function AudioStudio({
       }
     }
 
+    generationRunningRef.current = true;
     onGenerationStart?.();
     setIsGenerating(true);
     setGenerateError(null);
+
+    let requestId;
+    let job = {
+      model: selectedModelId,
+      prompt: params.prompt || "",
+      title: params.title || params.prompt || `Generated ${selectedModel.name}`,
+      timestamp: new Date().toISOString(),
+    };
 
     try {
       const audioParams = {
         ...params,
         _modelId: selectedModelId,
+        onRequestId: (id) => {
+          requestId = id;
+          job = pending.remember(id, job);
+        },
       };
 
       // Call generateAudio
       const res = await generateAudio(apiKey, audioParams);
 
-      if (!res?.url) {
-        throw new Error(copy.generate.noUrlError);
-      }
-
-      const title = params.title || params.prompt || `Generated ${selectedModel.name}`;
-      const entry = {
-        id: res.id || Date.now().toString(),
-        url: res.url,
-        title,
-        prompt: params.prompt || "",
-        model: selectedModelId,
-        timestamp: new Date().toISOString(),
-      };
-
-      if (!historyItems) addToInternalHistory(entry);
-
-      setActiveResultUrl(res.url);
-      setActiveResultTitle(title);
-      setView("result");
-      setActiveHistoryIdx(0);
-
-      if (onGenerationComplete) {
-        onGenerationComplete({
-          url: res.url,
-          model: selectedModelId,
-          prompt: params.prompt,
-          type: "audio",
-        });
-      }
+      acceptAudioResult(res, job);
+      if (requestId) pending.complete(requestId);
     } catch (e) {
-      logStudioError("[AudioStudio]", e);
-      const errMsg = formatErrorMessage(e, copy.generate.genericError);
-      if (onGenerationError) onGenerationError(errMsg);
-      else notifyError(errMsg);
+      if (requestId) pending.fail(requestId, e);
+      reportAudioError(e);
     } finally {
+      generationRunningRef.current = false;
       setIsGenerating(false);
       onGenerationEnd?.();
     }
@@ -765,11 +812,11 @@ export default function AudioStudio({
   };
 
   return (
-    <div className="w-full h-full flex bg-app-bg text-white overflow-hidden relative">
+    <div className="w-full h-full flex flex-col lg:flex-row bg-app-bg text-white overflow-y-auto lg:overflow-hidden relative">
       
       {/* ─── LEFT CONFIGURATION SIDEBAR ─── */}
-      <div ref={sidebarRef} className="w-full lg:w-[400px] border-r border-zinc-900 flex flex-col bg-surface-panel/40 backdrop-blur-lg flex-shrink-0 z-30">
-        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6 pb-24">
+      <div ref={sidebarRef} className="relative w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-zinc-900 flex flex-col bg-surface-panel/40 backdrop-blur-lg flex-shrink-0 z-30">
+        <div className={`p-6 overflow-visible lg:overflow-y-auto flex-1 custom-scrollbar space-y-6 pb-6 ${pending.hasPending ? "lg:pb-52" : "lg:pb-24"}`}>
           
           {/* Model Selector */}
           <div className="space-y-2 relative">
@@ -895,6 +942,8 @@ export default function AudioStudio({
                     </label>
                     <button
                       type="button"
+                      aria-label={schema.title || key}
+                      aria-expanded={isOpen}
                       onClick={() => {
                         setOpenDropdown(false);
                         setOpenParamDropdown(isOpen ? null : key);
@@ -979,10 +1028,11 @@ export default function AudioStudio({
               if (key === "prompt") {
                 return (
                   <div key={key} className="space-y-2">
-                    <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                    <label htmlFor={`${fieldIdPrefix}-${key}`} className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
                       {schema.title || copy.sidebar.lyricsPromptLabel}
                     </label>
                     <textarea
+                      id={`${fieldIdPrefix}-${key}`}
                       value={params[key] || ""}
                       onChange={(e) => setParams(prev => ({ ...prev, [key]: e.target.value }))}
                       className="w-full bg-surface-card border border-zinc-700 focus:border-primary/85 rounded p-3 text-xs text-white placeholder:text-zinc-400 focus:outline-none transition-all min-h-[100px] resize-none leading-relaxed shadow-inner"
@@ -1009,10 +1059,11 @@ export default function AudioStudio({
               // Standard Text / Input fields
               return (
                 <div key={key} className="space-y-2">
-                  <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                  <label htmlFor={`${fieldIdPrefix}-${key}`} className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
                     {schema.title || key}
                   </label>
                   <input
+                    id={`${fieldIdPrefix}-${key}`}
                     type={isNumber ? "number" : "text"}
                     value={params[key] !== undefined ? params[key] : ""}
                     placeholder={schema.placeholder || schema.description || copy.sidebar.fieldPlaceholder.replace('{field}', key)}
@@ -1035,11 +1086,25 @@ export default function AudioStudio({
         </div>
 
         {/* Dynamic Cost & Generate Section */}
-        <div className="p-4 border-t border-zinc-900 bg-surface-panel/80 backdrop-blur-xl absolute bottom-0 left-0 w-full lg:w-[400px] z-40">
+        <div className="p-4 border-t border-zinc-900 bg-surface-panel/80 backdrop-blur-xl relative lg:absolute bottom-0 left-0 w-full z-40">
+          {pending.hasPending && !isGenerating && (
+            <div className="mb-3 space-y-2">
+              <p className="text-xs text-white/70 leading-relaxed" role="status">
+                {copy.generate.pendingResumeHint}
+              </p>
+              <button
+                type="button"
+                onClick={() => pending.resume()}
+                className="w-full py-3 rounded-lg border border-primary/30 bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {copy.generate.resumePending}
+              </button>
+            </div>
+          )}
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={isGenerating || !selectedModel}
+            disabled={isGenerating || pending.hasPending || !selectedModel}
             className="w-full py-4 bg-primary text-on-brand text-base font-bold rounded hover:bg-brand-hover transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-glow flex items-center justify-center gap-3"
           >
             {isGenerating ? (
@@ -1059,10 +1124,10 @@ export default function AudioStudio({
         </div>
       </div>
       {/* ─── RIGHT CONTENT AREA ─── */}
-      <div className="flex-1 flex flex-col min-w-0 h-full relative z-20">
+      <div className="flex-none lg:flex-1 flex flex-col min-w-0 h-auto lg:h-full relative z-20">
         
         {/* Main Display panel */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 flex flex-col justify-between">
+        <div className="flex-1 overflow-visible lg:overflow-y-auto custom-scrollbar p-6 lg:p-10 flex flex-col justify-between">
           
           <div className="flex-1 flex items-center justify-center min-h-[400px] mb-8">
             
@@ -1109,16 +1174,17 @@ export default function AudioStudio({
 
             {/* 3. Empty State (no audio, not loading, no error) */}
             {view === "input" && !isGenerating && !generateError && (
-              <div className="flex flex-col items-center gap-6 max-w-md text-center p-8 bg-surface-card/40 border border-zinc-800 rounded backdrop-blur-sm relative group animate-fade-in-up">
-                {/* Glow behind the icon */}
-                <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full opacity-25 group-hover:opacity-40 transition-opacity duration-1000 pointer-events-none" />
-                <div className="w-20 h-20 bg-surface-card border border-zinc-705 rounded flex items-center justify-center shadow-inner relative z-10 transition-transform duration-500 group-hover:scale-105">
-                  <MusicIcon className="text-primary w-8 h-8 filter drop-shadow-[0_0_8px_rgba(46,230,214,0.3)]" />
+              <div className="flex flex-col items-center gap-5 max-w-md text-center p-7 bg-surface-card border border-white/10 rounded-xl animate-fade-in-up">
+                <div className="w-16 h-16 bg-surface-panel border border-white/10 rounded-xl flex items-center justify-center" aria-hidden="true">
+                  <MusicIcon className="text-primary w-7 h-7" />
                 </div>
-                <div className="relative z-10">
-                  <h3 className="text-white font-black text-xl mb-3 tracking-tight">{copy.result.emptyHeading}</h3>
-                  <p className="text-sm text-zinc-200 font-medium leading-relaxed px-4">
+                <div>
+                  <h3 className="text-white font-semibold text-2xl mb-3 tracking-tight">{copy.result.emptyHeading}</h3>
+                  <p className="text-sm text-white/70 leading-relaxed">
                     {copy.result.emptyBody}
+                  </p>
+                  <p className="text-xs text-white/50 leading-relaxed mt-3">
+                    {copy.result.nextSteps}
                   </p>
                 </div>
               </div>

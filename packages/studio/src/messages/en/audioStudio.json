@@ -31,6 +31,8 @@
     "requiredFieldError": "Please complete the required field: {field}"
   },
   "generate": {
+    "resumePending": "Resume pending generation",
+    "pendingResumeHint": "Your previous generation is saved. Resume it to check the result before starting another.",
     "generating": "Generating Audio...",
     "cta": "Generate Track",
     "noUrlError": "No audio URL returned by the API.",
@@ -42,8 +44,9 @@
     "errorHeading": "Generation Error",
     "loadingHeading": "Generating Soundtrack",
     "loadingSubtext": "Rendering audio waveforms and vocals...",
-    "emptyHeading": "Audio Studio",
-    "emptyBody": "Pick a music, voice or sound model, set it up on the left, and make your next track.",
+    "emptyHeading": "Create your first audio",
+    "emptyBody": "Create music, voice or sound with an audio model.",
+    "nextSteps": "Choose a model in the setup panel, complete its required fields, then generate, preview and download.",
     "newGeneration": "New Generation",
     "success": "Success"
   },

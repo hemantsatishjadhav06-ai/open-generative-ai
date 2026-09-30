@@ -39,3 +39,7 @@ out/
 
 # Aquora gateway local data (JSON store)
 .aquora-data/
+
+# Browser regression artifacts
+test-results/
+playwright-report/

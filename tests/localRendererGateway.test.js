@@ -88,7 +88,8 @@ test('gateway.generateImage submits to /api/v1/<model>, polls the job token and 
         assert.equal(submit.path, '/api/v1/flux-schnell-image', 'same-origin relative path');
         assert.equal(submit.init.credentials, 'same-origin');
         const headers = Object.keys(submit.init.headers || {}).map((name) => name.toLowerCase());
-        assert.ok(!headers.some((name) => name.includes('key') || name === 'authorization'), 'no key header is ever sent');
+        assert.ok(!headers.some((name) => ['x-api-key', 'api-key', 'authorization'].includes(name)), 'no provider credential header is ever sent');
+        assert.ok(submit.init.headers['Idempotency-Key'], 'generation retries carry a non-secret request identity');
         assert.equal(JSON.parse(submit.init.body).prompt, 'a lighthouse at dusk');
         assert.ok(fetchStub.calls.some((call) => call.path === '/api/session'), 'budget refreshed after the run');
     } finally {

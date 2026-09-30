@@ -62,3 +62,12 @@ export function newConversationId() {
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
+
+// Submit a turn directly; creating a route is not required to create a chat.
+// The server returns the actual conversation id and the signed polling token.
+export async function postAgentTurn(agentSlug, { message, conversationId, attachments = [] }, { post = axios.post } = {}) {
+  return post(`${AGENTS_API}/by-slug/${encodeURIComponent(agentSlug)}/chat`, {
+    message, conversation_id: conversationId || newConversationId(),
+    attachments, stream: false,
+  });
+}

@@ -67,6 +67,7 @@
     "runsOn": "Runs on {model}"
   },
   "controls": {
+    "promptLabel": "Video prompt",
     "draw": "Draw",
     "generate": "Generate",
     "generating": "Generating..."
@@ -86,8 +87,9 @@
     "linkCopied": "Link copied"
   },
   "empty": {
-    "heading": "Make it move.",
-    "subtitle": "Bring your images to life as AI video — motion and all",
+    "heading": "Create your first video",
+    "subtitle": "Start with a description, an image or an existing clip.",
+    "nextSteps": "Choose a model or tool below, complete its inputs, then select Generate.",
     "modelLabel": "Model"
   },
   "errors": {
@@ -582,5 +584,9 @@
         "description": "Describe what to leave out."
       }
     }
+  },
+  "pending": {
+    "note": "A submitted job is saved on this device. Refreshing resumes its progress; it does not submit a new request.",
+    "resume": "Resume generation"
   }
 }

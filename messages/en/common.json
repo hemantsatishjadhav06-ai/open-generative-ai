@@ -33,15 +33,19 @@
     "studioNavigation": "Studio navigation",
     "toolsSuffix": "tools",
     "settings": "Settings",
-    "dropHere": "Drop it here",
-    "dropHereHint": "Images, video or audio — all good",
+    "dropHere": "Upload a reference file",
+    "dropHereHint": "Use a file supported by the active studio",
     "dismiss": "Dismiss",
-    "unlockStudios": "Unlock all studios",
+    "unlockStudios": "Open Aquora studios",
     "switchLanguage": "Switch language",
     "budgetToday": "Today: {spent} of {cap}",
     "budgetShort": "{spent} / {cap}",
     "budgetTitle": "Estimated AI spend today for this workspace. Resets at 00:00 UTC.",
-    "budgetUsedUp": "Today's budget is used up. It resets at 00:00 UTC."
+    "budgetUsedUp": "Today's budget is used up. It resets at 00:00 UTC.",
+    "workspaceTools": "Creative tools",
+    "workspaceHint": "Choose a tool to get started",
+    "closeNavigation": "Close navigation",
+    "skipLink": "Skip to workspace"
   },
   "settingsModal": {
     "title": "Settings",
@@ -50,7 +54,7 @@
     "signedInWithCode": "Signed in with an access code",
     "workspaceId": "Workspace {id}",
     "openWorkspace": "Your workspace",
-    "openWorkspaceNote": "No sign-in needed. Your agents, workflows and designs stay private to this browser.",
+    "openWorkspaceNote": "No sign-in is required for this workspace. Workspace data belongs to this browser session; generation history is saved locally on this device.",
     "sharedNote": "Everyone who signs in with the same access code shares this workspace: agents, workflows, designs and the daily budget.",
     "budgetHeading": "Today's budget",
     "budgetNote": "Estimated spend across every studio. Resets at 00:00 UTC.",
@@ -61,26 +65,26 @@
     "close": "Close"
   },
   "notifications": {
-    "generating": "is cooking",
-    "generationComplete": "— done",
-    "generationFailed": "— didn't work",
+    "generating": "is generating",
+    "generationComplete": "— complete",
+    "generationFailed": "— generation failed",
     "resultReady": "Your result is ready.",
     "open": "Open →",
     "openResult": "Open {label} result",
     "dismissNotification": "Dismiss notification",
     "ariaLabel": "Generation activity and notifications",
-    "unreachable": "Couldn't reach the AI service. Try again in a sec.",
+    "unreachable": "The AI service is unavailable. Please try again.",
     "sessionExpired": "Your session ended. Enter your access code to keep going.",
     "budgetExceeded": "Today's budget is used up. It resets at 00:00 UTC.",
     "rateLimited": "Too many requests. Give it a few seconds and try again.",
-    "retryHint": "Fix it and hit Generate again."
+    "retryHint": "Review your inputs and try Generate again."
   },
   "accessCodeModal": {
     "title": "Aquora",
     "chips": [
-      "300+ models",
+      "Images, video & audio",
       "{studios} studios",
-      "Reelty inside"
+      "Agents & workflows"
     ],
     "subtitle": "Enter your access code to open the studio.",
     "close": "Close",
@@ -89,27 +93,28 @@
     "showCode": "Show code",
     "hideCode": "Hide code",
     "missingCodeError": "Enter your access code first.",
-    "submit": "Let's go",
+    "submit": "Open workspace",
     "checking": "Checking…",
     "invalidCode": "That access code isn't valid. Check it and try again.",
     "rateLimited": "Too many tries. Wait {seconds}s and try again.",
     "unavailable": "Couldn't reach Aquora. Check your connection and try again.",
     "genericError": "Something went wrong. Try again.",
-    "helpSummary": "Where do I get one?",
-    "helpBody": "Access codes come from whoever runs this Aquora. Ask them for yours.",
-    "helpNote": "You stay signed in on this device for 30 days. The AI provider keys stay on the server, so your browser never sees them.",
+    "helpSummary": "How do I get an access code?",
+    "helpBody": "Your workspace administrator provides access codes. Contact them to request access.",
+    "helpNote": "Your session remains active on this device until it expires or you sign out. AI provider credentials are managed by the server.",
     "sessionEndedTitle": "Your session ended",
     "sessionEndedSubtitle": "Enter your access code to pick up where you left off.",
     "reeltyOnly": "Just here for Reelty? Open it →",
-    "setupTitle": "Almost ready",
-    "setupBody": "This Aquora isn't set up yet. The site owner needs to add access codes and a session secret on the server.",
+    "setupTitle": "Workspace unavailable",
+    "setupBody": "This workspace is not ready to accept requests. Please contact the workspace administrator.",
     "offlineTitle": "Couldn't reach Aquora",
     "offlineBody": "The server didn't answer. Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "backHome": "Back to product overview"
   },
   "meta": {
     "siteTitle": "Aquora — AI studio for creators",
-    "description": "Make anything. Ship everything. Images, video, audio, avatars and edits with 300+ AI models in one studio.",
+    "description": "Your ideas. One creative workspace. Create images, video and audio, and connect your process with AI agents and workflows in Aquora.",
     "ogLocale": "en_US",
     "pages": {
       "agentChat": "Agent chat — Aquora",
@@ -133,20 +138,20 @@
     "popular": "Jump into a studio"
   },
   "landing": {
-    "eyebrow": "AI studio for creators",
-    "h1": "Make anything. Ship everything.",
-    "sub": "Your whole creative team in one tab: images, video, audio, avatars and ads across 300+ AI models. No sign-up, nothing to install.",
+    "eyebrow": "The creative AI workspace",
+    "h1": "Your ideas. One creative workspace.",
+    "sub": "Create images, video and audio, then connect your process with agents and workflows. Choose a studio, describe your idea and review the result in one place.",
     "ctaPrimary": "Open the studio",
-    "ctaSecondary": "See all studios",
+    "ctaSecondary": "Find your creative tool",
     "chips": [
-      "300+ models",
       "{studios} studios",
-      "Reelty inside"
+      "Images · video · audio",
+      "Agents & workflows"
     ],
-    "studiosHeading": "{count} studios",
-    "studiosSub": "Pick a lane. Every studio is one click away.",
+    "studiosHeading": "{count} connected studios",
+    "studiosSub": "Start with what you want to make. Each studio brings the right tools into focus.",
     "blurbs": {
-      "image": "Text or image in, 100+ image models out.",
+      "image": "Generate images from a prompt or a reference.",
       "layers": "Enhance, relight, re-angle and edit in layers.",
       "video": "Text or images to video with Kling, Veo, Sora.",
       "audio": "Music and sound from a single prompt.",
@@ -154,7 +159,7 @@
       "motion-control": "Drive a character with reference-video motion.",
       "lipsync": "Portrait plus audio becomes a talking video.",
       "body-swap": "Recast anyone in a video with your character.",
-      "cinema": "Real camera, lens and aperture controls.",
+      "cinema": "Explore camera, lens and aperture prompts.",
       "marketing": "Product shots in, video ads out.",
       "workflows": "Chain steps into repeatable pipelines.",
       "agents": "Agents that plan and generate for you.",
@@ -162,16 +167,67 @@
       "ai-influencer": "Consistent AI personas, post after post.",
       "reelty": "Listing videos and ads for real estate."
     },
-    "reeltyKicker": "Reelty inside",
-    "reeltyTitle": "Built for real-estate creators",
-    "reeltyBody": "Listing videos, walkthrough edits and property ads — a whole studio, one tab over.",
+    "reeltyKicker": "A connected workspace",
+    "reeltyTitle": "Creating content for real estate?",
+    "reeltyBody": "Open Reelty for property-focused listing videos and marketing content.",
     "reeltyCta": "Open Reelty",
-    "trust": "The AI provider keys live on Aquora's server, never in your browser.",
+    "trust": "Aquora brings creative AI tools into a shared workspace. Download results you want to keep; generation history is stored on this device.",
     "footerRuns": "Runs on Aquora's own AI backend (fal.ai + OpenRouter)",
     "footerOss": "Open source (MIT)",
     "footerGithub": "GitHub",
     "langSwitch": "中文",
     "langSwitchLabel": "Switch language",
-    "studiosNavLabel": "All studios"
+    "studiosNavLabel": "All studios",
+    "accessNote": "Workspace access is managed by your administrator. No installation required.",
+    "capabilityNote": "A focused space for your next idea.",
+    "skipLink": "Skip to creative tools",
+    "navigationLabel": "Product navigation",
+    "studiosKicker": "Tools with a clear purpose",
+    "goalHeading": "What would you like to create?",
+    "availabilityNote": "Available models and tools depend on your workspace configuration. Generation may use your daily AI budget.",
+    "previewLabel": "Interface illustration",
+    "previewArt": "Illustrative artwork",
+    "previewStep": "Image Studio",
+    "previewTitle": "Start with an idea",
+    "previewPrompt": "A quiet mountain landscape, soft morning light, natural colours.",
+    "previewModel": "Choose a model",
+    "previewAction": "Generate image",
+    "previewCaption": "Illustrative preview — create your own result in the studio.",
+    "processKicker": "A simpler creative process",
+    "processHeading": "From a clear brief to a result you can use.",
+    "processSub": "Keep the controls you need, with a direct path from your first prompt to your next creative iteration.",
+    "steps": [
+      {
+        "title": "Choose a studio",
+        "body": "Select images, video, audio or a tool for your specific task."
+      },
+      {
+        "title": "Describe and configure",
+        "body": "Write your prompt, add any required references, and review the model settings and estimated cost."
+      },
+      {
+        "title": "Generate, review and download",
+        "body": "Follow the job status, inspect the result and download it. Adjust your brief for the next version."
+      }
+    ],
+    "goals": {
+      "images": {
+        "title": "Create and edit images",
+        "body": "Generate visuals from a prompt, refine existing images and explore a canvas for your creative work."
+      },
+      "video": {
+        "title": "Bring ideas to video",
+        "body": "Turn text or images into clips, or choose a focused tool for motion, editing and product videos."
+      },
+      "audio": {
+        "title": "Make music and sound",
+        "body": "Describe the sound you need and create audio for your content using the available models."
+      },
+      "agents-automation": {
+        "title": "Connect your creative process",
+        "body": "Build an assistant or connect generation steps in a reusable visual workflow."
+      }
+    },
+    "reeltyNote": "Reelty opens a connected application with its own access and availability."
   }
 }

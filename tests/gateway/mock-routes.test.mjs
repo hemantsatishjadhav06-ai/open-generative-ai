@@ -140,7 +140,9 @@ function freshState() {
 test('GET /api/health reports providers, gate and storage without secrets', async () => {
     const res = await call(health.GET, { url: '/api/health' });
     assert.equal(res.status, 200);
-    assert.deepEqual(res.body, { ok: true, fal: true, openrouter: true, gate: 'codes', storage: 'persistent' });
+    const release = process.env.AQUORA_BUILD_SHA || process.env.RAILWAY_GIT_COMMIT_SHA;
+    const commit = typeof release === 'string' && /^[a-f0-9]{40}$/i.test(release) ? release.toLowerCase() : null;
+    assert.deepEqual(res.body, { ok: true, fal: true, openrouter: true, gate: 'codes', storage: 'persistent', commit });
 });
 
 test('session: wrong code 401, cross-site 403, right code sets an HttpOnly cookie, sign-out clears it', async () => {

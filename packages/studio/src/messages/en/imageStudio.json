@@ -14,6 +14,7 @@
     "uploadNewButton": "Upload new",
     "emptyState": "No uploads yet",
     "removeFromHistory": "Remove from history",
+    "removeReferenceImage": "Remove reference image {index}",
     "selectedCount": "{count} of {max} selected",
     "useSelected": "Use Selected"
   },
@@ -47,11 +48,13 @@
     "linkCopied": "Link copied"
   },
   "emptyState": {
-    "heading": "Make something.",
-    "subtitle": "Type a scene, a mood, a character. We handle the rest.",
+    "heading": "Create your first image",
+    "subtitle": "Turn a description or reference into an image.",
+    "nextSteps": "Choose a model below, add your prompt or reference, then select Generate.",
     "modelLabel": "Model"
   },
   "promptBar": {
+    "promptLabel": "Image prompt",
     "placeholderMultiImage": "{count} images selected — describe the transformation (optional)",
     "placeholderI2I": "Describe how to transform this image (optional)",
     "placeholderT2I": "Describe the image you want to create",
@@ -94,5 +97,9 @@
     "9:21": "Tall story",
     "2:3": "Pin / poster",
     "3:2": "Photo"
+  },
+  "pending": {
+    "note": "A submitted job is saved on this device. Refreshing resumes its progress; it does not submit a new request.",
+    "resume": "Resume generation"
   }
 }

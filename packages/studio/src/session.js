@@ -149,16 +149,15 @@ export async function signIn(code) {
     return session;
 }
 
-/** DELETE /api/session. Local state is cleared even if the request fails. */
+/** DELETE /api/session. Clear local state only after the cookie is revoked. */
 export async function signOut() {
-    try {
-        await fetch(SESSION_URL, { method: "DELETE", credentials: "same-origin" });
-    } finally {
-        setState({
-            status: "ready",
-            session: { ...(state.session || {}), authenticated: false, workspace: null, budget: null },
-        });
-    }
+    const response = await fetch(SESSION_URL, { method: "DELETE", credentials: "same-origin" });
+    const body = await readBody(response);
+    if (!response.ok) throw sessionError("Sign-out failed", response, body);
+    setState({
+        status: "ready",
+        session: { ...(state.session || {}), authenticated: false, workspace: null, budget: null },
+    });
 }
 
 // Short, stable, non-reversible tag for the signed-in workspace, used to

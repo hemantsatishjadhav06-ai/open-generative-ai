@@ -249,9 +249,8 @@ const EditAgent = ({ locale = "en" }) => {
       await axios.put(`${BASE_URL}/by-slug/${id}`, formData);
       
       toast.success(copy.edit.saved);
-      setTimeout(() => {
-        router.push(localePath(locale, "/agents"));
-      }, 1500);
+      // Stay in the editor. An untracked delayed redirect used to navigate
+      // away from a chat opened immediately after saving this agent.
     } catch (err) {
       toast.error(errorMessage(err, copy, copy.edit.saveFailed));
     } finally {

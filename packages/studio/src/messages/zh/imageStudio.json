@@ -14,6 +14,7 @@
     "uploadNewButton": "上传新图片",
     "emptyState": "暂无上传记录",
     "removeFromHistory": "从历史记录中移除",
+    "removeReferenceImage": "移除参考图片 {index}",
     "selectedCount": "已选择 {count}/{max}",
     "useSelected": "使用所选图片"
   },
@@ -47,11 +48,13 @@
     "linkCopied": "链接已复制"
   },
   "emptyState": {
-    "heading": "做点什么。",
-    "subtitle": "输入一个场景、一种情绪、一个角色，剩下的交给我们。",
+    "heading": "创建你的第一张图片",
+    "subtitle": "将文字描述或参考素材变成图片。",
+    "nextSteps": "选择下方模型，添加提示词或参考图片，然后点击生成。",
     "modelLabel": "模型"
   },
   "promptBar": {
+    "promptLabel": "图片提示词",
     "placeholderMultiImage": "已选择 {count} 张图片 — 描述转换效果（可选）",
     "placeholderI2I": "描述如何转换这张图片（可选）",
     "placeholderT2I": "描述你想要创建的图像",
@@ -94,5 +97,9 @@
     "9:21": "长竖屏",
     "2:3": "海报",
     "3:2": "照片"
+  },
+  "pending": {
+    "note": "已提交的任务保存在此设备上。刷新后继续查询进度，不会提交新请求。",
+    "resume": "继续查询生成进度"
   }
 }

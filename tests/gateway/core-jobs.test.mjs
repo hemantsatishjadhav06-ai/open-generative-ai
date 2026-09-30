@@ -118,7 +118,7 @@ test('pipeline registry: events with cursor, finish, cancel, persistence', async
     assert.equal(readEvents(job, 0).done, true);
 
     // Survives a registry wipe via the per-workspace store.
-    await new Promise((r) => setTimeout(r, 50));
+    assert.equal(await job.persistence, true, 'finished result was written before restart');
     resetJobs();
     const restored = await loadJob(job.id, 'ws1');
     assert.equal(restored.status, 'completed');
@@ -130,4 +130,5 @@ test('pipeline registry: events with cursor, finish, cancel, persistence', async
     assert.equal(running.status, 'cancelled');
     assert.equal(running.controller.signal.aborted, true);
     assert.equal(cancelJob(running), false);
+    assert.equal(await running.persistence, true);
 });

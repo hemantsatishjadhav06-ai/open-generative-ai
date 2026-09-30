@@ -1,24 +1,24 @@
 /** @type {import('tailwindcss').Config} */
 
 // Aquora brand tokens.
-// Turquoise is the primary; "Pop" electric blue is the accent. Surfaces are a
-// deep navy. Text on turquoise fills uses #04121a; text on blue fills is white;
-// blue *text* on dark surfaces uses pop-400 (#60a5fa) for AA contrast.
+// Turquoise is the primary; "Pop" muted blue is the accent. Surfaces are a
+// deep navy. Text on turquoise fills uses #102721; text on blue fills is white;
+// blue *text* on dark surfaces uses pop-400 (#94b7dd) for AA contrast.
 // Keep these values in sync with app/globals.css.
 const brand = {
     50: '#effefb',
     100: '#c9fef4',
     200: '#94fbea',
-    300: '#57f0dc',
-    400: '#2ee6d6',
+    300: '#96e2d4',
+    400: '#7bd9c8',
     500: '#0dc9bc',
     600: '#06a29a',
     700: '#0a817c',
     800: '#0e6663',
     900: '#115552',
     950: '#033332',
-    DEFAULT: '#2ee6d6',
-    hover: '#57f0dc',
+    DEFAULT: '#7bd9c8',
+    hover: '#96e2d4',
 };
 
 const pop = {
@@ -26,23 +26,23 @@ const pop = {
     100: '#dbeafe',
     200: '#bfdbfe',
     300: '#93c5fd',
-    400: '#60a5fa',
-    500: '#3b82f6',
-    600: '#2563eb',
+    400: '#94b7dd',
+    500: '#608fc8',
+    600: '#3e6c9f',
     700: '#1d4ed8',
     800: '#1e40af',
     900: '#1e3a8a',
     950: '#172554',
-    DEFAULT: '#3b82f6',
+    DEFAULT: '#608fc8',
 };
 
 const surface = {
-    app: '#050b14',
-    panel: '#0a1422',
-    card: '#0f1c2e',
-    raised: '#15253b',
-    hover: '#1a2d47',
-    border: 'rgba(148, 197, 255, 0.10)',
+    app: '#0b141c',
+    panel: '#111e28',
+    card: '#162630',
+    raised: '#1d303c',
+    hover: '#243b48',
+    border: 'rgba(181, 202, 216, 0.14)',
 };
 
 module.exports = {
@@ -70,9 +70,9 @@ module.exports = {
                 'app-bg': surface.app,
                 'panel-bg': surface.panel,
                 'card-bg': surface.card,
-                'on-brand': '#04121a',
-                secondary: '#9fb3c8',
-                muted: '#5b7089',
+                'on-brand': '#102721',
+                secondary: '#a8bac5',
+                muted: '#849aa9',
             },
             fontFamily: {
                 sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
@@ -89,12 +89,12 @@ module.exports = {
                 '3xl': '2rem',
             },
             boxShadow: {
-                'glow': '0 0 20px rgba(46, 230, 214, 0.4)',
-                'glow-accent': '0 0 20px rgba(59, 130, 246, 0.4)',
+                'glow': '0 4px 14px rgba(0, 0, 0, 0.12)',
+                'glow-accent': '0 4px 14px rgba(0, 0, 0, 0.12)',
                 '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.8)',
             },
             backgroundImage: {
-                'brand-gradient': 'linear-gradient(135deg, #2ee6d6 0%, #3b82f6 100%)',
+                'brand-gradient': 'linear-gradient(135deg, #96e2d4 0%, #7bd9c8 100%)',
             },
         },
     },

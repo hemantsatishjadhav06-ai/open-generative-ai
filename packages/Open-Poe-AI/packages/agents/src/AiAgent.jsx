@@ -15,7 +15,7 @@ import { BiLoaderAlt } from "react-icons/bi";
 import { themes } from "./components/themes";
 import { FaAngleRight } from "react-icons/fa6";
 import { getAgentCopy, localePath } from "./i18n";
-import { AGENTS_API as BASE_URL, errorMessage, isSessionError, newConversationId, uploadImage } from "./utils/api";
+import { AGENTS_API as BASE_URL, errorMessage, isSessionError, newConversationId, postAgentTurn, uploadImage } from "./utils/api";
 
 const POLL_INTERVAL_MS = 1000;
 const MAX_POLL_NETWORK_ERRORS = 5;
@@ -166,12 +166,8 @@ const ChatPage = ({
     return [];
   });
   const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(() => {
-    if (typeof window !== 'undefined' && effectiveConversationId) {
-      return !!sessionStorage.getItem('pending_first_msg');
-    }
-    return false;
-  });
+  const [isStreaming, setIsStreaming] = useState(false);
+  const sendRunningRef = useRef(false);
   const [agentDetails, setAgentDetails] = useState(initialAgentDetails || null);
   const [error, setError] = useState(null);
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -221,16 +217,6 @@ const ChatPage = ({
       }
 
       if (effectiveConversationId && lowerAgentSlug) {
-        const pending = sessionStorage.getItem('pending_first_msg');
-        if (pending) {
-          try {
-            const { convId } = JSON.parse(pending);
-            if (convId === effectiveConversationId) {
-              return;
-            }
-          } catch (e) {}
-        }
-
         try {
           let endpoint = `${BASE_URL}/by-slug/${lowerAgentSlug}/${effectiveConversationId}`;
           const res = await axios.get(endpoint);
@@ -342,28 +328,6 @@ const ChatPage = ({
   useEffect(() => {
     if (initialAgentDetails) setAgentDetails(initialAgentDetails);
   }, [lowerAgentSlug, initialAgentDetails]);
-
-  useEffect(() => {
-    const checkPendingMessage = async () => {
-      if (effectiveConversationId) {
-        const pending = sessionStorage.getItem('pending_first_msg');
-        if (pending) {
-          try {
-            const { convId, text, attachments: pendingAttachments } = JSON.parse(pending);
-            if (convId === effectiveConversationId) {
-              sessionStorage.removeItem('pending_first_msg');
-              setTimeout(() => {
-                handleSendMessage(null, text, pendingAttachments);
-              }, 100);
-            }
-          } catch (e) {
-            console.error("Failed to parse pending message", e);
-          }
-        }
-      }
-    };
-    checkPendingMessage();
-  }, [effectiveConversationId]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -492,10 +456,10 @@ const ChatPage = ({
     const currentAttachments = overrideAttachments || (overrideText ? [] : attachments);
 
     if (!userText.trim()) return;
-    if (isStreaming && !overrideText) return;
+    if (sendRunningRef.current || isStreaming) return;
     if (isUploading) return;
 
-    if (overrideText) setIsStreaming(false);
+    sendRunningRef.current = true;
 
     const userMessage = {
       role: "user",
@@ -528,29 +492,15 @@ const ChatPage = ({
     setMessages((prev) => [...prev, { ...currentAssistantMsgRef.current }]);
 
     try {
-      const currentConvId = conversationIdRef.current || effectiveConversationId;
+      const needsConversationUrl = !effectiveConversationId;
+      const currentConvId = conversationIdRef.current || effectiveConversationId || newConversationId();
+      conversationIdRef.current = currentConvId;
 
-      // First message of a new chat: move to the chat's own URL, which sends
-      // the pending message once it mounts.
-      if (!currentConvId && !overrideText) {
-        const newConvId = newConversationId();
-        conversationIdRef.current = newConvId;
-        sessionStorage.setItem('pending_first_msg', JSON.stringify({
-          convId: newConvId,
-          text: userText,
-          attachments: currentAttachments,
-          timestamp: new Date().toISOString()
-        }));
-        if (lowerAgentSlug) {
-          router.replace(localePath(locale, `/agents/${lowerAgentSlug}/${newConvId}`));
-        }
-        return;
-      }
-
-      const initialRes = await axios.post(`${BASE_URL}/by-slug/${lowerAgentSlug}/chat`, {
+      // Send from this mounted chat. Navigation must never be a prerequisite
+      // for the first paid turn or trigger an automatic replay on remount.
+      const initialRes = await postAgentTurn(lowerAgentSlug, {
         message: userText,
-        stream: false,
-        conversation_id: currentConvId,
+        conversationId: currentConvId,
         attachments: userMessage.attachments,
       });
 
@@ -558,6 +508,11 @@ const ChatPage = ({
       if (!request_id) throw new Error(copy.errors.turnFailed);
       if (initialRes.data.conversation_id) conversationIdRef.current = initialRes.data.conversation_id;
       await pollTurn(request_id, assistantMsgId);
+      if (needsConversationUrl && lowerAgentSlug) {
+        // The turn and conversation are persisted now. Keep the live chat
+        // mounted while giving refresh/back navigation its canonical URL.
+        window.history.replaceState(null, "", localePath(locale, `/agents/${encodeURIComponent(lowerAgentSlug)}/${encodeURIComponent(conversationIdRef.current)}`));
+      }
     } catch (err) {
       if (isSessionError(err)) setSessionEnded(true);
       setError(err?.response ? errorMessage(err, copy, copy.errors.turnFailed) : (err?.message || copy.errors.turnFailed));
@@ -566,6 +521,7 @@ const ChatPage = ({
         setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
       }
     } finally {
+      sendRunningRef.current = false;
       setIsStreaming(false);
     }
   };

@@ -302,7 +302,9 @@ test('clipping: only this workspace\'s uploads are accepted, priced and capped b
     const cid = workspace();
     const session = { sid: 'sid-clip', cid };
     const url = 'https://v3.fal.media/files/talk.mp4';
-    await assert.rejects(validateClippingInput({ video_url: 'https://example.com/four-hours.mp4' }, { session }), (e) => e.status === 400 && e.code === 'upload_required');
+    // A valid, unregistered CDN URL tests ownership without depending on
+    // public DNS. Private-address rejection has separate security coverage.
+    await assert.rejects(validateClippingInput({ video_url: 'https://v3.fal.media/files/not-uploaded-four-hours.mp4' }, { session }), (e) => e.status === 400 && e.code === 'upload_required');
     await assert.rejects(validateClippingInput({ video_url: url }, { session }), (e) => e.code === 'upload_required', 'not uploaded by this workspace');
     await recordUpload(cid, { url, bytes: 150 * 1024 * 1024, mime: 'video/mp4', kind: 'video', seconds: 3600 });
     await assert.rejects(validateClippingInput({ video_url: url }, { session: { sid: 'x', cid: workspace() } }), (e) => e.code === 'upload_required', 'another workspace');

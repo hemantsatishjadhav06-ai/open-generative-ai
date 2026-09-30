@@ -31,6 +31,8 @@
     "requiredFieldError": "请填写必填字段：{field}"
   },
   "generate": {
+    "resumePending": "继续待完成的生成",
+    "pendingResumeHint": "之前的生成请求已保存。请先继续查询结果，再开始新的生成。",
     "generating": "正在生成音频...",
     "cta": "生成音轨",
     "noUrlError": "API 未返回音频地址。",
@@ -42,8 +44,9 @@
     "errorHeading": "生成错误",
     "loadingHeading": "正在生成配乐",
     "loadingSubtext": "正在渲染音频波形和人声...",
-    "emptyHeading": "音频工作室",
-    "emptyBody": "选择音乐、声音或音效模型，在左侧设置好，开始制作你的下一段音轨。",
+    "emptyHeading": "创建你的第一段音频",
+    "emptyBody": "使用音频模型创建音乐、语音或音效。",
+    "nextSteps": "在设置面板中选择模型，填写必填内容，然后生成、试听和下载。",
     "newGeneration": "新建生成",
     "success": "成功"
   },

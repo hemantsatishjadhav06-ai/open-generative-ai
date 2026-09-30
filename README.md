@@ -8,7 +8,7 @@
 
 **Make anything. Ship everything.**
 
-Make images, video, audio, lip-sync and AI personas in one place. Aquora runs on its own AI backend: media generation goes to [fal.ai](https://fal.ai), text and agents go to [OpenRouter](https://openrouter.ai). The provider keys live on the server; people sign in with an access code and their browser never holds a key.
+Make images, video, audio, lip-sync and AI personas in one place. Aquora runs on its own AI backend: media generation goes to [fal.ai](https://fal.ai), text and agents go to [OpenRouter](https://openrouter.ai). The provider keys live on the server. Private deployments use access codes; optional public access gives each visitor a private workspace. The browser never holds a provider key.
 
 Who it's for:
 
@@ -56,7 +56,7 @@ browser ──(same origin, HttpOnly session cookie)──▶ Next.js /api route
                                                       └─▶ OpenRouter chat completions         (OPENROUTER_API_KEY)
 ```
 
-- **Sign-in**: `POST /api/session {code}` checks the code against `AQUORA_ACCESS_CODES` and sets an HttpOnly, SameSite=Lax cookie for 30 days. Everyone using the same code shares one workspace (agents, workflows, design sessions, history scope and the daily budget). Signing out revokes that session on the server (a copied cookie stops working too); removing a code signs all of its sessions out.
+- **Sign-in**: `POST /api/session {code}` checks the code against `AQUORA_ACCESS_CODES` and sets an HttpOnly, SameSite=Lax cookie for 30 days. Everyone using the same code shares one workspace (agents, workflows, design sessions, history scope and the daily budget). Signing out revokes that session on the server (a copied cookie stops working too); removing a code signs all of its sessions out. With `AQUORA_PUBLIC_ACCESS=true`, each new visitor receives a separate workspace automatically, still subject to deployment and workspace budgets.
 - **Generation**: the studios post to `/api/v1/<model>`; the gateway maps the request onto the matching fal endpoint, submits it to the fal queue and hands back a signed job token that only the same session can poll (`/api/v1/predictions/<token>/result`).
 - **Uploads**: `POST /api/v1/upload_file` checks type and size (images 25 MB, audio 50 MB, video 200 MB), sniffs the file's magic bytes and stores it on fal's CDN.
 - **Guard rails**: no generic pass-through (only catalog models, server-built fal URLs, an OpenRouter model allowlist and a `max_tokens` cap), same-origin checks on every write, rate limits per session and per IP, at most 4 jobs in flight per session, and daily spend caps (estimated per job at submit, refunded when a job fails). Over-budget requests get `402`, over-rate ones `429` with `Retry-After`.
@@ -76,7 +76,7 @@ cp .env.example .env.local
 npm run dev              # → http://localhost:3000
 ```
 
-In development (`NODE_ENV` is not `production`) the access gate is open, so no code is needed. Already cloned without submodules? Run `git submodule update --init --recursive` once, then `npm run setup`.
+In development (`NODE_ENV` is not `production`) the access gate is open when no access codes are configured. Setting `AQUORA_ACCESS_CODES` enables code sign-in in development too. Already cloned without submodules? Run `git submodule update --init --recursive` once, then `npm run setup`.
 
 **No provider keys?** `npm run mock:upstream` starts a local stand-in for fal.ai and OpenRouter (sample media, fake queue, fake chat) and prints the variables that point the gateway at it. The test suite uses the same mock, so nothing leaves your machine.
 
@@ -90,7 +90,8 @@ Every variable except the `NEXT_PUBLIC_*` ones is **server-only**: set it as a r
 |---|---|---|
 | `FAL_KEY` | yes | fal.ai API-scope key ([fal.ai/dashboard/keys](https://fal.ai/dashboard/keys)). Images, video, audio, lip-sync and uploads. |
 | `OPENROUTER_API_KEY` | for text features | OpenRouter key ([openrouter.ai/keys](https://openrouter.ai/keys)). Prompt tools, agents, the design agent, workflow text nodes, clipping highlights. Give it a credit limit on OpenRouter as a backstop. |
-| `AQUORA_ACCESS_CODES` | yes in production | Comma-separated access codes, one per person. Production ignores weak codes (under 12 characters or fewer than 6 different characters); generate each with `openssl rand -base64 18`. Without a usable code, a production server answers `503 setup_required` on every paid endpoint and the studio shows a setup notice. |
+| `AQUORA_PUBLIC_ACCESS` | no (false) | Set `true` to let each visitor use a private workspace without an access code. Production still requires a session secret; deployment and workspace spend caps still apply. |
+| `AQUORA_ACCESS_CODES` | production private access | Comma-separated access codes, one per person. Production ignores weak codes (under 12 characters or fewer than 6 different characters); generate each with `openssl rand -base64 18`. Without a usable code or public access, a production server answers `503 setup_required` on every paid endpoint and the studio shows a setup notice. |
 | `AQUORA_SESSION_SECRET` | yes in production | At least 32 random bytes; signs session cookies and job tokens. Rotate with `new,old` (comma list). Generate one: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `AQUORA_DAILY_BUDGET_USD` | no (25) | Estimated spend cap per UTC day for the whole deployment. |
 | `AQUORA_SESSION_DAILY_BUDGET_USD` | no (10) | Estimated spend cap per UTC day per workspace (access code). |
@@ -109,7 +110,7 @@ Every variable except the `NEXT_PUBLIC_*` ones is **server-only**: set it as a r
 
 `FAL_QUEUE_BASE`, `FAL_RUN_BASE`, `FAL_REST_BASE`, `FAL_API_BASE` and `OPENROUTER_BASE_URL` exist only to point the gateway at the local mock in tests; leave them unset in production.
 
-`GET /api/health` (public) reports `{ ok, fal, openrouter, gate, storage }`, booleans and modes only, so you can check a deployment's setup without signing in.
+`GET /api/health` (public) reports `{ ok, fal, openrouter, gate, storage, commit }`. Provider flags indicate keys are present; they do not verify provider credit or connectivity. `commit` is the validated Git commit baked into a Railway-built image, falling back to Railway's runtime commit variable, or `null` when unavailable. No secrets or customer data are exposed.
 
 ## Deploy
 
@@ -117,7 +118,10 @@ The app runs on **Railway** and builds from `main` with the included `Dockerfile
 
 1. Set `FAL_KEY`, `OPENROUTER_API_KEY`, `AQUORA_ACCESS_CODES` and `AQUORA_SESSION_SECRET` as service variables (plus any optional ones above).
 2. Mount a **volume at `/data`** so workspaces' agents, workflows, design sessions and today's budget ledger survive redeploys. Without it `/api/health` reports `storage: "ephemeral"`.
-3. Keep the service at **one replica**: rate limits, in-flight job slots and the job registry are in memory.
+3. Keep the service at **one replica**: rate limits, in-flight job slots and the job registry are in memory. An explicit `AQUORA_DATA_DIR` alone does not make container storage persistent on Railway; it must be inside the attached volume.
+4. Set public `NEXT_PUBLIC_*` values before building. The Docker builder accepts Reelty, site-origin and analytics values as public build arguments, plus Railway's public domain. Server keys and session secrets remain runtime variables.
+
+Direct fal queue jobs can be polled after a restart while the signed browser session and job token remain valid. In-process multi-step jobs (agents, design runs, workflows, clipping, upscale/extend pipelines) cannot resume after a restart; their UI must report an interruption and require a new run. Completed pipeline results are saved best effort. Avoid redeploying while these runs are active. A volume-backed single instance is suitable for a controlled beta; durable workers and shared rate limits are needed before adding replicas.
 
 Run it with Docker locally (reads an untracked `.env`, keeps data in a named volume):
 
@@ -144,7 +148,12 @@ Installers land in `release/`. Cloud models in the desktop app go through an Aqu
 npm test        # unit + gateway tests (session, limits, catalog transforms, routes against the local fal/OpenRouter mock); no network
 npm run lint    # eslint (flat config in eslint.config.mjs)
 node scripts/build-gateway-catalog.mjs --check   # fails if lib/gateway/catalog/catalog.json is stale
+npm run build   # production app and workspace packages
+npx playwright install --with-deps chromium
+npm run test:e2e # local production-mode app, mock providers and temporary test data
 ```
+
+The browser suite cannot target a remote deployment. See [pre-launch audit](docs/prelaunch-audit.md) for tested journeys, fixes, design proposals and deployment checks that still require account access.
 
 ## Project layout
 

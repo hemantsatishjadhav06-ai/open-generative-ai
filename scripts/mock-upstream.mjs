@@ -94,6 +94,7 @@ export function familyOf(endpoint) {
     const e = String(endpoint).toLowerCase();
     if (/whisper|wizper|speech-to-text|transcri|\bstt\b/.test(e)) return 'transcript';
     if (/stable-audio|music|cassetteai|sound-effect|sfx|lyria|ace-step|beatoven|audio-gen/.test(e)) return 'audio_file';
+    if (/(^|\/)text-to-audio(\/|$)/.test(e)) return 'audio';
     if (/tts|text-to-speech|speech|voice|elevenlabs|chatterbox|kokoro|dia-tts/.test(e)) return 'audio';
     // Image endpoints under video-family names (e.g. fal-ai/wan-25-preview/text-to-image).
     if (/(^|\/)(text-to-image|image-to-image)(\/|$)/.test(e)) return 'images';
