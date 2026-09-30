@@ -1,0 +1,57 @@
+[
+  {
+    "name": "deployed commit and persistent storage",
+    "passed": true,
+    "details": {
+      "ok": true,
+      "fal": true,
+      "openrouter": true,
+      "gate": "open",
+      "storage": "persistent",
+      "commit": "13457fa6783406e223d94ee23901d7d35d153712"
+    }
+  },
+  {
+    "name": "QA session survived deployment",
+    "passed": true,
+    "details": {
+      "status": 200,
+      "gate": "open",
+      "budget": {
+        "spentUsd": 0,
+        "capUsd": 10
+      }
+    }
+  },
+  {
+    "name": "QA workflow survived deployment",
+    "passed": true,
+    "details": {
+      "status": 200
+    }
+  },
+  {
+    "name": "model availability metadata loads",
+    "passed": true,
+    "details": {
+      "status": 200,
+      "enabled_count": 443,
+      "configured": true
+    }
+  },
+  {
+    "name": "no real-provider smoke job was dispatched",
+    "passed": true,
+    "details": {
+      "provider_smoke": "blocked by automatic approval review before execution"
+    }
+  },
+  {
+    "name": "isolated QA workflow cleaned up",
+    "passed": true,
+    "details": {
+      "delete_status": 200,
+      "read_after_delete_status": 404
+    }
+  }
+]

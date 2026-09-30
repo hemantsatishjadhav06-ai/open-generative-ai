@@ -1,0 +1,196 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "passed": true,
+    "bytes": 41544,
+    "title": "Aquora \u2014 AI studio for creators",
+    "new_heading": true,
+    "canonical_origin": true
+  },
+  {
+    "path": "/zh",
+    "status": 200,
+    "passed": true,
+    "bytes": 39758,
+    "title": "Aquora \u2014 \u521b\u4f5c\u8005\u7684 AI \u5de5\u4f5c\u5ba4"
+  },
+  {
+    "path": "/studio/image",
+    "status": 200,
+    "passed": true,
+    "bytes": 16002,
+    "title": "Image Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/layers",
+    "status": 200,
+    "passed": true,
+    "bytes": 16021,
+    "title": "Layers Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/video",
+    "status": 200,
+    "passed": true,
+    "bytes": 16002,
+    "title": "Video Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/audio",
+    "status": 200,
+    "passed": true,
+    "bytes": 16002,
+    "title": "Audio Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/clipping",
+    "status": 200,
+    "passed": true,
+    "bytes": 16035,
+    "title": "AI Clipping \u2014 Aquora"
+  },
+  {
+    "path": "/studio/motion-control",
+    "status": 200,
+    "passed": true,
+    "bytes": 16131,
+    "title": "Motion Control \u2014 Aquora"
+  },
+  {
+    "path": "/studio/lipsync",
+    "status": 200,
+    "passed": true,
+    "bytes": 16004,
+    "title": "Lip Sync \u2014 Aquora"
+  },
+  {
+    "path": "/studio/body-swap",
+    "status": 200,
+    "passed": true,
+    "bytes": 16036,
+    "title": "Body Swap \u2014 Aquora"
+  },
+  {
+    "path": "/studio/cinema",
+    "status": 200,
+    "passed": true,
+    "bytes": 16021,
+    "title": "Cinema Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/marketing",
+    "status": 200,
+    "passed": true,
+    "bytes": 16078,
+    "title": "Marketing Studio \u2014 Aquora"
+  },
+  {
+    "path": "/studio/workflows",
+    "status": 200,
+    "passed": true,
+    "bytes": 16036,
+    "title": "Workflows \u2014 Aquora"
+  },
+  {
+    "path": "/studio/agents",
+    "status": 200,
+    "passed": true,
+    "bytes": 15979,
+    "title": "Agents \u2014 Aquora"
+  },
+  {
+    "path": "/studio/design-agent",
+    "status": 200,
+    "passed": true,
+    "bytes": 16093,
+    "title": "Design Agent \u2014 Aquora"
+  },
+  {
+    "path": "/studio/ai-influencer",
+    "status": 200,
+    "passed": true,
+    "bytes": 16112,
+    "title": "AI Influencer \u2014 Aquora"
+  },
+  {
+    "path": "/studio/reelty",
+    "status": 200,
+    "passed": true,
+    "bytes": 15979,
+    "title": "Reelty \u2014 Aquora"
+  },
+  {
+    "path": "/zh/studio/image",
+    "status": 200,
+    "passed": true,
+    "bytes": 16604,
+    "title": "\u56fe\u50cf\u5de5\u4f5c\u5ba4 \u2014 Aquora"
+  },
+  {
+    "path": "/zh/studio/video",
+    "status": 200,
+    "passed": true,
+    "bytes": 16604,
+    "title": "\u89c6\u9891\u5de5\u4f5c\u5ba4 \u2014 Aquora"
+  },
+  {
+    "path": "/zh/studio/audio",
+    "status": 200,
+    "passed": true,
+    "bytes": 16604,
+    "title": "\u97f3\u9891\u5de5\u4f5c\u5ba4 \u2014 Aquora"
+  },
+  {
+    "path": "/studio/definitely-not-a-tool",
+    "status": 404,
+    "passed": true,
+    "bytes": 15096,
+    "title": "Not found \u2014 Aquora"
+  },
+  {
+    "path": "/icon.svg",
+    "status": 200,
+    "passed": true,
+    "bytes": 361,
+    "title": null
+  },
+  {
+    "path": "/icon-192.png",
+    "status": 200,
+    "passed": true,
+    "bytes": 2964,
+    "title": null
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "status": 200,
+    "passed": true,
+    "bytes": 441,
+    "title": null,
+    "name": "Aquora",
+    "theme_color": "#0b141c",
+    "description": "Create images, video and audio, and connect your process with AI agents and workflows."
+  },
+  {
+    "path": "/opengraph-image",
+    "status": 200,
+    "passed": true,
+    "bytes": 25748,
+    "title": null
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "passed": true,
+    "bytes": 159,
+    "title": null
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "passed": true,
+    "bytes": 18569,
+    "title": null
+  }
+]

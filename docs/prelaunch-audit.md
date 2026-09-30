@@ -1,5 +1,7 @@
 # Aquora pre-launch audit
 
+> Historical audit. The fixes have since been merged and deployed. See [deployment and launch verification](release-verification.md) for current results and remaining launch conditions.
+
 Date: 2026-09-30. Repository baseline: `7e8a10a8a6c478d1d36435a1d292b0873a005eb3`. Review branch: `audit/prelaunch-2026-09-30`.
 
 ## Release decision

@@ -1,0 +1,94 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 lint
+> eslint .
+
+
+/workspace/scratch/c79a368c9841/open-generative-ai/eslint.config.mjs
+  7:1  warning  Assign array to a variable before exporting as module default  import/no-anonymous-default-export
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/AiInfluencerStudio.jsx
+  630:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  709:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  819:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/AudioStudio.jsx
+   93:6  warning  React Hook useEffect has a missing dependency: 'uploadState'. Either include it or remove the dependency array                           react-hooks/exhaustive-deps
+  600:6  warning  React Hook useEffect has missing dependencies: 'params' and 'selectedModel'. Either include them or remove the dependency array          react-hooks/exhaustive-deps
+  679:6  warning  React Hook useEffect has a missing dependency: 'copy.generate.droppedFileUploadError'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/CinemaStudio.jsx
+   385:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   904:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1156:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1296:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/ClippingStudio.jsx
+  337:6  warning  React Hook useEffect has a missing dependency: 'copy'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/DrawModal.jsx
+   433:6   warning  React Hook useEffect has a missing dependency: 'redrawCanvas'. Either include it or remove the dependency array                                                                                                                                                                          react-hooks/exhaustive-deps
+   806:6   warning  React Hook useEffect has a missing dependency: 'selectedObjectId'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setCanvasObjects' needs the current value of 'selectedObjectId'                                react-hooks/exhaustive-deps
+   826:6   warning  React Hook useEffect has a missing dependency: 'selectedObjectId'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setCanvasObjects' needs the current value of 'selectedObjectId'                                react-hooks/exhaustive-deps
+  1363:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/ImageStudio.jsx
+   392:7   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   547:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1135:9   warning  The 'processDroppedImages' function makes the dependencies of useEffect Hook (at line 1196) change on every render. Move it inside the useEffect callback. Alternatively, wrap the definition of 'processDroppedImages' in its own useCallback() Hook                                    react-hooks/exhaustive-deps
+  1297:5   warning  React Hook useCallback has a missing dependency: 'copy.errors.noImageReferenceSupport'. Either include it or remove the dependency array                                                                                                                                                 react-hooks/exhaustive-deps
+  1523:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1666:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1965:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/LayersStudio.jsx
+   247:6   warning  React Hook useEffect has a missing dependency: 'handleUploadFile'. Either include it or remove the dependency array                                                                                                                                                                      react-hooks/exhaustive-deps
+  1382:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1467:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1617:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  2387:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  2469:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  3755:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  3845:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/LipSyncStudio.jsx
+  205:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  584:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.imageTooLarge' and 'copy.errors.imageUploadFailed'. Either include them or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+  611:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.videoTooLarge' and 'copy.errors.videoUploadFailed'. Either include them or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+  642:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.audioTooLarge' and 'copy.errors.audioUploadFailed'. Either include them or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+  663:6   warning  React Hook useEffect has missing dependencies: 'switchToImage' and 'switchToVideo'. Either include them or remove the dependency array                                                                                                                                                   react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/MarketingStudio.jsx
+  204:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  592:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/MotionControlStudio.jsx
+  306:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  345:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  445:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  613:9   warning  The 'availableAspectRatios' logical expression could make the dependencies of useEffect Hook (at line 632) change on every render. To fix this, wrap the initialization of 'availableAspectRatios' in its own useMemo() Hook                                                             react-hooks/exhaustive-deps
+  831:6   warning  React Hook useEffect has missing dependencies: 'handleAddImage' and 'handleUploadVideo'. Either include them or remove the dependency array                                                                                                                                              react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/RecastStudio.jsx
+   215:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   322:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   718:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.videoTooLarge' and 'copy.errors.videoUploadFailed'. Either include them or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+   752:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.imageTooLarge' and 'copy.errors.imageUploadFailed'. Either include them or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+  1263:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/VibeMotionStudio.jsx
+  244:6  warning  React Hook useCallback has a missing dependency: 'generating'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/VideoStudio.jsx
+   184:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1507:5   warning  React Hook useCallback has missing dependencies: 'copy.errors.modelChangedDuringUpload' and 'copy.errors.modelDoesNotSupportReference'. Either include them or remove the dependency array                                                                                               react-hooks/exhaustive-deps
+  1543:5   warning  React Hook useCallback has a missing dependency: 'copy.errors.sourceDoesNotAcceptImages'. Either include it or remove the dependency array                                                                                                                                               react-hooks/exhaustive-deps
+  1746:5   warning  React Hook useCallback has missing dependencies: 'copy.media.audio', 'copy.media.image', and 'copy.media.video'. Either include them or remove the dependency array                                                                                                                      react-hooks/exhaustive-deps
+  1775:6   warning  React Hook useEffect has a missing dependency: 'copy.errors.waitForCurrentUpload'. Either include it or remove the dependency array                                                                                                                                                      react-hooks/exhaustive-deps
+  2350:6   warning  React Hook useCallback has missing dependencies: 'uploadedImageUrl' and 'uploadedVideoUrl'. Either include them or remove the dependency array                                                                                                                                           react-hooks/exhaustive-deps
+
+/workspace/scratch/c79a368c9841/open-generative-ai/packages/studio/src/components/WorkflowStudio.jsx
+  545:5  warning  React Hook useCallback has a missing dependency: 'workflowRoot'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 56 problems (0 errors, 56 warnings)
+

@@ -1,0 +1,61 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aquora@2.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:31) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:39) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]  ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+
+Running 44 tests using 1 worker
+
+(node:51) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/auth-navigation.spec.mjs:4:1 › access code validates empty/invalid inputs and never stores the credential (1.7s)
+  ✓   2 tests/e2e/auth-navigation.spec.mjs:24:1 › settings dialog closes with Escape and returns keyboard focus (1.3s)
+  ✓   3 tests/e2e/auth-navigation.spec.mjs:34:1 › a failed logout keeps the authenticated workspace and explains retry (2.3s)
+  ✓   4 tests/e2e/auth-navigation.spec.mjs:51:1 › expired session requires authentication again without a blank screen (3.2s)
+  ✓   5 tests/e2e/auth-navigation.spec.mjs:69:1 › studio navigation tracks browser back/forward and refresh (2.6s)
+  ✓   6 tests/e2e/auth-navigation.spec.mjs:84:1 › invalid studio URL is 404 and retired/deep-link aliases redirect (1.8s)
+  ✓   7 tests/e2e/auth-navigation.spec.mjs:98:1 › deployment setup state shows a notice and can recover (607ms)
+  ✓   8 tests/e2e/auth-navigation.spec.mjs:107:1 › session outage shows a retry notice and can recover (590ms)
+  ✓   9 tests/e2e/core-journeys.spec.mjs:3:1 › video validates required input, generates a local clip and restores draft/history (9.0s)
+  ✓  10 tests/e2e/core-journeys.spec.mjs:21:1 › audio model selection validates a required prompt, generates playable audio and persists it (8.9s)
+  ✓  11 tests/e2e/core-journeys.spec.mjs:50:1 › agent is created, edited, chats through the local LLM, persists the conversation and deletes (7.3s)
+  ✓  12 tests/e2e/core-journeys.spec.mjs:94:1 › workflow create, rename, local image run, reload and delete form one persistent journey (11.1s)
+  ✓  13 tests/e2e/generation.spec.mjs:3:1 › image rejects an empty prompt without submitting a paid job (2.9s)
+  ✓  14 tests/e2e/generation.spec.mjs:12:1 › image submits once, polls successfully and preserves draft/history across refresh (8.7s)
+  ✓  15 tests/e2e/generation.spec.mjs:36:1 › provider rejection displays a safe error and the next image attempt works (6.5s)
+  ✓  16 tests/e2e/generation.spec.mjs:49:1 › budget error does not leave image generation stuck (2.5s)
+  ✓  17 tests/e2e/landing.spec.mjs:3:1 › desktop landing explains access, offers the real tools and opens the workspace (1.2s)
+  ✓  18 tests/e2e/landing.spec.mjs:16:1 › mobile landing and image workspace fit the screen and retain their primary actions (1.9s)
+  ✓  19 tests/e2e/landing.spec.mjs:29:1 › desktop studio has a named workspace landmark and a clear starting point (1.8s)
+  ✓  20 tests/e2e/model-availability.spec.mjs:3:1 › failed model discovery blocks generation and offers a safe retry (1.4s)
+  ✓  21 tests/e2e/model-availability.spec.mjs:17:1 › slow model discovery shows a loading state without unverified pickers (1.3s)
+  ✓  22 tests/e2e/pending-recovery.spec.mjs:4:3 › image resumes the same unfinished generation after a browser refresh (13.7s)
+  ✓  23 tests/e2e/pending-recovery.spec.mjs:4:3 › video resumes the same unfinished generation after a browser refresh (13.9s)
+  ✓  24 tests/e2e/pending-recovery.spec.mjs:4:3 › audio resumes the same unfinished generation after a browser refresh (13.6s)
+  ✓  25 tests/e2e/pending-recovery.spec.mjs:52:1 › an unfinished image stays private to its workspace and a transient poll error is retried (8.0s)
+  ✓  26 tests/e2e/pending-recovery.spec.mjs:81:1 › a stale unfinished token clears after signing back into the same workspace without resubmitting (8.1s)
+  ✓  27 tests/e2e/studios.spec.mjs:22:3 › the image studio deep link renders without a client exception (1.7s)
+  ✓  28 tests/e2e/studios.spec.mjs:22:3 › the layers studio deep link renders without a client exception (2.4s)
+  ✓  29 tests/e2e/studios.spec.mjs:22:3 › the video studio deep link renders without a client exception (3.5s)
+  ✓  30 tests/e2e/studios.spec.mjs:22:3 › the audio studio deep link renders without a client exception (2.0s)
+  ✓  31 tests/e2e/studios.spec.mjs:22:3 › the clipping studio deep link renders without a client exception (2.8s)
+  ✓  32 tests/e2e/studios.spec.mjs:22:3 › the motion-control studio deep link renders without a client exception (3.2s)
+  ✓  33 tests/e2e/studios.spec.mjs:22:3 › the lipsync studio deep link renders without a client exception (1.8s)
+  ✓  34 tests/e2e/studios.spec.mjs:22:3 › the body-swap studio deep link renders without a client exception (2.0s)
+  ✓  35 tests/e2e/studios.spec.mjs:22:3 › the cinema studio deep link renders without a client exception (1.9s)
+  ✓  36 tests/e2e/studios.spec.mjs:22:3 › the marketing studio deep link renders without a client exception (2.0s)
+  ✓  37 tests/e2e/studios.spec.mjs:22:3 › the workflows studio deep link renders without a client exception (1.3s)
+  ✓  38 tests/e2e/studios.spec.mjs:22:3 › the agents studio deep link renders without a client exception (1.4s)
+  ✓  39 tests/e2e/studios.spec.mjs:22:3 › the design-agent studio deep link renders without a client exception (1.8s)
+  ✓  40 tests/e2e/studios.spec.mjs:22:3 › the ai-influencer studio deep link renders without a client exception (2.0s)
+  ✓  41 tests/e2e/studios.spec.mjs:22:3 › the reelty studio deep link renders without a client exception (1.4s)
+  ✓  42 tests/e2e/studios.spec.mjs:45:1 › mobile image/video workflows keep navigation and Generate reachable (2.7s)
+  ✓  43 tests/e2e/studios.spec.mjs:60:1 › workflow and agent list failures offer a retry and recover (3.1s)
+  ✓  44 tests/e2e/studios.spec.mjs:76:1 › Chinese deep links retain the requested studio and localized sign-in (1.5s)
+
+  44 passed (3.0m)
