@@ -43,6 +43,7 @@ const StudioLoading = () => (
 
 // Each studio is its own async chunk and only mounts once its tab is opened.
 const ImageStudio = dynamic(() => import('studio/ImageStudio'), { ssr: false, loading: StudioLoading });
+const ModelAvailabilityGate = dynamic(() => import('studio/ModelAvailabilityGate'), { ssr: false, loading: StudioLoading });
 const VideoStudio = dynamic(() => import('studio/VideoStudio'), { ssr: false, loading: StudioLoading });
 const ClippingStudio = dynamic(() => import('studio/ClippingStudio'), { ssr: false, loading: StudioLoading });
 const MotionControlStudio = dynamic(() => import('studio/MotionControlStudio'), { ssr: false, loading: StudioLoading });
@@ -1188,6 +1189,7 @@ export default function StandaloneShell({ locale = 'en' }) {
         {/* Studio Content. Keyed by workspace: signing in with a different
             access code remounts the studios so no state crosses workspaces. */}
         <main id="workspace-content" tabIndex={-1} key={studioIdentity} aria-label={tabLabel(activeTab)} className="flex-1 min-w-0 min-h-0 h-full relative overflow-hidden bg-surface-app">
+        <ModelAvailabilityGate locale={locale} required={!['agents', 'workflows', 'design-agent', 'reelty'].includes(activeTab)}>
         <div className={activeTab === 'image' ? "h-full w-full" : "hidden"}>
           {shouldMount('image') && <ImageStudio apiKey={studioIdentity} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} {...studioCallbacks('image')} />}
         </div>
@@ -1303,6 +1305,7 @@ export default function StandaloneShell({ locale = 'en' }) {
             )}
           </div>
         </div>
+        </ModelAvailabilityGate>
       </main>
     </div>
 

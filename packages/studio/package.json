@@ -9,6 +9,7 @@
     "./package.json": "./package.json",
     "./dist/tailwind.css": "./dist/tailwind.css",
     "./ImageStudio": "./src/components/ImageStudio.jsx",
+    "./ModelAvailabilityGate": "./src/components/ModelAvailabilityGate.jsx",
     "./VideoStudio": "./src/components/VideoStudio.jsx",
     "./AudioStudio": "./src/components/AudioStudio.jsx",
     "./ClippingStudio": "./src/components/ClippingStudio.jsx",

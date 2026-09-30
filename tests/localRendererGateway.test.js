@@ -65,7 +65,7 @@ test('migrateLegacyStorage renames image history, drops unusable data and the ol
 test('gateway.generateImage submits to /api/v1/<model>, polls the job token and refreshes the budget', async () => {
     const { gateway } = await load('../src/lib/gateway.js');
     const { setModelAvailability } = await load('../packages/studio/src/modelAvailability.js');
-    setModelAvailability(null);
+    setModelAvailability({ enabled: ['flux-schnell-image'], disabled: [], disabled_models: [] });
     const fetchStub = stubFetch({
         'POST /api/v1/flux-schnell-image': () => ({ body: { request_id: 'job.token', status: 'processing' } }),
         'GET /api/v1/predictions/job.token/result': () => ({

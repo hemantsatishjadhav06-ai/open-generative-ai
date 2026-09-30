@@ -6,9 +6,8 @@
 // studio posts to /api/v1/<key> (model.endpoint || model.id). The list is
 // fetched once per page load and shared by every picker.
 //
-// Until the list arrives (or when it can't be fetched) everything counts as
-// available, so the pickers never render empty; the gateway still rejects a
-// disabled model on submit. Node tests import this file: nothing runs at
+// Unknown availability is not permission to advertise a model. The shell
+// shows loading/retry UI until this list arrives. Node tests import this file: nothing runs at
 // import time, and there is no React here (the hook lives in
 // useModelAvailability.js).
 import {
@@ -82,7 +81,7 @@ export function loadModelAvailability() {
   if (snapshot) return Promise.resolve(snapshot);
   if (inflight) return inflight;
   if (typeof window === "undefined" || typeof fetch !== "function") return Promise.resolve(null);
-  inflight = fetch(AVAILABLE_URL, { headers: { Accept: "application/json" }, credentials: "same-origin" })
+  inflight = fetch(AVAILABLE_URL, { headers: { Accept: "application/json" }, credentials: "same-origin", signal: AbortSignal.timeout(10_000) })
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => (data && Array.isArray(data.enabled) ? setModelAvailability(data) : null))
     .catch(() => null)
@@ -104,13 +103,13 @@ function lookupModel(id) {
 
 /** True when the gateway has an enabled catalog entry for this endpoint key. */
 export function isEndpointAvailable(endpoint) {
-  if (!snapshot) return true;
+  if (!snapshot) return false;
   return typeof endpoint === "string" && snapshot.enabled.has(endpoint);
 }
 
 /** Accepts a studio model object or a model id. Unknown ids use the id as the key. */
 export function isModelAvailable(modelOrId) {
-  if (!snapshot) return true;
+  if (!snapshot) return false;
   const model = typeof modelOrId === "string" ? (lookupModel(modelOrId) || { id: modelOrId }) : modelOrId;
   if (!model?.id) return false;
   if (snapshot.disabledModels.has(model.id)) return false;
@@ -118,7 +117,7 @@ export function isModelAvailable(modelOrId) {
 }
 
 export function filterAvailableModels(models) {
-  if (!snapshot) return models;
+  if (!snapshot) return [];
   return models.filter((model) => isModelAvailable(model));
 }
 

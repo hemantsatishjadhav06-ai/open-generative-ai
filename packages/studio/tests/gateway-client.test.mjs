@@ -277,9 +277,11 @@ test('signIn surfaces status, code and retryAfter; signOut clears the workspace'
 
 // ─── model availability ────────────────────────────────────────────────────
 
-test('model availability: everything runs until the list arrives, then disabled models hide', async () => {
+test('model availability: unknown and disabled models are not advertised as available', async () => {
   availability.setModelAvailability(null);
-  assert.equal(availability.isModelAvailable('anything'), true);
+  assert.equal(availability.isModelAvailable('anything'), false);
+  assert.equal(availability.isEndpointAvailable('anything'), false);
+  assert.deepEqual(availability.filterAvailableModels(t2iModels), []);
   const [first, second] = t2iModels.filter((m) => m.endpoint);
   availability.setModelAvailability({ enabled: [second.endpoint], disabled: [first.endpoint], disabled_models: [] });
   assert.equal(availability.isModelAvailable(first), false);
