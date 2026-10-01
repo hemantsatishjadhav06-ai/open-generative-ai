@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-01",
+  "release_commit": "13457fa6783406e223d94ee23901d7d35d153712",
+  "railway_deployment": "787f408d-195a-46c3-a144-6ee83ef05fb8",
+  "health": {
+    "ok": true,
+    "fal": true,
+    "openrouter": true,
+    "gate": "open",
+    "storage": "persistent"
+  },
+  "authorized_limit_usd": 1,
+  "workspace_spent_usd": 0.253062,
+  "provider_invoice_verified": false,
+  "media": [
+    {
+      "kind": "image",
+      "model": "flux-schnell-image",
+      "submit_http": 200,
+      "final_http": 200,
+      "status": "completed",
+      "output_count": 1,
+      "observation_seconds": 27,
+      "estimated_ledger_usd": 0.04,
+      "output_url": "https://v3b.fal.media/files/b/0aac9958/UCdQYyd85cpQLwcNAX5ob.jpg",
+      "bytes": 140984,
+      "sha256": "bb98b85c47a5ffd8c944aebbd79fde3bd3e2eb32c9b8a5642dcadc686ba3aaf1",
+      "streams": [
+        {
+          "codec_name": "mjpeg",
+          "width": 512,
+          "height": 512,
+          "r_frame_rate": "25/1",
+          "duration": "0.040000"
+        }
+      ]
+    },
+    {
+      "kind": "video",
+      "model": "seedance-pro-t2v-fast",
+      "submit_http": 200,
+      "final_http": 200,
+      "status": "completed",
+      "output_count": 1,
+      "observation_seconds": 39,
+      "estimated_ledger_usd": 0.16,
+      "output_url": "https://v3b.fal.media/files/b/0aac995e/E1mfg4FtD8ULdhuLP8fUO_video.mp4",
+      "bytes": 1150026,
+      "sha256": "88b28814a904871496b051fcaa67437eac5073c8180ed7b94660c5e42902b6d7",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 864,
+          "height": 480,
+          "r_frame_rate": "24/1",
+          "duration": "2.041667"
+        }
+      ]
+    },
+    {
+      "kind": "audio",
+      "model": "mmaudio-v2/text-to-audio",
+      "submit_http": 200,
+      "final_http": 200,
+      "status": "completed",
+      "output_count": 1,
+      "observation_seconds": 141,
+      "estimated_ledger_usd": 0.05,
+      "output_url": "https://v3b.fal.media/files/b/0aac9969/fBdyv_2Jy0CzuJf-n5CWm_Wyb9GN4Q.mp3",
+      "bytes": 29815,
+      "sha256": "9814212203c763235279a2eaa7fe3d600de042f4dbeabb1d1b9cff5ba0afea00",
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 1,
+          "r_frame_rate": "0/0",
+          "duration": "2.063673"
+        }
+      ]
+    }
+  ],
+  "llm": [
+    {
+      "purpose": "fast",
+      "http": 200,
+      "content": "Aquora QA OK",
+      "model": "openai/gpt-6-luna",
+      "finish_reason": "stop",
+      "cost": 5.4e-06
+    },
+    {
+      "purpose": "agent",
+      "http": 200,
+      "content": "Aquora QA OK",
+      "model": "anthropic/claude-sonnet-5",
+      "finish_reason": "stop",
+      "cost": 0.000144
+    },
+    {
+      "purpose": "vision",
+      "http": 200,
+      "content": "The icon features a dark teal",
+      "model": "google/gemini-3.8-flash",
+      "finish_reason": "length",
+      "cost": 0.00114675
+    },
+    {
+      "purpose": "vision_complete",
+      "http": 200,
+      "content": "A minimalist icon featuring a dark green underlined capital letter \"A\" centered on a mint green rounded square background.",
+      "model": "google/gemini-3.8-flash",
+      "finish_reason": "stop",
+      "cost": 0.0017655
+    }
+  ],
+  "upload": {
+    "http": 200,
+    "download_http": 200,
+    "content_type": "image/png",
+    "bytes": 2964,
+    "exact_source_match": true,
+    "sha256": "38f0642955a7ef4225977446cc08fd10bf01ae2cf5a4adb9d6620690c80f7486"
+  },
+  "harness_corrections": [
+    {
+      "http": 404,
+      "reason": "Encode slash in model key as the studio does; request rejected before submission."
+    },
+    "The 256-token vision probe stopped at length; a separate 1024-token probe completed. Both costs included."
+  ],
+  "limitations": [
+    "API-level real-provider smoke; core browser happy paths were tested with local upstream fixtures.",
+    "One selected model per media category; not all enabled catalog entries tested.",
+    "No restart or cancellation of paid jobs during this smoke.",
+    "Fal invoice is not reconciled; media ledger values are conservative estimates.",
+    "Audio was fully decoded and measured as non-silent; no listening quality certification."
+  ],
+  "no_credit_or_subscription_purchase": true,
+  "no_customer_data_used": true,
+  "no_load_test": true,
+  "session_cleanup": {
+    "logout_http": 200,
+    "authenticated": false,
+    "result_after_logout_http": 404,
+    "error": "not_found"
+  }
+}

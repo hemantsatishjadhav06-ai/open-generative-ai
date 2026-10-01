@@ -1,0 +1,117 @@
+{
+  "deploymentId": "787f408d-195a-46c3-a144-6ee83ef05fb8",
+  "status": "SUCCESS",
+  "period_start": "2026-10-01T06:20:00Z",
+  "events": [
+    {
+      "time": "2026-10-01T06:28:15.383027241Z",
+      "severity": "info",
+      "event": "\"fal_request\"",
+      "route": "\"submit\"",
+      "provider": "\"fal\"",
+      "endpoint": "\"fal-ai/flux/schnell\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:28:15.383031994Z",
+      "severity": "info",
+      "event": "\"job_submitted\"",
+      "endpoint": "\"fal-ai/flux/schnell\""
+    },
+    {
+      "time": "2026-10-01T06:28:35.211765041Z",
+      "severity": "info",
+      "event": "\"fal_request\"",
+      "route": "\"result\"",
+      "provider": "\"fal\"",
+      "endpoint": "\"fal-ai/flux/schnell\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:28:55.168154729Z",
+      "severity": "info",
+      "event": "\"fal_request\"",
+      "route": "\"submit\"",
+      "provider": "\"fal\"",
+      "endpoint": "\"fal-ai/bytedance/seedance/v1/pro/fast/text-to-video\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:28:55.168163643Z",
+      "severity": "info",
+      "event": "\"job_submitted\"",
+      "endpoint": "\"fal-ai/bytedance/seedance/v1/pro/fast/text-to-video\""
+    },
+    {
+      "time": "2026-10-01T06:29:25.020943419Z",
+      "severity": "info",
+      "event": "\"fal_request\"",
+      "route": "\"result\"",
+      "provider": "\"fal\"",
+      "endpoint": "\"fal-ai/bytedance/seedance/v1/pro/fast/text-to-video\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:29:44.694876453Z",
+      "severity": "info",
+      "event": "\"fal_request\"",
+      "route": "\"submit\"",
+      "provider": "\"fal\"",
+      "endpoint": "\"fal-ai/mmaudio-v2/text-to-audio\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:29:44.694879628Z",
+      "severity": "info",
+      "event": "\"job_submitted\"",
+      "endpoint": "\"fal-ai/mmaudio-v2/text-to-audio\""
+    },
+    {
+      "time": "2026-10-01T06:29:52.306682559Z",
+      "severity": "info",
+      "event": "\"fal_upload_initiate\"",
+      "provider": "\"fal\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:29:52.452632041Z",
+      "severity": "info",
+      "event": "\"fal_upload\"",
+      "provider": "\"fal\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:30:02.427643179Z",
+      "severity": "info",
+      "event": "\"openrouter_request\"",
+      "provider": "\"openrouter\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:30:22.176892188Z",
+      "severity": "info",
+      "event": "\"openrouter_request\"",
+      "provider": "\"openrouter\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:30:42.359773242Z",
+      "severity": "info",
+      "event": "\"openrouter_request\"",
+      "provider": "\"openrouter\"",
+      "status": "200"
+    },
+    {
+      "time": "2026-10-01T06:31:32.270127869Z",
+      "severity": "info",
+      "event": "\"openrouter_request\"",
+      "provider": "\"openrouter\"",
+      "status": "200"
+    }
+  ],
+  "http_status_counts": {
+    "200": 49,
+    "307": 1,
+    "404": 1
+  }
+}
